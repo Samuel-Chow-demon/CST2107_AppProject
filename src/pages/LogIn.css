@@ -1,0 +1,12 @@
+
+#id-app-name {
+    font-family: 'Pacifico', cursive !important;
+    font-size: 60px;
+    margin-top: 25px;
+
+    background: linear-gradient(45deg, #6f0e72, #8ea2e4); /* Gradient colors */
+    line-height: 2;
+    background-size: 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
