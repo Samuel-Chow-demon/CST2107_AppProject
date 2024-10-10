@@ -1,7 +1,9 @@
 import { useRoutes } from 'react-router-dom';
 import Home from './pages/Home';
-import LandingPage from './pages/LandingPage';
-import LogInPage from './pages/LogInPage';
+import Landing from './pages/Landing';
+import LogIn from './pages/LogIn';
+import SignUp from './pages/SignUp';
+import {CONST_PATH} from './components/front_end_constant';
 import './App.css';
 
 function App() {
@@ -13,15 +15,19 @@ function App() {
   let pagesComponent = useRoutes(
     [
       {
-        path: '/',
-        element: <LandingPage />
+        path: CONST_PATH.landing,   // '/'
+        element: <Landing />
       },
       {
-        path: '/login',
-        element: <LogInPage />
+        path: CONST_PATH.login,     // '/login'
+        element: <LogIn />
       },
       {
-        path: '/home',
+        path: CONST_PATH.signup,    // '/signup'
+        element: <SignUp />
+      },
+      {
+        path: CONST_PATH.home,      // '/home'
         element: <Home />
       }
     ]
