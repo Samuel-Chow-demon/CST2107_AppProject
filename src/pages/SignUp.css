@@ -1,0 +1,20 @@
+#id-card-signup{
+    width : 600px;
+}
+
+#id-icon-bkgrd-signup{
+    background-color: #5656df;
+    width: 56px;
+    height: 56px;
+}
+
+#id-icon-signup{
+    font-size: 40px;
+}
+
+#id-button-signup{
+    background-color: blue;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+}

@@ -73,28 +73,6 @@ const LogInform = () => {
         // }
     })
 
-    const cardStyle = {
-        width : '600px',
-    };
-
-    const iconBgStyle = {
-        backgroundColor:'rgb(88 181 88)',
-        width : 56,
-        height : 56
-    };
-
-    const iconStyle = {
-        fontSize : 40
-    };
-
-    const buttonStyle = {
-        backgroundColor :'green',
-        variant : "contained",
-        fontSize : '18px',
-        fontWeight : 'bold',
-        color : 'white' 
-    };
-
     const FORM_ITEM_TAILWIND_STYLE = `mt-5 w-full`;
 
 
@@ -199,9 +177,9 @@ const LogInform = () => {
     return (
         <div className="flex justify-center">
             <ThemeProvider theme={theme}>
-                <Paper elevation={10} style={cardStyle} className="flex justify-center aligns-center py-20 mt-20">
+                <Paper elevation={10} id="id-card-login" className="flex justify-center aligns-center py-20 mt-20">
                     <div className="flex flex-col items-center w-96">
-                        <Avatar className="my-10" style={iconBgStyle}><VpnKeyIcon style={iconStyle} /></Avatar>
+                        <Avatar className="my-10" id="id-icon-bkgrd-login"><VpnKeyIcon id="id-icon-login" /></Avatar>
 
                         <div className="mt-1 mb-8 flex flex-col items-center">
                             <Typography variant='h4'>Welcome To</Typography>
@@ -231,8 +209,9 @@ const LogInform = () => {
 
                         <div className={FORM_ITEM_TAILWIND_STYLE}>
                             <Button 
-                                fullWidth 
-                                style={buttonStyle}
+                                fullWidth
+                                id="id-button-login"
+                                variant="contained" 
                                 onClick={clickSubmit}>
                                     Log In
                             </Button>

@@ -3,9 +3,12 @@ import {useNavigate} from 'react-router-dom';
 
 import {createTheme, ThemeProvider,
         Paper, Typography, Avatar, Button, 
-        TextField} from '@mui/material';
+        TextField,
+        CircularProgress} from '@mui/material';
 
 import FaceIcon from '@mui/icons-material/Face';
+import CancelIcon from '@mui/icons-material/Cancel';
+import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 
 import {validateEmailAndPasswordInput} from '../components/utility.js';
 import {InputEmailBox, InputPasswordBox, passwordBoxIcon} from '../components/Input.jsx';
@@ -14,6 +17,11 @@ import {CONST_PATH, CONST_LOG_IN_DELAY_MS,
         DEPLOYED_HOME_URL} from '../components/front_end_constant.js';
 
 import {SERVER_URL, API_USER_URL} from '../../backends/module_constant.js'
+
+import {DisplayMessage} from '../components/display';
+
+// Use CSS for styling
+import './SignUp.css'
 
 const {useState, useEffect} = React;
 
@@ -44,6 +52,12 @@ const SignUpform = () => {
     const [passwordConfirmErrorMessage, setPasswordConfirmErrorMessage] = useState('');
 
     const [confirmPasswordIcon, setConfirmIconType] = useState(passwordBoxIcon.none);
+
+    const [showSpinner, setShowSpinner] = useState(false);
+
+    const [errorMessage, setErrorMessage] = useState('');
+
+    const [okMessage, setOkMessage] = useState('Registered Successfully');
 
 
     // ********************************************** Declare function
@@ -98,6 +112,24 @@ const SignUpform = () => {
         })
     };
 
+    const hideMessageDisplay = () =>{
+        setShowSpinner(false);
+        setErrorMessage('');
+        setOkMessage('');
+    }
+
+    const errorMessageControl = {
+        message : errorMessage,
+        color: 'rgb(224, 124, 111)',
+        icon : <CancelIcon style={{color:'rgb(224, 124, 111)', fontSize:'36px'}}/>
+    }
+
+    const okMessageControl = {
+        message : okMessage,
+        color: 'rgb(81, 155, 72)',
+        icon : <DoneOutlineIcon style={{color:'rgb(81, 155, 72)', fontSize:'36px'}}/>
+    }
+
     // ********************************************** Declare Effect
 
     // Effect on checking confirm password
@@ -138,28 +170,6 @@ const SignUpform = () => {
         //     fontFamily: 'Lato, Roboto, Monospace, Helvetica, sens-serif',
         // }
     })
-
-    const cardStyle = {
-        width : '600px',
-    };
-
-    const iconBgStyle = {
-        backgroundColor:'#5656df',
-        width : 56,
-        height : 56
-    };
-
-    const iconStyle = {
-        fontSize : 40
-    };
-
-    const buttonStyle = {
-        backgroundColor :'blue',
-        variant : "contained",
-        fontSize : '18px',
-        fontWeight : 'bold',
-        color : 'white' 
-    };
 
     const FORM_ITEM_TAILWIND_STYLE = `mt-5 w-full`;
 
@@ -212,10 +222,14 @@ const SignUpform = () => {
 
     const clickSubmit = async (event)=>{
 
+        // Call api to database
         console.log(formData.email + ", " + formData.password);
 
         if (validateInput())
         {
+            // Here display the loading spinner
+            setShowSpinner(true);
+
             // Do Post API
             try {
                 const createdUser = await fetch(`${SERVER_URL}${API_USER_URL}/register`, {
@@ -242,6 +256,8 @@ const SignUpform = () => {
                     }
         
                     // Here Display Register Success Component (not finish)
+                    hideMessageDisplay();
+                    setOkMessage('Registered Successfully');
 
                     // Wait for the next browser repaint using requestAnimationFrame
                     await new Promise(resolve => requestAnimationFrame(resolve));
@@ -258,26 +274,38 @@ const SignUpform = () => {
                 }
             }
             catch(error){
-                alert(`Error : ${error}`);
+                //alert(`Error : ${error}`);
 
                 // Here display the Sign Up Fail Component (not finish)
+                hideMessageDisplay();
+                setOkMessage(`Register User ${formData.email} Fail (error : ${error})`);
             }
             
             // Whatever, reset the form data
             setFormData(initFormData);
+        }
+        else
+        {
+            hideMessageDisplay();
         }
     };
 
     return (
         <div className="flex justify-center">
             <ThemeProvider theme={theme}>
-                <Paper elevation={10} style={cardStyle} className="flex justify-center aligns-center py-20 mt-20">
+                <Paper elevation={10} id="id-card-signup" className="flex justify-center aligns-center py-20 mt-20">
                     <div className="flex flex-col items-center w-96">
-                        <Avatar className="my-10" style={iconBgStyle}><FaceIcon style={iconStyle} /></Avatar>
+                        <Avatar className="my-10" id="id-icon-bkgrd-signup"><FaceIcon id="id-icon-signup" /></Avatar>
 
                         <div className="mt-1 mb-10">
                             <Typography variant='h4'>Sign Up</Typography>
                         </div>
+
+                        <DisplayMessage 
+                            showSpinner = {showSpinner}
+                            errorMsg = {errorMessageControl}
+                            okMsg={okMessageControl}
+                        />
 
                         <div className={FORM_ITEM_TAILWIND_STYLE}>
                             <InputEmailBox
@@ -327,8 +355,9 @@ const SignUpform = () => {
 
                         <div className={FORM_ITEM_TAILWIND_STYLE}>
                             <Button 
-                                fullWidth 
-                                style={buttonStyle}
+                                fullWidth
+                                id="id-button-signup"
+                                variant="contained"
                                 onClick={clickSubmit}>
                                     Sign Up
                             </Button>
