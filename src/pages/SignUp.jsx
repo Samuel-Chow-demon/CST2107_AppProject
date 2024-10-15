@@ -16,7 +16,7 @@ import {InputEmailBox, InputPasswordBox, passwordBoxIcon} from '../components/In
 import {CONST_PATH, CONST_LOG_IN_DELAY_MS, 
         DEPLOYED_HOME_URL} from '../components/front_end_constant.js';
 
-import {SERVER_URL, API_USER_URL} from '../../backends/module_constant.js'
+import {SERVER_URL, API_USER_URL} from '../components/front_end_constant.js'
 
 import {DisplayMessage} from '../components/display';
 
@@ -53,11 +53,13 @@ const SignUpform = () => {
 
     const [confirmPasswordIcon, setConfirmIconType] = useState(passwordBoxIcon.none);
 
+    const [isDisableSignup, setDisableSignup] = useState(false);
+
     const [showSpinner, setShowSpinner] = useState(false);
 
     const [errorMessage, setErrorMessage] = useState('');
 
-    const [okMessage, setOkMessage] = useState('Registered Successfully');
+    const [okMessage, setOkMessage] = useState('');
 
 
     // ********************************************** Declare function
@@ -222,11 +224,15 @@ const SignUpform = () => {
 
     const clickSubmit = async (event)=>{
 
+        setDisableSignup(true);
+
         // Call api to database
-        console.log(formData.email + ", " + formData.password);
+        //console.log(formData.email + ", " + formData.password);
 
         if (validateInput())
         {
+            console.log(SERVER_URL);
+
             // Here display the loading spinner
             setShowSpinner(true);
 
@@ -244,21 +250,23 @@ const SignUpform = () => {
         
                 if (createdUserJSON)
                 {
-                    alert(createdUserJSON.message);
+                    //alert(createdUserJSON.message);
                     let messageSuccessRegister = `${createdUserJSON.message}`;
 
                     //let enumDisplay = eDISPLAY.FAIL;
         
+                    hideMessageDisplay();
                     if (createdUser.status === 201)
                     {
                         //enumDisplay = eDISPLAY.GOOD;
                         messageSuccessRegister += `<br>Here Bring You To The Login Page.`;
+                        setOkMessage(messageSuccessRegister);
+                    }
+                    else
+                    {
+                        setErrorMessage(messageSuccessRegister);
                     }
         
-                    // Here Display Register Success Component (not finish)
-                    hideMessageDisplay();
-                    setOkMessage('Registered Successfully');
-
                     // Wait for the next browser repaint using requestAnimationFrame
                     await new Promise(resolve => requestAnimationFrame(resolve));
         
@@ -266,10 +274,10 @@ const SignUpform = () => {
                     if (createdUser.status === 201)
                     {
                         // Wait for 1500 ms
-                        await new Promise(resolve => setTimeout(resolve, CONST_LOG_IN_DELAY_MS * 2));
+                        await new Promise(resolve => setTimeout(resolve, CONST_LOG_IN_DELAY_MS * 3));
         
                         // Drive to LogIn Page
-                        navigate(DEPLOYED_HOME_URL ? `${DEPLOYED_HOME_URL}/login` : CONST_PATH.login); // '/login'
+                        //navigate(DEPLOYED_HOME_URL ? `${DEPLOYED_HOME_URL}/login` : CONST_PATH.login); // '/login'
                     }
                 }
             }
@@ -278,7 +286,7 @@ const SignUpform = () => {
 
                 // Here display the Sign Up Fail Component (not finish)
                 hideMessageDisplay();
-                setOkMessage(`Register User ${formData.email} Fail (error : ${error})`);
+                setErrorMessage(`Register User ${formData.email} Fail (error : ${error})`);
             }
             
             // Whatever, reset the form data
@@ -288,6 +296,7 @@ const SignUpform = () => {
         {
             hideMessageDisplay();
         }
+        setDisableSignup(false);
     };
 
     return (
@@ -356,6 +365,10 @@ const SignUpform = () => {
                         <div className={FORM_ITEM_TAILWIND_STYLE}>
                             <Button 
                                 fullWidth
+                                disabled={isDisableSignup}
+                                sx={{
+                                    opacity: isDisableSignup ? 0.5 : 1,
+                                }}
                                 id="id-button-signup"
                                 variant="contained"
                                 onClick={clickSubmit}>

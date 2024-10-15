@@ -12,7 +12,7 @@ import {InputEmailBox, InputPasswordBox, passwordBoxIcon} from '../components/In
 import {CONST_PATH, CONST_LOG_IN_DELAY_MS, 
         DEPLOYED_HOME_URL} from '../components/front_end_constant.js';
 
-import {SERVER_URL, API_USER_URL} from '../../backends/module_constant.js'
+import {SERVER_URL, API_USER_URL} from '../components/front_end_constant.js'
 
 import './Login.css';
 

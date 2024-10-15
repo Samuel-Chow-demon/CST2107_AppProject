@@ -1,9 +1,7 @@
-// 0 - Use the .env File
-import dotnev from 'dotenv';
-dotnev.config();
 
 // 1 - Define the const
-import {SERVER_PORT, API_USER_URL} from './module_constant.js';
+import {SERVER_PORT,
+        API_USER_URL, MONGODB_API} from './back_end_constant.js';
 
 // 2 - Retreive the node modules
 import express    from 'express';
@@ -15,7 +13,7 @@ const server            = express();
 
 // 3 - Connect to Database
 mongoose
-  .connect(process.env.MONGODB_SIMPLEWORK_APP_URL)
+  .connect(MONGODB_API)
   .then(() => {
     console.log("Connected to the database");
   })
@@ -32,7 +30,9 @@ server.use(cors());
 // 5 - Develop the API
 server.use(`${API_USER_URL}`, userRoutes);         // Log In Process
 
+// 6 -  Allow Frontend to retrieve the backend config
+
 // 6 - Start Server
 server.listen(SERVER_PORT, ()=>{
-    console.log(`Server Running, PORT : ${SERVER_PORT}`);
+    console.log(`Server Running at Port : ${SERVER_PORT}`);
 });
