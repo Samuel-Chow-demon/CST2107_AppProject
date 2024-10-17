@@ -1,3 +1,7 @@
+import axios from 'axios';
+import {SERVER_URL, API_USER_URL,
+        LANDING_URL} from './front_end_constant.js'
+
 
 function validateEmailAndPasswordInput (formData, funcInit, funcErrorHandle) 
 {
@@ -50,4 +54,97 @@ function validateEmailAndPasswordInput (formData, funcInit, funcErrorHandle)
     return !(emailError || passwordError);
 }
 
-export {validateEmailAndPasswordInput};
+function funcReturnLogInPageHandle(promptMessage = "")
+{
+    // remove the token and email whatever if any fail
+    if (localStorage.getItem('id') != null)
+    {
+        localStorage.removeItem('id');
+    }
+
+    if (localStorage.getItem('token') != null)
+    {
+        localStorage.removeItem('token');
+    }
+
+    if (promptMessage)
+    {
+        alert(promptMessage);
+    }
+
+    window.location.href = `${LANDING_URL}`;
+}
+
+async function checkIfUserLoggedInValid()
+{
+    const token = localStorage.getItem('token');
+    const id = localStorage.getItem('id');
+
+    const funcReturn = (valid, loginUserJSON, message)=>{
+
+        return {
+                valid,
+                loginUserJSON,
+                message
+                };
+    }
+
+    if (!token || !id)
+    {
+        funcReturnLogInPageHandle(`User Token Not Found`);
+        return funcReturn(false, null, `User Token Not Found`);
+    }
+
+    // Fetch Get to Database to check if the latest token in the database matched to client storage
+    try {
+
+        // Do not know why the axios keep return the 302 redirect error even setting the CORS config. in the server
+
+        // let loggedinResponse = await axios.get(`${SERVER_URL}${API_USER_URL}/${id}`, {
+        //     maxRedirects: 0
+        // });
+
+        // // A redirect exist
+        // if (loggedinResponse.status == 302)
+        // {
+        //     // Get the redirect URL from the 'Location' header
+        //     const redirectUrl = response.headers['location'];
+        //     console.log('Redirecting to:', redirectUrl);
+
+        //     // Make a new request to the redirect URL
+        //     loggedinResponse = await axios.get(redirectUrl);
+        //     console.log('Redirected Response:', loggedinResponse.data);
+        // }
+        // const loginUserJSON = loggedinResponse.data;
+
+        // Use fetch can auto redirect smoothly if exist
+        const loggedinUser = await fetch(`${SERVER_URL}${API_USER_URL}/${id}`);     
+        const loginUserJSON = await loggedinUser.json();
+        
+        if (loginUserJSON)
+        {
+            console.log(loginUserJSON.data.token, " ", token);
+            if (token != loginUserJSON.data.token)
+            {
+                funcReturnLogInPageHandle(`New User Login Detected.`);
+                return funcReturn(false, loginUserJSON, `New User Login Detected.`);
+            }
+            return funcReturn(true, loginUserJSON, ``);
+        }
+        else
+        {
+            funcReturnLogInPageHandle(`User Token Comparison Fail`);
+            return funcReturn(false, null, `User Token Comparison Fail`);
+        }
+    }
+    catch(error)
+    {
+        funcReturnLogInPageHandle(`User Token Comparison Error : ${error}`);
+        return funcReturn(false, null, `User Token Comparison Error : ${error}`);
+    }
+}
+
+export {validateEmailAndPasswordInput, 
+        funcReturnLogInPageHandle,
+        checkIfUserLoggedInValid
+};

@@ -160,7 +160,7 @@ const UserLogIn = async (req, res)=>{
             id : userExisted._id,
             name : userExisted.name,
             email : userExisted.email,
-            categoryUse : userExisted.categoryUse,
+            //categoryUse : userExisted.categoryUse,
             createdAt : userExisted.createdAt,
             updatedAt : userExisted.updatedAt,
             token : accessToken
@@ -226,73 +226,73 @@ const AuthenticatePassword = async (req, res)=>{
     });
 }
 
-const UpdateUserCatByID = async (req, res)=>{
+// const UpdateUserCatByID = async (req, res)=>{
 
-    /*{
-        id : Account_Object_id,
-        iconId : iconIDValue
-        catName : categoryName}
-    }*/
-    const updateInfo = req.body;
+//     /*{
+//         id : Account_Object_id,
+//         iconId : iconIDValue
+//         catName : categoryName}
+//     }*/
+//     const updateInfo = req.body;
 
-    const userId = updateInfo.id;
-    const updateCATName = updateInfo.catName;
-    const updateCATIconId = updateInfo.iconId;
+//     const userId = updateInfo.id;
+//     const updateCATName = updateInfo.catName;
+//     const updateCATIconId = updateInfo.iconId;
 
-    const userExisted = await userModel.findOne({
-        _id : userId
-    });
+//     const userExisted = await userModel.findOne({
+//         _id : userId
+//     });
 
-    if (!userExisted)
-    {
-        return res.status(401).json({
-            message : `User ${userId} NOT existed.`
-        });
-    }
+//     if (!userExisted)
+//     {
+//         return res.status(401).json({
+//             message : `User ${userId} NOT existed.`
+//         });
+//     }
 
-    // Get the object if already existed in the account category
-    const foundExistCAT = userExisted.categoryUse.find(eachCAT => eachCAT.name === updateCATName);
+//     // Get the object if already existed in the account category
+//     const foundExistCAT = userExisted.categoryUse.find(eachCAT => eachCAT.name === updateCATName);
     
-    // If exist, modify
-    if (foundExistCAT)
-    {
-        foundExistCAT.iconId = updateCATIconId;
-    }
-    // else append
-    else
-    {
-        userExisted.categoryUse.push({
-            iconId : updateCATIconId,
-            name : updateCATName
-        });
-    }
+//     // If exist, modify
+//     if (foundExistCAT)
+//     {
+//         foundExistCAT.iconId = updateCATIconId;
+//     }
+//     // else append
+//     else
+//     {
+//         userExisted.categoryUse.push({
+//             iconId : updateCATIconId,
+//             name : updateCATName
+//         });
+//     }
 
-    try
-    {
-        // Then Store back the updated categoryUse back to the database Account
-        const userUpdated = await userModel.findByIdAndUpdate(
-            userExisted._id,
-            {categoryUse : userExisted.categoryUse},
-            {new : true}
-        );
+//     try
+//     {
+//         // Then Store back the updated categoryUse back to the database Account
+//         const userUpdated = await userModel.findByIdAndUpdate(
+//             userExisted._id,
+//             {categoryUse : userExisted.categoryUse},
+//             {new : true}
+//         );
 
-        return res.status(200).json({
-            message : "Update Category Success",
-            data : {
-                id : userUpdated._id,
-                categoryUse : userUpdated.categoryUse,
-                token : userUpdated.token
-            }
-        });
-    }
-    catch (error) {
-        return res.status(500).json({
-            message : `Update User Category "${updateCATName}" Fail`,
-            error
-        })
-    }
+//         return res.status(200).json({
+//             message : "Update Category Success",
+//             data : {
+//                 id : userUpdated._id,
+//                 categoryUse : userUpdated.categoryUse,
+//                 token : userUpdated.token
+//             }
+//         });
+//     }
+//     catch (error) {
+//         return res.status(500).json({
+//             message : `Update User Category "${updateCATName}" Fail`,
+//             error
+//         })
+//     }
 
-}
+// }
 
 const ModifyUserInfoByID = async (req, res)=>{
 
@@ -313,7 +313,7 @@ const ModifyUserInfoByID = async (req, res)=>{
     const origPassword = updateInfo.oldpassword;
     const updatePassword = updateInfo.password;
 
-    const updatedCategory = updateInfo.catUse;
+    //const updatedCategory = updateInfo.catUse;
 
     const userExisted = await userModel.findOne({
         _id : userId
@@ -360,12 +360,12 @@ const ModifyUserInfoByID = async (req, res)=>{
         }
     }
 
-    if (updatedCategory && 
-        updatedCategory.length &&
-        !areCategoryIdentical(updatedCategory, userExisted.categoryUse))
-    {
-        modifyModelObj['categoryUse'] = updatedCategory;
-    }
+    // if (updatedCategory && 
+    //     updatedCategory.length &&
+    //     !areCategoryIdentical(updatedCategory, userExisted.categoryUse))
+    // {
+    //     modifyModelObj['categoryUse'] = updatedCategory;
+    // }
 
     try
     {
@@ -401,7 +401,7 @@ const userController  = {
     GetAllUsers,
     UserLogIn,
     GetUserByID,
-    UpdateUserCatByID,
+    //UpdateUserCatByID,
     ModifyUserInfoByID,
     AuthenticatePassword
 }

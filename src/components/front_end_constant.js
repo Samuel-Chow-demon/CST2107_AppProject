@@ -13,7 +13,11 @@ const SERVER_URL = import.meta.env.VITE_DEPLOYED_SERVER_DOMAIN || `http://localh
 const API_USER_URL = '/api/simplework/v0/users';
 
 // Current not yet deployed, set as '' first
-const DEPLOYED_HOME_URL = '';
+const DEPLOYED_URL = '';
+
+//const HOME_URL = DEPLOYED_URL ? `${DEPLOYED_URL}/${CONST_PATH.home}` : CONST_PATH.home; // '/home'
+const LANDING_URL = DEPLOYED_URL ? `${DEPLOYED_URL}${CONST_PATH.landing}` : CONST_PATH.landing; // '/landing'
 
 export {CONST_PATH, CONST_LOG_IN_DELAY_MS,
-        DEPLOYED_HOME_URL, SERVER_URL, API_USER_URL};
+        LANDING_URL,
+        SERVER_URL, API_USER_URL};

@@ -3,8 +3,7 @@ import {useNavigate} from 'react-router-dom';
 
 import {createTheme, ThemeProvider,
         Paper, Typography, Avatar, Button, 
-        TextField,
-        CircularProgress} from '@mui/material';
+        TextField} from '@mui/material';
 
 import FaceIcon from '@mui/icons-material/Face';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -13,8 +12,7 @@ import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 import {validateEmailAndPasswordInput} from '../components/utility.js';
 import {InputEmailBox, InputPasswordBox, passwordBoxIcon} from '../components/Input.jsx';
 
-import {CONST_PATH, CONST_LOG_IN_DELAY_MS, 
-        DEPLOYED_HOME_URL} from '../components/front_end_constant.js';
+import {CONST_PATH, CONST_LOG_IN_DELAY_MS} from '../components/front_end_constant.js';
 
 import {SERVER_URL, API_USER_URL} from '../components/front_end_constant.js'
 
@@ -22,6 +20,7 @@ import {DisplayMessage} from '../components/display';
 
 // Use CSS for styling
 import './SignUp.css'
+import axios from 'axios';
 
 const {useState, useEffect} = React;
 
@@ -56,9 +55,7 @@ const SignUpform = () => {
     const [isDisableSignup, setDisableSignup] = useState(false);
 
     const [showSpinner, setShowSpinner] = useState(false);
-
     const [errorMessage, setErrorMessage] = useState('');
-
     const [okMessage, setOkMessage] = useState('');
 
 
@@ -238,46 +235,34 @@ const SignUpform = () => {
 
             // Do Post API
             try {
-                const createdUser = await fetch(`${SERVER_URL}${API_USER_URL}/register`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(formData)
-                })
-        
-                const createdUserJSON = await createdUser.json();
+
+                const signUpResponse = await axios.post(`${SERVER_URL}${API_USER_URL}/register`, formData);
+                const createdUserJSON = signUpResponse.data;
         
                 if (createdUserJSON)
                 {
                     //alert(createdUserJSON.message);
-                    let messageSuccessRegister = `${createdUserJSON.message}`;
-
-                    //let enumDisplay = eDISPLAY.FAIL;
-        
                     hideMessageDisplay();
-                    if (createdUser.status === 201)
+                    if (signUpResponse.status === 201)
                     {
-                        //enumDisplay = eDISPLAY.GOOD;
-                        messageSuccessRegister += `<br>Here Bring You To The Login Page.`;
-                        setOkMessage(messageSuccessRegister);
+                        setOkMessage(createdUserJSON.message);
                     }
                     else
                     {
-                        setErrorMessage(messageSuccessRegister);
+                        setErrorMessage(createdUserJSON.message);
                     }
-        
+
                     // Wait for the next browser repaint using requestAnimationFrame
                     await new Promise(resolve => requestAnimationFrame(resolve));
         
                     // Create Success to direct to log in page
-                    if (createdUser.status === 201)
+                    if (signUpResponse.status === 201)
                     {
                         // Wait for 1500 ms
                         await new Promise(resolve => setTimeout(resolve, CONST_LOG_IN_DELAY_MS * 3));
         
                         // Drive to LogIn Page
-                        //navigate(DEPLOYED_HOME_URL ? `${DEPLOYED_HOME_URL}/login` : CONST_PATH.login); // '/login'
+                        navigate(CONST_PATH.login); // '/login'
                     }
                 }
             }
@@ -318,6 +303,7 @@ const SignUpform = () => {
 
                         <div className={FORM_ITEM_TAILWIND_STYLE}>
                             <InputEmailBox
+                                disabled={isDisableSignup}
                                 emailValue = {formData.email}
                                 enterEmailCallBk = {enterEmail}
                                 isEmailError = {emailError}
@@ -328,6 +314,10 @@ const SignUpform = () => {
                         <div className={FORM_ITEM_TAILWIND_STYLE}>
                             <TextField 
                                 fullWidth
+                                disabled={isDisableSignup}
+                                sx={{
+                                    opacity: isDisableSignup ? 0.5 : 1,
+                                }}
                                 label="UserName"
                                 value={formData.username}
                                 placeholder='Hi, user'
@@ -339,6 +329,7 @@ const SignUpform = () => {
 
                         <div className={FORM_ITEM_TAILWIND_STYLE}>
                             <InputPasswordBox
+                                disabled={isDisableSignup}
                                 password = {formData.password}
                                 allowShowPassword = {true}
                                 iconType = {passwordBoxIcon.showButton}
@@ -352,6 +343,7 @@ const SignUpform = () => {
 
                         <div className={FORM_ITEM_TAILWIND_STYLE}>
                             <InputPasswordBox
+                                disabled={isDisableSignup}
                                 password = {formData.confirm_password}
                                 displayLabel = {"Confirm Password"}
                                 iconType = {confirmPasswordIcon}
