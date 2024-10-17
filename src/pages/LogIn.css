@@ -10,3 +10,24 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
+
+#id-card-login{
+    width : 600px;
+}
+
+#id-icon-bkgrd-login{
+    background-color: rgb(83, 185, 83);
+    width: 56px;
+    height: 56px;
+}
+
+#id-icon-login{
+    font-size: 40px;
+}
+
+#id-button-login{
+    background-color: green;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+}

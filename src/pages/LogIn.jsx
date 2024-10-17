@@ -5,16 +5,19 @@ import {createTheme, ThemeProvider,
         Paper, Typography, Avatar, Button } from '@mui/material';
 
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
+import CancelIcon from '@mui/icons-material/Cancel';
+import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 
 import {validateEmailAndPasswordInput} from '../components/utility.js';
 import {InputEmailBox, InputPasswordBox, passwordBoxIcon} from '../components/Input.jsx';
 
-import {CONST_PATH, CONST_LOG_IN_DELAY_MS, 
-        DEPLOYED_HOME_URL} from '../components/front_end_constant.js';
+import {CONST_PATH, CONST_LOG_IN_DELAY_MS} from '../components/front_end_constant.js';
 
-import {SERVER_URL, API_USER_URL} from '../../backends/module_constant.js'
+import {SERVER_URL, API_USER_URL} from '../components/front_end_constant.js'
 
 import './Login.css';
+import { DisplayMessage } from '../components/display.jsx';
+import axios from 'axios';
 
 const {useState, useEffect} = React;
 
@@ -37,6 +40,15 @@ const LogInform = () => {
 
     const [passwordError, setPasswordError] = useState(false);
     const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
+
+    const [isDisableLogin, setDisableLogin] = useState(false);
+
+    const [showSpinner, setShowSpinner] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [okMessage, setOkMessage] = useState('');
+
+    // ********************************************** Declare useState Variable
+
 
 
     // ********************************************** Declare function
@@ -64,6 +76,24 @@ const LogInform = () => {
         })
     };
 
+    const hideMessageDisplay = () =>{
+        setShowSpinner(false);
+        setErrorMessage('');
+        setOkMessage('');
+    }
+
+    const errorMessageControl = {
+        message : errorMessage,
+        color: 'rgb(224, 124, 111)',
+        icon : <CancelIcon style={{color:'rgb(224, 124, 111)', fontSize:'36px'}}/>
+    }
+
+    const okMessageControl = {
+        message : okMessage,
+        color: 'rgb(81, 155, 72)',
+        icon : <DoneOutlineIcon style={{color:'rgb(81, 155, 72)', fontSize:'36px'}}/>
+    }
+
     // ********************************************** Create Style
     const theme = createTheme({
 
@@ -72,28 +102,6 @@ const LogInform = () => {
         //     fontFamily: 'Lato, Roboto, Monospace, Helvetica, sens-serif',
         // }
     })
-
-    const cardStyle = {
-        width : '600px',
-    };
-
-    const iconBgStyle = {
-        backgroundColor:'rgb(88 181 88)',
-        width : 56,
-        height : 56
-    };
-
-    const iconStyle = {
-        fontSize : 40
-    };
-
-    const buttonStyle = {
-        backgroundColor :'green',
-        variant : "contained",
-        fontSize : '18px',
-        fontWeight : 'bold',
-        color : 'white' 
-    };
 
     const FORM_ITEM_TAILWIND_STYLE = `mt-5 w-full`;
 
@@ -130,34 +138,38 @@ const LogInform = () => {
 
     const clickSubmit = async (event)=>{
 
-        console.log(formData.email + ", " + formData.password);
+        setDisableLogin(true);
+
+        //console.log(formData.email + ", " + formData.password);
 
         if (validateInput())
         {
             // Do Post API
             try {
-                const loginUser = await fetch(`${SERVER_URL}${API_USER_URL}/login`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(formData)
-                })
-        
-                const loginUserJSON = await loginUser.json();
-        
+
+                const loginResponse = await axios.post(`${SERVER_URL}${API_USER_URL}/login`, formData);
+                const loginUserJSON = loginResponse.data;
                 //console.log(loginUserJSON);
         
                 if (loginUserJSON)
                 {
                     //alert(loginUserJSON.message);
 
-                    // Here Display Log In Success Component (not finish)
+                    // Here Display Log In Success / Error Component
+                    hideMessageDisplay();
+                    if (loginResponse.status === 200)
+                    {
+                        setOkMessage(loginUserJSON.message);
+                    }
+                    else
+                    {
+                        setErrorMessage(loginUserJSON.message);
+                    }
 
                     // Wait for the next browser repaint using requestAnimationFrame
                     await new Promise(resolve => requestAnimationFrame(resolve));
         
-                    if (loginUser.status === 200)
+                    if (loginResponse.status === 200)
                     {
                         // Store the id and token to local Storage
                         localStorage.setItem('id', loginUserJSON.data.id);
@@ -167,7 +179,7 @@ const LogInform = () => {
                         await new Promise(resolve => setTimeout(resolve, CONST_LOG_IN_DELAY_MS));
         
                         // Direct to Home Page
-                        navigate(DEPLOYED_HOME_URL ? `${DEPLOYED_HOME_URL}/home` : CONST_PATH.home); // '/home'
+                        navigate(CONST_PATH.home); // '/home'
                     }
                     else
                     {
@@ -186,30 +198,40 @@ const LogInform = () => {
             }
             catch(error){
         
-                // Here display the Sign Up Fail Component (not finish)
+                //alert(`Error : ${error}`);
 
-                alert(`Error : ${error}`);
+                // Here display the Sign Up Fail Component
+                hideMessageDisplay();
+                setErrorMessage(`Login User ${formData.email} Fail (error : ${error})`);
             }
 
             // Whatever, reset the form data
             setFormData(initFormData);
         }
+        setDisableLogin(false);
     };
 
     return (
         <div className="flex justify-center">
             <ThemeProvider theme={theme}>
-                <Paper elevation={10} style={cardStyle} className="flex justify-center aligns-center py-20 mt-20">
+                <Paper elevation={10} id="id-card-login" className="flex justify-center aligns-center py-20 mt-20">
                     <div className="flex flex-col items-center w-96">
-                        <Avatar className="my-10" style={iconBgStyle}><VpnKeyIcon style={iconStyle} /></Avatar>
+                        <Avatar className="my-10" id="id-icon-bkgrd-login"><VpnKeyIcon id="id-icon-login" /></Avatar>
 
                         <div className="mt-1 mb-8 flex flex-col items-center">
                             <Typography variant='h4'>Welcome To</Typography>
                             <Typography variant='h4' id='id-app-name'>SimpleWork</Typography>
                         </div>
 
+                        <DisplayMessage
+                            showSpinner = {showSpinner}
+                            errorMsg = {errorMessageControl}
+                            okMsg={okMessageControl}
+                        />
+
                         <div className={FORM_ITEM_TAILWIND_STYLE}>
                             <InputEmailBox
+                                disabled={isDisableLogin}
                                 emailValue = {formData.email}
                                 enterEmailCallBk = {enterEmail}
                                 isEmailError = {emailError}
@@ -219,6 +241,10 @@ const LogInform = () => {
 
                         <div className={FORM_ITEM_TAILWIND_STYLE}>
                             <InputPasswordBox
+                                disabled={isDisableLogin}
+                                sx={{
+                                    opacity: isDisableLogin ? 0.5 : 1,
+                                }}
                                 password = {formData.password}
                                 iconType = {passwordBoxIcon.showButton}
                                 showPassword = {showPassword}
@@ -231,8 +257,10 @@ const LogInform = () => {
 
                         <div className={FORM_ITEM_TAILWIND_STYLE}>
                             <Button 
-                                fullWidth 
-                                style={buttonStyle}
+                                fullWidth
+                                disabled={isDisableLogin}
+                                id="id-button-login"
+                                variant="contained" 
                                 onClick={clickSubmit}>
                                     Log In
                             </Button>

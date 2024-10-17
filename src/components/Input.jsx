@@ -7,12 +7,17 @@ import { Visibility, VisibilityOff} from '@mui/icons-material';
 import DangerousIcon from '@mui/icons-material/Dangerous';
 import CheckIcon from '@mui/icons-material/Check';
 
-const InputEmailBox = ({emailValue, enterEmailCallBk, isEmailError, emailErrorMessage}) => {
+const InputEmailBox = ({emailValue, enterEmailCallBk, isEmailError, emailErrorMessage,
+                        disabled = false}) => {
 
   return (
     <>
         <TextField
             fullWidth
+            disabled={disabled}
+            sx={{
+                opacity: disabled ? 0.5 : 1,
+            }}
             //id="input-email"
             label="Email"
             autoComplete='email'
@@ -36,7 +41,7 @@ const passwordBoxIcon = {
 }
 
 const InputPasswordBox = ({password, enterPasswordCallBk, showPassword, isPasswordError, passwordErrorMessage,
-                            iconType = null, displayLabel = 'Password',
+                            iconType = null, displayLabel = 'Password', disabled = false,
                             handleClickShowPassword = null, handleMouseDownPassword = null, handleMouseUpPassword = null}) =>{
 
     const handleByPass = (event) => {
@@ -96,6 +101,10 @@ const InputPasswordBox = ({password, enterPasswordCallBk, showPassword, isPasswo
                 <InputLabel htmlFor="outlined-adornment-password" style={labelStyle}>{displayLabel}</InputLabel>
                 <OutlinedInput
                     //id="input-password"
+                    disabled={disabled}
+                    sx={{
+                        opacity: disabled ? 0.5 : 1,
+                    }}
                     type={showPassword ? 'text' : 'password'}
                     label='Password'
                     color={isPasswordError ? 'error' : 'primary'}
