@@ -1,10 +1,9 @@
 import { useRoutes } from 'react-router-dom';
 import Home from './pages/Home';
 import Landing from './pages/Landing';
-import LogIn from './pages/LogIn';
-import SignUp from './pages/SignUp';
 import {CONST_PATH} from './components/front_end_constant';
 import './App.css';
+import LogInSignUp from './pages/LogInSignUp';
 
 function App() {
 
@@ -19,12 +18,8 @@ function App() {
         element: <Landing />
       },
       {
-        path: CONST_PATH.login,     // '/login'
-        element: <LogIn />
-      },
-      {
-        path: CONST_PATH.signup,    // '/signup'
-        element: <SignUp />
+        path: CONST_PATH.signInUp,   // '/signinup'
+        element: <LogInSignUp />
       },
       {
         path: CONST_PATH.home,      // '/home'

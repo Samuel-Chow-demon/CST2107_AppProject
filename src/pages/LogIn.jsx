@@ -21,7 +21,7 @@ import axios from 'axios';
 
 const {useState, useEffect} = React;
 
-const LogInform = () => {
+const LogInform = ({clickHandleToSignUp}) => {
 
     const navigate = useNavigate();
 
@@ -214,7 +214,7 @@ const LogInform = () => {
     return (
         <div className="flex justify-center">
             <ThemeProvider theme={theme}>
-                <Paper elevation={10} id="id-card-login" className="flex justify-center aligns-center py-20 mt-20">
+                <Paper elevation={10} id="id-card-login" className="flex justify-center aligns-center py-20">
                     <div className="flex flex-col items-center w-96">
                         <Avatar className="my-10" id="id-icon-bkgrd-login"><VpnKeyIcon id="id-icon-login" /></Avatar>
 
@@ -264,6 +264,10 @@ const LogInform = () => {
                                 onClick={clickSubmit}>
                                     Log In
                             </Button>
+                        </div>
+
+                        <div className= "mt-10 w-full flex justify-center">
+                            <Typography variant='h8'>Not Yet Have An Account ? <a className="underline font-bold" href='#' onClick={clickHandleToSignUp}>Sign Up</a></Typography>
                         </div>
                     </div>
 
