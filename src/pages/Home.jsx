@@ -1,5 +1,5 @@
-import React from 'react'
-import {checkIfUserLoggedInValid} from '../components/utility.js'
+import React from 'react';
+import {checkIfUserLoggedInValid} from '../components/utility.js';
 
 const {useState, useEffect} = React;
 
