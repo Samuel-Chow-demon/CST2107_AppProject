@@ -2,8 +2,7 @@ const CONST_LOG_IN_DELAY_MS = 550;
 
 const CONST_PATH = {
     landing : '/',
-    login : '/login',
-    signup : '/signup',
+    signInUp : '/signinup',
     home : '/home'
 }
 
