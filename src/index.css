@@ -16,6 +16,6 @@ body {
   min-height: 100vh;
 }
 
-* {
-  font-family : "Helvetica", "Lato", "Roboto", "Roboto Mono", "Monospace", sans-serif !important;
-}
+/* * {
+  font-family : "Helvetica", "Lato", "Roboto", "Roboto Mono", "Monospace", sans-serif;
+} */
