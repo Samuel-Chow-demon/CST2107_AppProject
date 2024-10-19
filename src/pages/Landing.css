@@ -9,8 +9,8 @@
   .grid-item {
     position: relative;
     cursor: grab; /* Indicate draggable elements */
-    width: 100%;
-    height: 25vh;
+    width: max(400px, 25vw);
+    height: 30vh;
   }
   
   .grid-image {
@@ -22,10 +22,37 @@
   }
   
   .grid-component {
-    padding: 20px;
-    border: 1px solid #ccc;
+    padding: 10px;
+    /* border: 1px solid #ccc; */
+    border: none;
     border-radius: 8px;
     background-color: white;
+    height : 100%;
+    width : 100%;
+  }
+
+  #id-grid-item-3 {
+    font-family: 'Pacifico', cursive !important;
+    background-color: rgb(252, 205, 214);
+    color: purple;
+    font-size: 48px;
+    font-weight: 600;
+  }
+
+  /* App Logo */
+  #id-grid-item-5 {
+    overflow:visible;
+    z-index: -1;
+    position: absolute;
+    top: -100px;
+    left: 8px;
+    padding: 0px;
+    margin: 0px;
+    width: 200%;
+    height: 200%;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
   }
   
   .grid-item:active {
