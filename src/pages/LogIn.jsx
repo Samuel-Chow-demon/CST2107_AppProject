@@ -1,14 +1,14 @@
 import React from 'react';
 import {useNavigate} from 'react-router-dom';
 
-import {createTheme, ThemeProvider,
+import {//createTheme, ThemeProvider,
         Paper, Typography, Avatar, Button } from '@mui/material';
 
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import CancelIcon from '@mui/icons-material/Cancel';
 import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 
-import {validateEmailAndPasswordInput} from '../components/utility.js';
+import {RemoveLocalStorage, SetLocalStorage, validateAccountSetupInput} from '../components/utility.js';
 import {InputEmailBox, InputPasswordBox, passwordBoxIcon} from '../components/Input.jsx';
 
 import {CONST_PATH, CONST_LOG_IN_DELAY_MS} from '../components/front_end_constant.js';
@@ -95,13 +95,13 @@ const LogInform = ({clickHandleToSignUp}) => {
     }
 
     // ********************************************** Create Style
-    const theme = createTheme({
+    // const theme = createTheme({
 
-        // Current use !important controlled by index.css
-        // typography:{
-        //     fontFamily: 'Lato, Roboto, Monospace, Helvetica, sens-serif',
-        // }
-    })
+    //     // Current use !important controlled by index.css
+    //     // typography:{
+    //     //     fontFamily: 'Lato, Roboto, Monospace, Helvetica, sens-serif',
+    //     // }
+    // })
 
     const FORM_ITEM_TAILWIND_STYLE = `mt-5 w-full`;
 
@@ -133,7 +133,7 @@ const LogInform = ({clickHandleToSignUp}) => {
             }
         };
     
-        return validateEmailAndPasswordInput(formData, funcInit, funcErrorHandle);
+        return validateAccountSetupInput(formData, funcInit, funcErrorHandle);
     }
 
     const clickSubmit = async (event)=>{
@@ -172,8 +172,9 @@ const LogInform = ({clickHandleToSignUp}) => {
                     if (loginResponse.status === 200)
                     {
                         // Store the id and token to local Storage
-                        localStorage.setItem('id', loginUserJSON.data.id);
-                        localStorage.setItem('token', loginUserJSON.data.token);
+                        SetLocalStorage(loginUserJSON.data.id,
+                                        loginUserJSON.data.token,
+                                        loginUserJSON.data.name);
         
                         // Wait for 550 ms
                         await new Promise(resolve => setTimeout(resolve, CONST_LOG_IN_DELAY_MS));
@@ -183,16 +184,8 @@ const LogInform = ({clickHandleToSignUp}) => {
                     }
                     else
                     {
-                        // remove the token and email whatever if any fail
-                        if (localStorage.getItem('id') != null)
-                        {
-                            localStorage.removeItem('id');
-                        }
-        
-                        if (localStorage.getItem('token') != null)
-                        {
-                            localStorage.removeItem('token');
-                        }
+                        // remove the whatever if any fail
+                        RemoveLocalStorage();
                     }
                 }
             }
@@ -213,7 +206,7 @@ const LogInform = ({clickHandleToSignUp}) => {
 
     return (
         <div className="flex justify-center">
-            <ThemeProvider theme={theme}>
+            {/* <ThemeProvider theme={theme}> */}
                 <Paper elevation={10} id="id-card-login" className="flex justify-center aligns-center py-20">
                     <div className="flex flex-col items-center w-96">
                         <Avatar className="my-10" id="id-icon-bkgrd-login"><VpnKeyIcon id="id-icon-login" /></Avatar>
@@ -272,7 +265,7 @@ const LogInform = ({clickHandleToSignUp}) => {
                     </div>
 
                 </Paper>
-            </ThemeProvider>
+            {/* </ThemeProvider> */}
         </div>
     )
 }
