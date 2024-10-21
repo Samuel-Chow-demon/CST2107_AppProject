@@ -9,7 +9,7 @@ import FaceIcon from '@mui/icons-material/Face';
 import CancelIcon from '@mui/icons-material/Cancel';
 import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 
-import {validateEmailAndPasswordInput} from '../components/utility.js';
+import {validateAccountSetupInput} from '../components/utility.js';
 import {InputEmailBox, InputPasswordBox, passwordBoxIcon} from '../components/Input.jsx';
 
 import {CONST_PATH, CONST_LOG_IN_DELAY_MS} from '../components/front_end_constant.js';
@@ -49,6 +49,9 @@ const SignUpform = ({clickHandleToLogin}) => {
 
     const [passwordConfirmError, setPasswordConfirmError] = useState(false);
     const [passwordConfirmErrorMessage, setPasswordConfirmErrorMessage] = useState('');
+
+    const [nameError, setNameError] = useState(false);
+    const [nameErrorMessage, setNameErrorMessage] = useState('');
 
     const [confirmPasswordIcon, setConfirmIconType] = useState(passwordBoxIcon.none);
 
@@ -96,6 +99,9 @@ const SignUpform = ({clickHandleToLogin}) => {
     };
 
     const enterUsername = (event)=>{
+
+        setNameError(false);
+        setNameErrorMessage('');
 
         setFormData({
             ...formData,
@@ -184,9 +190,12 @@ const SignUpform = ({clickHandleToLogin}) => {
 
             setPasswordError(false);
             setPasswordErrorMessage('');
+
+            setNameError(false);
+            setNameErrorMessage('');
         };
 
-        const funcErrorHandle = (emailError, passwordError) => {
+        const funcErrorHandle = (emailError, passwordError, nameError) => {
 
             if (emailError.length > 0)
             {
@@ -204,9 +213,15 @@ const SignUpform = ({clickHandleToLogin}) => {
                     confirm_password: ''
                 })
             }
+
+            if (nameError.length > 0)
+            {
+                setNameError(true);
+                setNameErrorMessage(nameError);
+            }
         };
     
-        if (validateEmailAndPasswordInput(formData, funcInit, funcErrorHandle))
+        if (validateAccountSetupInput(formData, funcInit, funcErrorHandle))
         {
             if (formData.password != formData.confirm_password)
             {
@@ -236,8 +251,18 @@ const SignUpform = ({clickHandleToLogin}) => {
             // Do Post API
             try {
 
-                const signUpResponse = await axios.post(`${SERVER_URL}${API_USER_URL}/register`, formData);
-                const createdUserJSON = signUpResponse.data;
+                // const signUpResponse = await axios.post(`${SERVER_URL}${API_USER_URL}/register`, formData);
+                // const createdUserJSON = signUpResponse.data;
+
+                const signUpResponse = await fetch(`${SERVER_URL}${API_USER_URL}/register`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(formData)
+                })
+        
+                const createdUserJSON = await signUpResponse.json();
         
                 if (createdUserJSON)
                 {
@@ -262,7 +287,7 @@ const SignUpform = ({clickHandleToLogin}) => {
                         await new Promise(resolve => setTimeout(resolve, CONST_LOG_IN_DELAY_MS * 3));
         
                         // Drive to LogIn Page
-                        navigate(CONST_PATH.signInUp); // '/signinup'
+                        clickHandleToLogin();
                     }
                 }
             }
@@ -271,7 +296,7 @@ const SignUpform = ({clickHandleToLogin}) => {
 
                 // Here display the Sign Up Fail Component (not finish)
                 hideMessageDisplay();
-                setErrorMessage(`Register User ${formData.email} Fail (error : ${error})`);
+                setErrorMessage(`Register User ${formData.email} Fail (error : ${error.message})`);
             }
             
             // Whatever, reset the form data
@@ -314,10 +339,13 @@ const SignUpform = ({clickHandleToLogin}) => {
                         <div className={FORM_ITEM_TAILWIND_STYLE}>
                             <TextField 
                                 fullWidth
+                                required
                                 disabled={isDisableSignup}
                                 sx={{
                                     opacity: isDisableSignup ? 0.5 : 1,
                                 }}
+                                error={nameError}
+                                helperText={nameErrorMessage}
                                 label="UserName"
                                 value={formData.username}
                                 placeholder='Hi, user'

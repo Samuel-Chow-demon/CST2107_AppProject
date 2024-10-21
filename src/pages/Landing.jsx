@@ -2,17 +2,24 @@
 import React from 'react'
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import {Button, TextField} from '@mui/material';
-import { teal } from '@mui/material/colors'; // Import color palette
+import {Avatar, Button, TextField} from '@mui/material';
+import { teal, indigo, orange } from '@mui/material/colors'; // Import color palette
 
+import bkgrd1 from '../assets/bkgrd1.png'
 import bkgrd2 from '../assets/bkgrd2.png'
 import bkgrd3 from '../assets/bkgrd3.png'
 import bkgrd4 from '../assets/bkgrd4.png'
 import bkgrd5 from '../assets/bkgrd5.png'
 import bkgrd6 from '../assets/bkgrd6.png'
+import bkgrd7 from '../assets/bkgrd7.png'
 import iconSimpleWork from '../assets/SimpleWorkSmall.svg'
 
 import './Landing.css';
+import { useNavigate } from 'react-router-dom';
+import { CONST_PATH } from '../components/front_end_constant';
+import { checkIfUserLoggedInValid, RemoveLocalStorage } from '../components/utility';
+
+import HomeIcon from '@mui/icons-material/Home';
 
 const {useState, useEffect} = React;
 
@@ -21,11 +28,19 @@ const GridItem = ({ item, index, moveItem, id }) => {
   const [, ref] = useDrag({
     type: 'item',
     item: { index },
+    //canDrag: (id !== 5)
   });
 
   const [, drop] = useDrop({
     accept: 'item',
     hover: (draggedItem) => {
+
+      // not allow to place on the app logo
+      // if (id === 5)
+      // {
+      //   return;
+      // }
+
       if (draggedItem.index !== index) {
         moveItem(draggedItem.index, index);
         draggedItem.index = index;
@@ -46,16 +61,38 @@ const GridItem = ({ item, index, moveItem, id }) => {
 
 const LandingPage = () => {
 
+  const navigate = useNavigate();
+
   const displayTextList = ['Simple Work .\nWork Simple',
                             `Today is ${(new Date()).toLocaleDateString()}`,
-                            "Welcome !"
+                            "Manage Work .\nDrag and Drop"
   ];
 
   const [clickIdx, setClickIdx] = useState(0);
   const [displayText, setDisplayText] = useState(displayTextList[0]);
+  const [loggedInUserName, setLoggedInUserName] = useState('');
 
   const buttonClick = ()=>{
     setClickIdx(prevIdx=>(prevIdx + 1) % displayTextList.length);
+  };
+
+  const buttonLogInOutClick = ({loggedInUserName})=>{
+
+    //console.log(loggedInUserName);
+
+    // If current logged in, run log out process
+    if (loggedInUserName !== '')
+    {
+      // Remove the browser storage
+      RemoveLocalStorage();
+      setLoggedInUserName('');
+    }
+    // else if not yet log in, direct to log in page
+    else
+    {
+      // Drive to LogIn Page
+      navigate(CONST_PATH.signInUp); // '/signinup'
+    }
   };
 
   // Define Sub Component
@@ -65,6 +102,40 @@ const LandingPage = () => {
       <div className="text-center p-5">
         <h2 style={{ whiteSpace: 'pre-line' }}>{displayText}</h2>
       </div>
+    );
+  };
+
+  const TextUserComponent = ({userName}) => {
+
+    const textUserDisplay = `Welcome,\n${userName}`;
+
+    return (
+      <>
+        {userName != "" && (
+            <div className="text-center p-5 flex justify-center items-center">
+            <h2 style={{ whiteSpace: 'pre-line' }}>{textUserDisplay}</h2>
+            <Avatar 
+                sx= {{
+                borderRadius: '50%',
+                margin: '0px 0px 0px 25px',
+                width: '4em',
+                height: '4em',
+                background: teal[500],
+                '&:hover': {
+                  backgroundColor: teal[300], // Hover background color
+                },
+                boxShadow: '0px 20px 20px rgba(10, 20, 0, 0.3)'
+              }}>
+            <HomeIcon 
+              sx= {{
+                fontSize: '3em'
+              }}
+              onClick={()=>{navigate(CONST_PATH.home);}} // '/home'
+              />
+            </Avatar>
+          </div>
+        )}
+      </>
     );
   };
 
@@ -78,14 +149,52 @@ const LandingPage = () => {
             sx= {{
               padding: '24px 24px',
               fontSize: '28px',
-              height: '250px',
-              width: '250px',
+              height: '8em',
+              width: '8em',
               borderRadius: '50%',
               background: teal[500],
+              '&:hover': {
+                backgroundColor: teal[300], // Hover background color
+              },
               boxShadow: '0px 20px 20px rgba(10, 20, 0, 0.3)'
             }}
             onClick={buttonClick}>
-                Click To Hi !
+                Click Me !
+        </Button>
+      //</div>
+    );
+  };
+
+  const ButtonLogInOutComponent = ({buttonClick, loggedInUserName}) => {
+
+    const isLoggedIn = loggedInUserName !== '';
+    const borderRadius = isLoggedIn ? '50%' : '4px';
+    const bkgrdColor = isLoggedIn ? orange[600] :indigo[600];
+    const hoverBkgrdColor = isLoggedIn ? orange[400] :indigo[400];
+    const buttonText = isLoggedIn ? "Log Out" : "Log In";
+
+    //console.log('username :', typeof(loggedInUserName), loggedInUserName.length);
+
+    return (
+      //<div className="text-center p-0 w-full h-20">
+        <Button 
+            fullWidth
+            variant="contained"
+            sx= {{
+              //fontFamily: 'Lato',
+              padding: '0px',
+              fontSize: '28px',
+              height: '120px',
+              width: '120px',
+              borderRadius: borderRadius,
+              background: bkgrdColor,
+              '&:hover': {
+                backgroundColor: hoverBkgrdColor, // Hover background color
+              },
+              boxShadow: '0px 20px 20px rgba(10, 20, 100, 0.5)'
+            }}
+            onClick={()=>buttonClick({loggedInUserName})}>
+                {buttonText}
         </Button>
       //</div>
     );
@@ -93,18 +202,49 @@ const LandingPage = () => {
 
   // Define useState
   const [items, setItems] = useState([
-    { id: 1, type: 'image', src: bkgrd2 },
-    { id: 2, type: 'image', src: bkgrd3 },
     { id: 3, type: 'component', component: <TextComponent displayText={displayText} /> },
-    { id: 4, type: 'image', src: bkgrd4 },
+    { id: 2, type: 'image', src: bkgrd3 },
+    { id: 1, type: 'component', component: <ButtonLogInOutComponent buttonClick={buttonLogInOutClick} loggedInUserName={loggedInUserName}/> },
+    { id: 4, type: 'image', src: bkgrd2 },
     { id: 5, type: 'image', src: iconSimpleWork },
-    { id: 6, type: 'image', src: bkgrd6 },
+    { id: 6, type: 'image', src: bkgrd1 },
     { id: 7, type: 'component', component: <ButtonComponent buttonClick={buttonClick}/> },
-    { id: 8, type: 'image', src: bkgrd5 },
-    { id: 9, type: 'image', src: bkgrd3 }
+    { id: 8, type: 'image', src: bkgrd7 },
+    { id: 9, type: 'component', component: <TextUserComponent userName={loggedInUserName} /> }
   ]);
 
   // Define useEffect
+  // Check once when page in or render
+  useEffect(()=>{
+
+    const checkIfLoggedIn = async() => {
+
+      try
+      {
+        // Important, no need prompt and redirect
+        const result = await checkIfUserLoggedInValid(false, false);
+
+        if (result.valid)
+        {
+          setLoggedInUserName(result.loginUserJSON.data.name);
+        }
+        else
+        {
+          // although invalid would do the remove local storage, here call again for safe
+          RemoveLocalStorage();
+          setLoggedInUserName('');
+        }
+      }
+      catch (error)
+      {
+        console.error('Check If User Logged In Fail', error);
+      }
+    };
+
+    // Call the async function
+    checkIfLoggedIn();
+  }, []);
+
   // When button click, switch the text and assign to the display
   useEffect(()=>{
 
@@ -119,19 +259,42 @@ const LandingPage = () => {
     //console.log("set Item " + displayText);
 
     setItems(prevItems => 
-      prevItems.map(item => 
-        item.type === 'component' && item.id === 3
-          ? { ...item, component: <TextComponent displayText={displayText}/> }
-          : item
+      prevItems.map(item => {
+
+        if (item.type === 'component')
+        {
+          switch (item.id)
+          {
+            case 3:
+              return { ...item, component: <TextComponent displayText={displayText}/> };
+            case 1:
+              return { ...item, component: <ButtonLogInOutComponent buttonClick={buttonLogInOutClick} loggedInUserName={loggedInUserName}/> };
+            case 9:
+              return { ...item, component: <TextUserComponent userName={loggedInUserName}/> };
+            default:
+              return item;
+          }
+        }
+        else
+        {
+          return item;
+        }
+
+      }
+
+        // item.type === 'component' && item.id === 3
+        //   ? { ...item, component: <TextComponent displayText={displayText}/> }
+        //   : item
       )
     );
-  }, [displayText]);
+  }, [displayText, loggedInUserName]);
 
   // Define Function, the drag Item replace the target hover item in the list
   const moveItem = (dragIndex, hoverIndex) => {
     const updatedItems = [...items];
-    const [draggedItem] = updatedItems.splice(dragIndex, 1);
-    updatedItems.splice(hoverIndex, 0, draggedItem);
+    // const [draggedItem] = updatedItems.splice(dragIndex, 1);
+    // updatedItems.splice(hoverIndex, 0, draggedItem);
+    [updatedItems[dragIndex], updatedItems[hoverIndex]] = [updatedItems[hoverIndex], updatedItems[dragIndex]]
     setItems(updatedItems);
   };
 

@@ -2,13 +2,47 @@ import axios from 'axios';
 import {SERVER_URL, API_USER_URL,
         LANDING_URL} from './front_end_constant.js'
 
+function SetLocalStorage(id, token, userName)
+{
+    localStorage.setItem('id', id);
+    localStorage.setItem('token', token);
+    localStorage.setItem('userName', userName);
+}
 
-function validateEmailAndPasswordInput (formData, funcInit, funcErrorHandle) 
+function GetLocalStorage()
+{
+    const token = localStorage.getItem('token');
+    const id = localStorage.getItem('id');
+    const userName = localStorage.getItem('userName');
+    return {id, token, userName};
+}
+
+function RemoveLocalStorage()
+{
+    if (localStorage.getItem('id') != null)
+    {
+        localStorage.removeItem('id');
+    }
+
+    if (localStorage.getItem('token') != null)
+    {
+        localStorage.removeItem('token');
+    }
+
+    if (localStorage.getItem('userName') != null)
+    {
+        localStorage.removeItem('userName');
+    }
+}
+
+
+function validateAccountSetupInput (formData, funcInit, funcErrorHandle) 
 {
     const PASSWORD_MIN_LENGTH = 6;
     
     let passwordError = '';
     let emailError = '';
+    let nameError = '';
 
     // CallBack Function if funcInit != null
     if (funcInit)
@@ -46,39 +80,41 @@ function validateEmailAndPasswordInput (formData, funcInit, funcErrorHandle)
         passwordError = 'Password must include ONE special character.';
     }
 
+    if (!formData.username)
+    {
+        nameError = 'Username cannot be empty';
+    }
+
     if (funcErrorHandle)
     {
-        funcErrorHandle(emailError, passwordError)
+        funcErrorHandle(emailError, passwordError, nameError);
     }
     
-    return !(emailError || passwordError);
+    return !(emailError || passwordError || nameError);
 }
 
-function funcReturnLogInPageHandle(promptMessage = "")
+function funcReturnLogInPageHandle(promptMessage = "",
+                                   needPromptMsg = true,
+                                   needDirectBackToLandingPage = true)
 {
     // remove the token and email whatever if any fail
-    if (localStorage.getItem('id') != null)
-    {
-        localStorage.removeItem('id');
-    }
+    RemoveLocalStorage()
 
-    if (localStorage.getItem('token') != null)
-    {
-        localStorage.removeItem('token');
-    }
-
-    if (promptMessage)
+    if (promptMessage && needPromptMsg)
     {
         alert(promptMessage);
     }
 
-    window.location.href = `${LANDING_URL}`;
+    if (needDirectBackToLandingPage)
+    {
+        window.location.href = `${LANDING_URL}`;
+    }
 }
 
-async function checkIfUserLoggedInValid()
+async function checkIfUserLoggedInValid(needPromptIfError = true,
+                                        needDirectBackToLangPageIfError = true)
 {
-    const token = localStorage.getItem('token');
-    const id = localStorage.getItem('id');
+    const {id, token, userName} = GetLocalStorage();
 
     const funcReturn = (valid, loginUserJSON, message)=>{
 
@@ -89,9 +125,11 @@ async function checkIfUserLoggedInValid()
                 };
     }
 
-    if (!token || !id)
+    if (!token || !id || userName === null) // userName can be empty string
     {
-        funcReturnLogInPageHandle(`User Token Not Found`);
+        funcReturnLogInPageHandle(`User Token Not Found`,
+                                    needPromptIfError,
+                                    needDirectBackToLangPageIfError);
         return funcReturn(false, null, `User Token Not Found`);
     }
 
@@ -123,28 +161,37 @@ async function checkIfUserLoggedInValid()
         
         if (loginUserJSON)
         {
-            console.log(loginUserJSON.data.token, " ", token);
+            //console.log(loginUserJSON.data.token, " ", token);
             if (token != loginUserJSON.data.token)
             {
-                funcReturnLogInPageHandle(`New User Login Detected.`);
+                funcReturnLogInPageHandle(`New User Login Detected.`,
+                                            needPromptIfError,
+                                            needDirectBackToLangPageIfError);
                 return funcReturn(false, loginUserJSON, `New User Login Detected.`);
             }
             return funcReturn(true, loginUserJSON, ``);
         }
         else
         {
-            funcReturnLogInPageHandle(`User Token Comparison Fail`);
+            funcReturnLogInPageHandle(`User Token Comparison Fail`,
+                                    needPromptIfError,
+                                    needDirectBackToLangPageIfError);
             return funcReturn(false, null, `User Token Comparison Fail`);
         }
     }
     catch(error)
     {
-        funcReturnLogInPageHandle(`User Token Comparison Error : ${error}`);
+        funcReturnLogInPageHandle(`User Token Comparison Error : ${error}`,
+                                    needPromptIfError,
+                                    needDirectBackToLangPageIfError);
         return funcReturn(false, null, `User Token Comparison Error : ${error}`);
     }
 }
 
-export {validateEmailAndPasswordInput, 
+export {validateAccountSetupInput, 
         funcReturnLogInPageHandle,
-        checkIfUserLoggedInValid
+        checkIfUserLoggedInValid,
+        SetLocalStorage,
+        GetLocalStorage,
+        RemoveLocalStorage
 };
