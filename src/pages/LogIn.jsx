@@ -28,7 +28,8 @@ const LogInform = ({clickHandleToSignUp}) => {
     // ********************************************** Declare useState Variable
     const initFormData = {
         email : '',
-        password : ''
+        password : '',
+        username : 'login'
     }
 
     const [formData, setFormData] = useState(initFormData);
@@ -147,8 +148,18 @@ const LogInform = ({clickHandleToSignUp}) => {
             // Do Post API
             try {
 
-                const loginResponse = await axios.post(`${SERVER_URL}${API_USER_URL}/login`, formData);
-                const loginUserJSON = loginResponse.data;
+                const loginResponse = await fetch(`${SERVER_URL}${API_USER_URL}/login`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(formData)
+                })
+        
+                const loginUserJSON = await loginResponse.json();
+
+                //const loginResponse = await axios.post(`${SERVER_URL}${API_USER_URL}/login`, formData);
+                //const loginUserJSON = loginResponse.data;
                 //console.log(loginUserJSON);
         
                 if (loginUserJSON)
@@ -212,8 +223,8 @@ const LogInform = ({clickHandleToSignUp}) => {
                         <Avatar className="my-10" id="id-icon-bkgrd-login"><VpnKeyIcon id="id-icon-login" /></Avatar>
 
                         <div className="mt-1 mb-8 flex flex-col items-center">
-                            <Typography variant='h4'>Welcome To</Typography>
-                            <Typography variant='h4' id='id-app-name'>SimpleWork</Typography>
+                            <Typography component={'span'} variant='h4'>Welcome To</Typography>
+                            <Typography component={'span'} variant='h4' id='id-app-name'>SimpleWork</Typography>
                         </div>
 
                         <DisplayMessage
@@ -260,7 +271,7 @@ const LogInform = ({clickHandleToSignUp}) => {
                         </div>
 
                         <div className= "mt-10 w-full flex justify-center">
-                            <Typography variant='h8'>Not Yet Have An Account ? <a className="underline font-bold" href='#' onClick={clickHandleToSignUp}>Sign Up</a></Typography>
+                            <Typography component={'span'} variant='h8'>Not Yet Have An Account ? <a className="underline font-bold" href='#' onClick={clickHandleToSignUp}>Sign Up</a></Typography>
                         </div>
                     </div>
 

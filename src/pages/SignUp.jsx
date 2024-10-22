@@ -284,7 +284,7 @@ const SignUpform = ({clickHandleToLogin}) => {
                     if (signUpResponse.status === 201)
                     {
                         // Wait for 1500 ms
-                        await new Promise(resolve => setTimeout(resolve, CONST_LOG_IN_DELAY_MS * 3));
+                        await new Promise(resolve => setTimeout(resolve, CONST_LOG_IN_DELAY_MS * 2));
         
                         // Drive to LogIn Page
                         clickHandleToLogin();
@@ -317,7 +317,7 @@ const SignUpform = ({clickHandleToLogin}) => {
                         <Avatar className="my-10" id="id-icon-bkgrd-signup"><FaceIcon id="id-icon-signup" /></Avatar>
 
                         <div className="mt-1 mb-10">
-                            <Typography variant='h4'>Sign Up</Typography>
+                            <Typography component={'span'} variant='h4'>Sign Up</Typography>
                         </div>
 
                         <DisplayMessage 
@@ -397,7 +397,7 @@ const SignUpform = ({clickHandleToLogin}) => {
                         </div>
 
                         <div className= "mt-10 w-full flex justify-center">
-                            <Typography variant='h8'>Already Have An Account ? <a className="underline font-bold" href='#' onClick={clickHandleToLogin}>Log In</a></Typography>
+                            <Typography component={'span'} variant='h8'>Already Have An Account ? <a className="underline font-bold" href='#' onClick={clickHandleToLogin}>Log In</a></Typography>
                         </div>
                     </div>
 
