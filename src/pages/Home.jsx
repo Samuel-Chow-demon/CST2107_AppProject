@@ -1,5 +1,6 @@
 import React from 'react';
 import {checkIfUserLoggedInValid} from '../components/utility.js';
+import HomeSideBar from '../components/HomeSideBar.jsx';
 
 const {useState, useEffect} = React;
 
@@ -21,7 +22,10 @@ const Home = () => {
   }, []); // The empty dependency array ensures this runs only on mount and unmount
 
   return (
-    <div>Home</div>
+    <div className = "w-screen h-screen flex justify-left m-0">
+      <HomeSideBar />
+
+    </div>
   )
 }
 

@@ -1,6 +1,6 @@
-import axios from 'axios';
+import {useState} from 'react';
 import {SERVER_URL, API_USER_URL,
-        LANDING_URL} from './front_end_constant.js'
+        LANDING_URL, CONST_PATH} from './front_end_constant.js'
 
 function SetLocalStorage(id, token, userName)
 {
@@ -188,10 +188,44 @@ async function checkIfUserLoggedInValid(needPromptIfError = true,
     }
 }
 
+const useLogInOutClick = (initialLoggedInUserName = '')=>{
+
+    const [loggedInUserName, setLoggedInUserName] = useState(initialLoggedInUserName);
+
+    //console.log(loggedInUserName);
+
+    const actionLogInOut = ()=>{
+
+        // If current logged in, run log out process
+        if (loggedInUserName !== '')
+        {
+            // Remove the browser storage
+            RemoveLocalStorage();
+            setLoggedInUserName('');
+
+            if (window.location.pathname != CONST_PATH.landing)
+            {
+                // Drive to LogIn Page
+                window.location.href = `${CONST_PATH.signInUp}` // '/signinup'
+            }
+        }
+        // else if not yet log in, direct to log in page
+        else
+        {
+            // Drive to LogIn Page
+            window.location.href = `${CONST_PATH.signInUp}` // '/signinup'
+        }
+    }
+
+    return [loggedInUserName, setLoggedInUserName, actionLogInOut]
+  };
+
+
 export {validateAccountSetupInput, 
         funcReturnLogInPageHandle,
         checkIfUserLoggedInValid,
         SetLocalStorage,
         GetLocalStorage,
-        RemoveLocalStorage
+        RemoveLocalStorage,
+        useLogInOutClick
 };

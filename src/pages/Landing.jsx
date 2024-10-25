@@ -1,5 +1,5 @@
 
-import React from 'react'
+import {useState, useEffect} from 'react'
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import {Avatar, Button, TextField} from '@mui/material';
@@ -17,11 +17,10 @@ import iconSimpleWork from '../assets/SimpleWorkSmall.svg'
 import './Landing.css';
 import { useNavigate } from 'react-router-dom';
 import { CONST_PATH } from '../components/front_end_constant';
-import { checkIfUserLoggedInValid, RemoveLocalStorage } from '../components/utility';
+import { checkIfUserLoggedInValid, RemoveLocalStorage,
+          useLogInOutClick} from '../components/utility';
 
 import HomeIcon from '@mui/icons-material/Home';
-
-const {useState, useEffect} = React;
 
 // GridItem component
 const GridItem = ({ item, index, moveItem, id }) => {
@@ -70,29 +69,10 @@ const LandingPage = () => {
 
   const [clickIdx, setClickIdx] = useState(0);
   const [displayText, setDisplayText] = useState(displayTextList[0]);
-  const [loggedInUserName, setLoggedInUserName] = useState('');
+  const [loggedInUserName, setLoggedInUserName, actionLogInOut] = useLogInOutClick('');
 
   const buttonClick = ()=>{
     setClickIdx(prevIdx=>(prevIdx + 1) % displayTextList.length);
-  };
-
-  const buttonLogInOutClick = ({loggedInUserName})=>{
-
-    //console.log(loggedInUserName);
-
-    // If current logged in, run log out process
-    if (loggedInUserName !== '')
-    {
-      // Remove the browser storage
-      RemoveLocalStorage();
-      setLoggedInUserName('');
-    }
-    // else if not yet log in, direct to log in page
-    else
-    {
-      // Drive to LogIn Page
-      navigate(CONST_PATH.signInUp); // '/signinup'
-    }
   };
 
   // Define Sub Component
@@ -165,7 +145,7 @@ const LandingPage = () => {
     );
   };
 
-  const ButtonLogInOutComponent = ({buttonClick, loggedInUserName}) => {
+  const ButtonLogInOutComponent = () => {
 
     const isLoggedIn = loggedInUserName !== '';
     const borderRadius = isLoggedIn ? '50%' : '4px';
@@ -193,7 +173,7 @@ const LandingPage = () => {
               },
               boxShadow: '0px 20px 20px rgba(10, 20, 100, 0.5)'
             }}
-            onClick={()=>buttonClick({loggedInUserName})}>
+            onClick={actionLogInOut}>
                 {buttonText}
         </Button>
       //</div>
@@ -204,7 +184,7 @@ const LandingPage = () => {
   const [items, setItems] = useState([
     { id: 3, type: 'component', component: <TextComponent displayText={displayText} /> },
     { id: 2, type: 'image', src: bkgrd3 },
-    { id: 1, type: 'component', component: <ButtonLogInOutComponent buttonClick={buttonLogInOutClick} loggedInUserName={loggedInUserName}/> },
+    { id: 1, type: 'component', component: <ButtonLogInOutComponent /> },
     { id: 4, type: 'image', src: bkgrd2 },
     { id: 5, type: 'image', src: iconSimpleWork },
     { id: 6, type: 'image', src: bkgrd1 },
@@ -268,7 +248,7 @@ const LandingPage = () => {
             case 3:
               return { ...item, component: <TextComponent displayText={displayText}/> };
             case 1:
-              return { ...item, component: <ButtonLogInOutComponent buttonClick={buttonLogInOutClick} loggedInUserName={loggedInUserName}/> };
+              return { ...item, component: <ButtonLogInOutComponent /> };
             case 9:
               return { ...item, component: <TextUserComponent userName={loggedInUserName}/> };
             default:
