@@ -1,0 +1,33 @@
+.menuColumn {
+    width: 200px;
+    background-color: #a14865;
+    color: white;
+    padding: 20px;
+    height: 100vh;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .menuTitle, .viewsTitle, .boardsTitle {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  
+  .menuList {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 20px;
+  }
+  
+  .menuItem {
+    padding: 8px 0;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  
+  .menuItem:hover {
+    background-color: #bf5a7c;
+  }
+  
