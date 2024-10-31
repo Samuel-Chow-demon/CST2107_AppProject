@@ -3,7 +3,8 @@ const CONST_LOG_IN_DELAY_MS = 550;
 const CONST_PATH = {
     landing : '/',
     signInUp : '/signinup',
-    home : '/home'
+    home : '/home',
+    board: '/board',
 }
 
 // The constant to be used for whole project

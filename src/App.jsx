@@ -1,9 +1,11 @@
 import { useRoutes } from 'react-router-dom';
 import Home from './pages/Home';
 import Landing from './pages/Landing';
-import {CONST_PATH} from './components/front_end_constant';
+import { CONST_PATH } from './components/front_end_constant';
 import './App.css';
 import LogInSignUp from './pages/LogInSignUp';
+import Board from './components/Board';
+import BoardPage from './pages/Board';
 
 function App() {
 
@@ -24,11 +26,16 @@ function App() {
       {
         path: CONST_PATH.home,      // '/home'
         element: <Home />
+      }, 
+      {
+        path: CONST_PATH.board,      // '/board'
+        element: <BoardPage />
       }
     ]
+    
   )
   
   return pagesComponent;
 }
 
-export default App
+export default App;
