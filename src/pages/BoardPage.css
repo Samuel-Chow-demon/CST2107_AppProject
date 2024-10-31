@@ -1,4 +1,4 @@
-/* Ensure the app-wide navbar is fixed and takes up space */
+/* Ensure the app-wide navbar is fixed at the top */
 .app-navbar {
   position: fixed;
   top: 0;
@@ -12,7 +12,7 @@
   color: white;
 }
 
-/* Ensure the board-specific navbar is fixed under the app navbar */
+/* Ensure the board-specific navbar is fixed directly below the app-wide navbar */
 .board-navbar {
   position: fixed;
   top: 60px; /* Set below the AppNavbar */
@@ -27,19 +27,13 @@
   justify-content: space-between;
 }
 
-/* Main board content that fills the rest of the screen */
-.board-content {
+/* Main board container that starts below the navbars */
+.board-container {
   margin-top: 110px; /* Combined height of AppNavbar and BoardNavbar */
-  height: calc(100vh - 110px); /* Full height minus navbars */
+  height: calc(100vh - 110px); /* Full viewport height minus navbar heights */
   width: 100vw; /* Full viewport width */
-  overflow-y: auto; /* Enable vertical scrolling if the content exceeds the viewport */
-  box-sizing: border-box;
-  padding: 0;
-}
-
-/* Remove unnecessary margin or padding from buttons or lists */
-.board-content button,
-.board-content .list {
-  margin: 0;
-  padding: 0;
+  overflow-y: auto; /* Enable vertical scrolling if needed */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
