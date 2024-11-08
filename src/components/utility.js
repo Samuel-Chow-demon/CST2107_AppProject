@@ -1,39 +1,7 @@
-import {useState} from 'react';
-import {SERVER_URL, API_USER_URL,
-        LANDING_URL, CONST_PATH} from './front_end_constant.js'
+import {LANDING_URL} from './front_end_constant.js'
 
-function SetLocalStorage(id, token, userName)
-{
-    localStorage.setItem('id', id);
-    localStorage.setItem('token', token);
-    localStorage.setItem('userName', userName);
-}
-
-function GetLocalStorage()
-{
-    const token = localStorage.getItem('token');
-    const id = localStorage.getItem('id');
-    const userName = localStorage.getItem('userName');
-    return {id, token, userName};
-}
-
-function RemoveLocalStorage()
-{
-    if (localStorage.getItem('id') != null)
-    {
-        localStorage.removeItem('id');
-    }
-
-    if (localStorage.getItem('token') != null)
-    {
-        localStorage.removeItem('token');
-    }
-
-    if (localStorage.getItem('userName') != null)
-    {
-        localStorage.removeItem('userName');
-    }
-}
+import { getErrorCode } from '../fireStore/error.js';
+import { getAuth, signOut } from "firebase/auth";
 
 
 function validateAccountSetupInput (formData, funcInit, funcErrorHandle) 
@@ -93,12 +61,28 @@ function validateAccountSetupInput (formData, funcInit, funcErrorHandle)
     return !(emailError || passwordError || nameError);
 }
 
-function funcReturnLogInPageHandle(promptMessage = "",
+async function signOutUser(setCurrentUser) 
+{
+    const auth = getAuth();
+
+    try {
+        await signOut(auth);
+        setCurrentUser(null);
+        console.log("User signed out.");
+        return true;
+    } catch (error) {
+        console.error("Error signing out:", error);
+    }
+    return false;
+}
+
+async function funcReturnLogInPageHandle(setCurrentUser,
+                                   promptMessage = "",
                                    needPromptMsg = true,
                                    needDirectBackToLandingPage = true)
 {
     // remove the token and email whatever if any fail
-    RemoveLocalStorage()
+    await signOutUser(setCurrentUser);
 
     if (promptMessage && needPromptMsg)
     {
@@ -111,121 +95,66 @@ function funcReturnLogInPageHandle(promptMessage = "",
     }
 }
 
-async function checkIfUserLoggedInValid(needPromptIfError = true,
+async function checkIfUserLoggedInValid(_currentUser, setCurrentUser,
+                                        needPromptIfError = true,
                                         needDirectBackToLangPageIfError = true)
 {
-    const {id, token, userName} = GetLocalStorage();
-
-    const funcReturn = (valid, loginUserJSON, message)=>{
+    const funcReturn = (valid, userObj, message)=>{
 
         return {
                 valid,
-                loginUserJSON,
+                userObj,
                 message
                 };
     }
 
-    if (!token || !id || userName === null) // userName can be empty string
+    console.log(_currentUser);
+
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (!user ||
+        !_currentUser ||
+        !_currentUser.token || !_currentUser.uid)
     {
-        funcReturnLogInPageHandle(`User Token Not Found`,
+        await funcReturnLogInPageHandle(setCurrentUser, 
+                                    `No Authenticated User Found`,
                                     needPromptIfError,
                                     needDirectBackToLangPageIfError);
-        return funcReturn(false, null, `User Token Not Found`);
+        return funcReturn(false, null, `No Authenticated User Found`);
     }
 
-    // Fetch Get to Database to check if the latest token in the database matched to client storage
+    // Get from Database to check if the latest token in the database matched to client storage
     try {
 
-        // Do not know why the axios keep return the 302 redirect error even setting the CORS config. in the server
+        const userTokenFromAuth = await user.getIdTokenResult();
 
-        // let loggedinResponse = await axios.get(`${SERVER_URL}${API_USER_URL}/${id}`, {
-        //     maxRedirects: 0
-        // });
-
-        // // A redirect exist
-        // if (loggedinResponse.status == 302)
-        // {
-        //     // Get the redirect URL from the 'Location' header
-        //     const redirectUrl = response.headers['location'];
-        //     console.log('Redirecting to:', redirectUrl);
-
-        //     // Make a new request to the redirect URL
-        //     loggedinResponse = await axios.get(redirectUrl);
-        //     console.log('Redirected Response:', loggedinResponse.data);
-        // }
-        // const loginUserJSON = loggedinResponse.data;
-
-        // Use fetch can auto redirect smoothly if exist
-        const loggedinUser = await fetch(`${SERVER_URL}${API_USER_URL}/${id}`);     
-        const loginUserJSON = await loggedinUser.json();
-        
-        if (loginUserJSON)
+        console.log("Auth  " +  userTokenFromAuth.token);
+        console.log("local  " + _currentUser.token);
+       
+        if (userTokenFromAuth.token != _currentUser.token)
         {
-            //console.log(loginUserJSON.data.token, " ", token);
-            if (token != loginUserJSON.data.token)
-            {
-                funcReturnLogInPageHandle(`New User Login Detected.`,
-                                            needPromptIfError,
-                                            needDirectBackToLangPageIfError);
-                return funcReturn(false, loginUserJSON, `New User Login Detected.`);
-            }
-            return funcReturn(true, loginUserJSON, ``);
+            await funcReturnLogInPageHandle(setCurrentUser,
+                                        `New User Login Detected.`,
+                                        needPromptIfError,
+                                        needDirectBackToLangPageIfError);
+            return funcReturn(false, user, `New User Login Detected.`);
         }
-        else
-        {
-            funcReturnLogInPageHandle(`User Token Comparison Fail`,
-                                    needPromptIfError,
-                                    needDirectBackToLangPageIfError);
-            return funcReturn(false, null, `User Token Comparison Fail`);
-        }
+        return funcReturn(true, user, ``);
     }
     catch(error)
     {
-        funcReturnLogInPageHandle(`User Token Comparison Error : ${error}`,
+        const errMessage = getErrorCode(error.code);
+        await funcReturnLogInPageHandle(setCurrentUser,
+                                    `User Token Comparison Error : ${errMessage}`,
                                     needPromptIfError,
                                     needDirectBackToLangPageIfError);
-        return funcReturn(false, null, `User Token Comparison Error : ${error}`);
+        return funcReturn(false, null, `User Token Comparison Error : ${errMessage}`);
     }
 }
-
-const useLogInOutClick = (initialLoggedInUserName = '')=>{
-
-    const [loggedInUserName, setLoggedInUserName] = useState(initialLoggedInUserName);
-
-    //console.log(loggedInUserName);
-
-    const actionLogInOut = ()=>{
-
-        // If current logged in, run log out process
-        if (loggedInUserName !== '')
-        {
-            // Remove the browser storage
-            RemoveLocalStorage();
-            setLoggedInUserName('');
-
-            if (window.location.pathname != CONST_PATH.landing)
-            {
-                // Drive to LogIn Page
-                window.location.href = `${CONST_PATH.signInUp}` // '/signinup'
-            }
-        }
-        // else if not yet log in, direct to log in page
-        else
-        {
-            // Drive to LogIn Page
-            window.location.href = `${CONST_PATH.signInUp}` // '/signinup'
-        }
-    }
-
-    return [loggedInUserName, setLoggedInUserName, actionLogInOut]
-  };
-
 
 export {validateAccountSetupInput, 
         funcReturnLogInPageHandle,
         checkIfUserLoggedInValid,
-        SetLocalStorage,
-        GetLocalStorage,
-        RemoveLocalStorage,
-        useLogInOutClick
+        signOutUser
 };

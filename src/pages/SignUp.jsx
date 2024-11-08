@@ -1,8 +1,6 @@
-import React from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useState, useEffect} from 'react';
 
-import {createTheme, ThemeProvider,
-        Paper, Typography, Avatar, Button, 
+import {Paper, Typography, Avatar, Button, 
         TextField} from '@mui/material';
 
 import FaceIcon from '@mui/icons-material/Face';
@@ -12,22 +10,19 @@ import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 import {validateAccountSetupInput} from '../components/utility.js';
 import {InputEmailBox, InputPasswordBox, passwordBoxIcon} from '../components/Input.jsx';
 
-import {CONST_PATH, CONST_LOG_IN_DELAY_MS} from '../components/front_end_constant.js';
-
-import {SERVER_URL, API_USER_URL} from '../components/front_end_constant.js'
+import {CONST_LOG_IN_DELAY_MS,
+        SERVER_URL} from '../components/front_end_constant.js';
 
 import {DisplayMessage} from '../components/display';
 
+import { auth } from '../firebaseConfig';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { getErrorCode } from '../fireStore/error.js';
+
 // Use CSS for styling
 import './SignUp.css'
-import axios from 'axios';
-
-const {useState, useEffect} = React;
-
 
 const SignUpform = ({clickHandleToLogin}) => {
-
-    const navigate = useNavigate();
 
     // ********************************************** Declare useState Variable
     const initFormData = {
@@ -168,14 +163,6 @@ const SignUpform = ({clickHandleToLogin}) => {
 
 
     // ********************************************** Create Style
-    const theme = createTheme({
-
-        // Current use !important controlled by index.css
-        // typography:{
-        //     fontFamily: 'Lato, Roboto, Monospace, Helvetica, sens-serif',
-        // }
-    })
-
     const FORM_ITEM_TAILWIND_STYLE = `mt-5 w-full`;
 
 
@@ -234,12 +221,23 @@ const SignUpform = ({clickHandleToLogin}) => {
         return false;
     }
 
+    async function createUser(formData)
+    {
+        const {user} = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+
+        // Add username stored into the profile "displayName"
+        await updateProfile(user, {displayName: formData.username});
+
+        await auth.currentUser.reload();
+
+        console.log("Updated display name:", auth.currentUser.displayName);
+
+        return user;
+    }
+
     const clickSubmit = async (event)=>{
 
         setDisableSignup(true);
-
-        // Call api to database
-        //console.log(formData.email + ", " + formData.password);
 
         if (validateInput())
         {
@@ -251,52 +249,31 @@ const SignUpform = ({clickHandleToLogin}) => {
             // Do Post API
             try {
 
-                // const signUpResponse = await axios.post(`${SERVER_URL}${API_USER_URL}/register`, formData);
-                // const createdUserJSON = signUpResponse.data;
+                const user = await createUser(formData);
 
-                const signUpResponse = await fetch(`${SERVER_URL}${API_USER_URL}/register`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(formData)
-                })
-        
-                const createdUserJSON = await signUpResponse.json();
-        
-                if (createdUserJSON)
-                {
-                    //alert(createdUserJSON.message);
-                    hideMessageDisplay();
-                    if (signUpResponse.status === 201)
-                    {
-                        setOkMessage(createdUserJSON.message);
-                    }
-                    else
-                    {
-                        setErrorMessage(createdUserJSON.message);
-                    }
+                console.log(user);
 
-                    // Wait for the next browser repaint using requestAnimationFrame
-                    await new Promise(resolve => requestAnimationFrame(resolve));
-        
-                    // Create Success to direct to log in page
-                    if (signUpResponse.status === 201)
-                    {
-                        // Wait for 1500 ms
-                        await new Promise(resolve => setTimeout(resolve, CONST_LOG_IN_DELAY_MS * 2));
-        
-                        // Drive to LogIn Page
-                        clickHandleToLogin();
-                    }
-                }
+                // Here means register success
+                hideMessageDisplay();
+                setOkMessage("New User Registered Successfully");
+
+                // Wait for the next browser repaint using requestAnimationFrame
+                await new Promise(resolve => requestAnimationFrame(resolve));
+
+                // Set a Timeout then jump to the LogIn Tab
+                setTimeout(()=>{
+                    // Drive to LogIn Page
+                    clickHandleToLogin();
+
+                }, CONST_LOG_IN_DELAY_MS * 2);
             }
             catch(error){
                 //alert(`Error : ${error}`);
 
-                // Here display the Sign Up Fail Component (not finish)
+                // Here display the Sign Up Fail Component
+                const errMessage = getErrorCode(error.code);
                 hideMessageDisplay();
-                setErrorMessage(`Register User ${formData.email} Fail (error : ${error.message})`);
+                setErrorMessage(`Register User ${formData.email} Fail (${errMessage})`);
             }
             
             // Whatever, reset the form data
@@ -311,98 +288,96 @@ const SignUpform = ({clickHandleToLogin}) => {
 
     return (
         <div className="flex justify-center">
-            <ThemeProvider theme={theme}>
-                <Paper elevation={10} id="id-card-signup" className="flex justify-center aligns-center py-20">
-                    <div className="flex flex-col items-center w-96">
-                        <Avatar className="my-10" id="id-icon-bkgrd-signup"><FaceIcon id="id-icon-signup" /></Avatar>
+            <Paper elevation={10} id="id-card-signup" className="flex justify-center aligns-center py-20">
+                <div className="flex flex-col items-center w-96">
+                    <Avatar className="my-10" id="id-icon-bkgrd-signup"><FaceIcon id="id-icon-signup" /></Avatar>
 
-                        <div className="mt-1 mb-10">
-                            <Typography component={'span'} variant='h4'>Sign Up</Typography>
-                        </div>
-
-                        <DisplayMessage 
-                            showSpinner = {showSpinner}
-                            errorMsg = {errorMessageControl}
-                            okMsg={okMessageControl}
-                        />
-
-                        <div className={FORM_ITEM_TAILWIND_STYLE}>
-                            <InputEmailBox
-                                disabled={isDisableSignup}
-                                emailValue = {formData.email}
-                                enterEmailCallBk = {enterEmail}
-                                isEmailError = {emailError}
-                                emailErrorMessage = {emailErrorMessage}
-                            />
-                        </div>
-
-                        <div className={FORM_ITEM_TAILWIND_STYLE}>
-                            <TextField 
-                                fullWidth
-                                required
-                                disabled={isDisableSignup}
-                                sx={{
-                                    opacity: isDisableSignup ? 0.5 : 1,
-                                }}
-                                error={nameError}
-                                helperText={nameErrorMessage}
-                                label="UserName"
-                                value={formData.username}
-                                placeholder='Hi, user'
-                                size='Normal'
-                                onChange={enterUsername}
-                            />
-
-                        </div>
-
-                        <div className={FORM_ITEM_TAILWIND_STYLE}>
-                            <InputPasswordBox
-                                disabled={isDisableSignup}
-                                password = {formData.password}
-                                allowShowPassword = {true}
-                                iconType = {passwordBoxIcon.showButton}
-                                showPassword = {showPassword}
-                                isPasswordError = {passwordError}
-                                passwordErrorMessage = {passwordErrorMessage}
-                                enterPasswordCallBk = {enterPassword}
-                                handleClickShowPassword = {handleClickShowPassword}
-                            />
-                        </div>
-
-                        <div className={FORM_ITEM_TAILWIND_STYLE}>
-                            <InputPasswordBox
-                                disabled={isDisableSignup}
-                                password = {formData.confirm_password}
-                                displayLabel = {"Confirm Password"}
-                                iconType = {confirmPasswordIcon}
-                                showPassword = {false}
-                                isPasswordError = {passwordConfirmError}
-                                passwordErrorMessage = {passwordConfirmErrorMessage}
-                                enterPasswordCallBk = {enterConfirmPassword}
-                            />
-                        </div>
-
-                        <div className={FORM_ITEM_TAILWIND_STYLE}>
-                            <Button 
-                                fullWidth
-                                disabled={isDisableSignup}
-                                sx={{
-                                    opacity: isDisableSignup ? 0.5 : 1,
-                                }}
-                                id="id-button-signup"
-                                variant="contained"
-                                onClick={clickSubmit}>
-                                    Sign Up
-                            </Button>
-                        </div>
-
-                        <div className= "mt-10 w-full flex justify-center">
-                            <Typography component={'span'} variant='h8'>Already Have An Account ? <a className="underline font-bold" href='#' onClick={clickHandleToLogin}>Log In</a></Typography>
-                        </div>
+                    <div className="mt-1 mb-10">
+                        <Typography component={'span'} variant='h4'>Sign Up</Typography>
                     </div>
 
-                </Paper>
-            </ThemeProvider>
+                    <DisplayMessage 
+                        showSpinner = {showSpinner}
+                        errorMsg = {errorMessageControl}
+                        okMsg={okMessageControl}
+                    />
+
+                    <div className={FORM_ITEM_TAILWIND_STYLE}>
+                        <InputEmailBox
+                            disabled={isDisableSignup}
+                            emailValue = {formData.email}
+                            enterEmailCallBk = {enterEmail}
+                            isEmailError = {emailError}
+                            emailErrorMessage = {emailErrorMessage}
+                        />
+                    </div>
+
+                    <div className={FORM_ITEM_TAILWIND_STYLE}>
+                        <TextField 
+                            fullWidth
+                            required
+                            disabled={isDisableSignup}
+                            sx={{
+                                opacity: isDisableSignup ? 0.5 : 1,
+                            }}
+                            error={nameError}
+                            helperText={nameErrorMessage}
+                            label="UserName"
+                            value={formData.username}
+                            placeholder='Hi, user'
+                            size='Normal'
+                            onChange={enterUsername}
+                        />
+
+                    </div>
+
+                    <div className={FORM_ITEM_TAILWIND_STYLE}>
+                        <InputPasswordBox
+                            disabled={isDisableSignup}
+                            password = {formData.password}
+                            allowShowPassword = {true}
+                            iconType = {passwordBoxIcon.showButton}
+                            showPassword = {showPassword}
+                            isPasswordError = {passwordError}
+                            passwordErrorMessage = {passwordErrorMessage}
+                            enterPasswordCallBk = {enterPassword}
+                            handleClickShowPassword = {handleClickShowPassword}
+                        />
+                    </div>
+
+                    <div className={FORM_ITEM_TAILWIND_STYLE}>
+                        <InputPasswordBox
+                            disabled={isDisableSignup}
+                            password = {formData.confirm_password}
+                            displayLabel = {"Confirm Password"}
+                            iconType = {confirmPasswordIcon}
+                            showPassword = {false}
+                            isPasswordError = {passwordConfirmError}
+                            passwordErrorMessage = {passwordConfirmErrorMessage}
+                            enterPasswordCallBk = {enterConfirmPassword}
+                        />
+                    </div>
+
+                    <div className={FORM_ITEM_TAILWIND_STYLE}>
+                        <Button 
+                            fullWidth
+                            disabled={isDisableSignup}
+                            sx={{
+                                opacity: isDisableSignup ? 0.5 : 1,
+                            }}
+                            id="id-button-signup"
+                            variant="contained"
+                            onClick={clickSubmit}>
+                                Sign Up
+                        </Button>
+                    </div>
+
+                    <div className= "mt-10 w-full flex justify-center">
+                        <Typography component={'span'} variant='h8'>Already Have An Account ? <a className="underline font-bold" href='#' onClick={clickHandleToLogin}>Log In</a></Typography>
+                    </div>
+                </div>
+
+            </Paper>
         </div>
     )
 }

@@ -1,24 +1,17 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import {checkIfUserLoggedInValid} from '../components/utility.js';
 import HomeSideBar from '../components/HomeSideBar.jsx';
+import userContext from '../context/userContext.js'
 
 const {useState, useEffect} = React;
 
 const Home = () => {
 
-  const [isCheckedLogInValid, setCheckedLogInValid] = useState(false);
+  const {_currentUser, setCurrentUser} = useContext(userContext);
 
   useEffect(() => {
 
-    // Since the React may trigger multiple render
-    if (!isCheckedLogInValid)
-    {
-      setCheckedLogInValid(true);
-
-      // EveryTime when access Home Page
-      checkIfUserLoggedInValid();
-    }
-
+      checkIfUserLoggedInValid(_currentUser, setCurrentUser);
   }, []); // The empty dependency array ensures this runs only on mount and unmount
 
   return (
