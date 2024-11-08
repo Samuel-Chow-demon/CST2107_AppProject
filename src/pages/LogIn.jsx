@@ -1,4 +1,4 @@
-import React from 'react';
+import { useContext, useState } from 'react';
 import {useNavigate} from 'react-router-dom';
 
 import {//createTheme, ThemeProvider,
@@ -8,18 +8,20 @@ import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import CancelIcon from '@mui/icons-material/Cancel';
 import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 
-import {RemoveLocalStorage, SetLocalStorage, validateAccountSetupInput} from '../components/utility.js';
+import { validateAccountSetupInput } from '../components/utility.js';
 import {InputEmailBox, InputPasswordBox, passwordBoxIcon} from '../components/Input.jsx';
 
 import {CONST_PATH, CONST_LOG_IN_DELAY_MS} from '../components/front_end_constant.js';
 
-import {SERVER_URL, API_USER_URL} from '../components/front_end_constant.js'
-
 import './Login.css';
 import { DisplayMessage } from '../components/display.jsx';
-import axios from 'axios';
 
-const {useState, useEffect} = React;
+import { auth } from '../firebaseConfig';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { getErrorCode } from '../fireStore/error.js';
+
+import userContext from '../context/userContext.js'
+
 
 const LogInform = ({clickHandleToSignUp}) => {
 
@@ -47,6 +49,8 @@ const LogInform = ({clickHandleToSignUp}) => {
     const [showSpinner, setShowSpinner] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [okMessage, setOkMessage] = useState('');
+
+    const {_currentUser, setCurrentUser} = useContext(userContext);
 
     // ********************************************** Declare useState Variable
 
@@ -95,17 +99,7 @@ const LogInform = ({clickHandleToSignUp}) => {
         icon : <DoneOutlineIcon style={{color:'rgb(81, 155, 72)', fontSize:'36px'}}/>
     }
 
-    // ********************************************** Create Style
-    // const theme = createTheme({
-
-    //     // Current use !important controlled by index.css
-    //     // typography:{
-    //     //     fontFamily: 'Lato, Roboto, Monospace, Helvetica, sens-serif',
-    //     // }
-    // })
-
     const FORM_ITEM_TAILWIND_STYLE = `mt-5 w-full`;
-
 
     // ********************************************** Create Function
     function validateInput () 
@@ -141,72 +135,73 @@ const LogInform = ({clickHandleToSignUp}) => {
 
         setDisableLogin(true);
 
-        //console.log(formData.email + ", " + formData.password);
-
         if (validateInput())
         {
-            // Do Post API
             try {
 
-                const loginResponse = await fetch(`${SERVER_URL}${API_USER_URL}/login`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(formData)
-                })
-        
-                const loginUserJSON = await loginResponse.json();
+                // 1 - Check FireBase Authentication
+                const { user } = await signInWithEmailAndPassword(auth, formData.email, formData.password);
 
-                //const loginResponse = await axios.post(`${SERVER_URL}${API_USER_URL}/login`, formData);
-                //const loginUserJSON = loginResponse.data;
-                //console.log(loginUserJSON);
-        
-                if (loginUserJSON)
+                await user.reload();
+
+                const accesstoken = await user.getIdToken(); // Retrieve the access token
+
+                if (!user.displayName)
                 {
-                    //alert(loginUserJSON.message);
-
-                    // Here Display Log In Success / Error Component
-                    hideMessageDisplay();
-                    if (loginResponse.status === 200)
-                    {
-                        setOkMessage(loginUserJSON.message);
-                    }
-                    else
-                    {
-                        setErrorMessage(loginUserJSON.message);
-                    }
-
-                    // Wait for the next browser repaint using requestAnimationFrame
-                    await new Promise(resolve => requestAnimationFrame(resolve));
-        
-                    if (loginResponse.status === 200)
-                    {
-                        // Store the id and token to local Storage
-                        SetLocalStorage(loginUserJSON.data.id,
-                                        loginUserJSON.data.token,
-                                        loginUserJSON.data.name);
-        
-                        // Wait for 550 ms
-                        await new Promise(resolve => setTimeout(resolve, CONST_LOG_IN_DELAY_MS));
-        
-                        // Direct to Home Page
-                        navigate(CONST_PATH.home); // '/home'
-                    }
-                    else
-                    {
-                        // remove the whatever if any fail
-                        RemoveLocalStorage();
-                    }
+                    user.displayName = auth.currentUser.displayName;
                 }
+
+                console.log(user);
+
+                // No need to use backend to get the token, firebase already had token access
+                // 2 - After pass the credential, get the Token generated from the backend by API
+                // const logintoken = await fetch(`${SERVER_URL}${API_USER_URL}/login/token`, {
+                //     method: "POST",
+                //     headers: {
+                //         "Content-Type": "application/json"
+                //     },
+                //     body: JSON.stringify({
+                //         name : user.displayName,
+                //         email : user.email,
+                //         id : user.uid
+                //     })
+                // })
+                //const logintokenJSON = await logintoken.json();
+                //const loginData = logintokenJSON.data;
+
+                // Here Display Log In Success / Error Component
+                hideMessageDisplay();
+                setOkMessage("User Logged In Successfully");
+
+                // Wait for the next browser repaint using requestAnimationFrame
+                await new Promise(resolve => requestAnimationFrame(resolve));
+    
+                // Store user info include id and token to local Storage
+                setCurrentUser({
+                    userName : user.displayName,
+                    email : user.email,
+                    uid : user.uid,
+                    token : accesstoken
+                });
+
+                // Set a Timeout then jump to the Home Page
+                setTimeout(()=>{
+                    // Direct to Home Page
+                    navigate(CONST_PATH.home); // '/home'
+
+                }, CONST_LOG_IN_DELAY_MS);               
             }
             catch(error){
         
                 //alert(`Error : ${error}`);
 
-                // Here display the Sign Up Fail Component
+                // Here display the LogIn Fail Component
                 hideMessageDisplay();
-                setErrorMessage(`Login User ${formData.email} Fail (error : ${error})`);
+                const errMessage = getErrorCode(error.code);
+                setErrorMessage(`Login User ${formData.email} Fail (${errMessage})`);
+
+                // remove the whatever if any fail
+                setCurrentUser(null);
             }
 
             // Whatever, reset the form data

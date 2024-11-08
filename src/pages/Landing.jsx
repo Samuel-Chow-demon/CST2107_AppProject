@@ -1,5 +1,5 @@
 
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useContext} from 'react'
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import {Avatar, Button, TextField} from '@mui/material';
@@ -17,8 +17,8 @@ import iconSimpleWork from '../assets/SimpleWorkSmall.svg'
 import './Landing.css';
 import { useNavigate } from 'react-router-dom';
 import { CONST_PATH } from '../components/front_end_constant';
-import { checkIfUserLoggedInValid, RemoveLocalStorage,
-          useLogInOutClick} from '../components/utility';
+import { signOutUser } from '../components/utility';
+import userContext from '../context/userContext.js'
 
 import HomeIcon from '@mui/icons-material/Home';
 
@@ -62,6 +62,8 @@ const LandingPage = () => {
 
   const navigate = useNavigate();
 
+  const {_currentUser, setCurrentUser} = useContext(userContext);
+
   const displayTextList = ['Simple Work .\nWork Simple',
                             `Today is ${(new Date()).toLocaleDateString()}`,
                             "Manage Work .\nDrag and Drop"
@@ -69,7 +71,6 @@ const LandingPage = () => {
 
   const [clickIdx, setClickIdx] = useState(0);
   const [displayText, setDisplayText] = useState(displayTextList[0]);
-  const [loggedInUserName, setLoggedInUserName, actionLogInOut] = useLogInOutClick('');
 
   const buttonClick = ()=>{
     setClickIdx(prevIdx=>(prevIdx + 1) % displayTextList.length);
@@ -85,13 +86,14 @@ const LandingPage = () => {
     );
   };
 
-  const TextUserComponent = ({userName}) => {
+  const TextUserComponent = () => {
 
+    const userName = _currentUser && _currentUser.userName ? _currentUser.userName : "Talent";
     const textUserDisplay = `Welcome,\n${userName}`;
 
     return (
       <>
-        {userName != "" && (
+        {_currentUser  && (
             <div className="text-center p-5 flex justify-center items-center">
             <h2 style={{ whiteSpace: 'pre-line' }}>{textUserDisplay}</h2>
             <Avatar 
@@ -147,13 +149,27 @@ const LandingPage = () => {
 
   const ButtonLogInOutComponent = () => {
 
-    const isLoggedIn = loggedInUserName !== '';
+    const isLoggedIn = _currentUser != null;
     const borderRadius = isLoggedIn ? '50%' : '4px';
     const bkgrdColor = isLoggedIn ? orange[600] :indigo[600];
     const hoverBkgrdColor = isLoggedIn ? orange[400] :indigo[400];
     const buttonText = isLoggedIn ? "Log Out" : "Log In";
 
-    //console.log('username :', typeof(loggedInUserName), loggedInUserName.length);
+    const logInOutHandle = async ()=>{
+
+      if (isLoggedIn) // call logout
+      {
+        await signOutUser(setCurrentUser);
+        if (window.location.pathname != CONST_PATH.landing)
+        {
+          navigate(CONST_PATH.signInUp);
+        }
+      }
+      else
+      {
+        navigate(CONST_PATH.signInUp);
+      }
+    }
 
     return (
       //<div className="text-center p-0 w-full h-20">
@@ -173,7 +189,7 @@ const LandingPage = () => {
               },
               boxShadow: '0px 20px 20px rgba(10, 20, 100, 0.5)'
             }}
-            onClick={actionLogInOut}>
+            onClick={logInOutHandle}>
                 {buttonText}
         </Button>
       //</div>
@@ -190,40 +206,8 @@ const LandingPage = () => {
     { id: 6, type: 'image', src: bkgrd1 },
     { id: 7, type: 'component', component: <ButtonComponent buttonClick={buttonClick}/> },
     { id: 8, type: 'image', src: bkgrd7 },
-    { id: 9, type: 'component', component: <TextUserComponent userName={loggedInUserName} /> }
+    { id: 9, type: 'component', component: <TextUserComponent /> }
   ]);
-
-  // Define useEffect
-  // Check once when page in or render
-  useEffect(()=>{
-
-    const checkIfLoggedIn = async() => {
-
-      try
-      {
-        // Important, no need prompt and redirect
-        const result = await checkIfUserLoggedInValid(false, false);
-
-        if (result.valid)
-        {
-          setLoggedInUserName(result.loginUserJSON.data.name);
-        }
-        else
-        {
-          // although invalid would do the remove local storage, here call again for safe
-          RemoveLocalStorage();
-          setLoggedInUserName('');
-        }
-      }
-      catch (error)
-      {
-        console.error('Check If User Logged In Fail', error);
-      }
-    };
-
-    // Call the async function
-    checkIfLoggedIn();
-  }, []);
 
   // When button click, switch the text and assign to the display
   useEffect(()=>{
@@ -250,7 +234,7 @@ const LandingPage = () => {
             case 1:
               return { ...item, component: <ButtonLogInOutComponent /> };
             case 9:
-              return { ...item, component: <TextUserComponent userName={loggedInUserName}/> };
+              return { ...item, component: <TextUserComponent /> };
             default:
               return item;
           }
@@ -267,7 +251,7 @@ const LandingPage = () => {
         //   : item
       )
     );
-  }, [displayText, loggedInUserName]);
+  }, [displayText, _currentUser]);
 
   // Define Function, the drag Item replace the target hover item in the list
   const moveItem = (dragIndex, hoverIndex) => {

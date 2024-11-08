@@ -1,13 +1,18 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Box, Typography, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { Dashboard, AccountCircle, Logout } from '@mui/icons-material';
 import ControlPointIcon from '@mui/icons-material/ControlPoint';
-import { useLogInOutClick } from '../components/utility';
 import iconSimpleWork from '../assets/SimpleWorkSmall.svg'
+import { useNavigate } from 'react-router-dom';
+import { CONST_PATH } from './front_end_constant';
+import userContext from '../context/userContext';
+import { signOutUser } from './utility';
 
 function Sidebar() {
 
-    const [loggedInUserName, setLoggedInUserName, actionLogInOut] = useLogInOutClick('logout');
+    const navigate = useNavigate();
+
+    const {_currentUser, setCurrentUser} = useContext(userContext);
 
     const ListItemComponent = ({IconComponent, itemText, buttonClick = ()=>{}})=>{
 
@@ -32,6 +37,12 @@ function Sidebar() {
             </ListItem>
         );
     };
+
+    const logOutHandle = async ()=>{
+
+        await signOutUser(setCurrentUser);
+        navigate(CONST_PATH.signInUp);
+    }
 
 
   return (
@@ -88,7 +99,7 @@ function Sidebar() {
         <ListItemComponent 
             IconComponent={<Logout fontSize="large" sx={{ color: '#6f727c' }} />}
             itemText={"Logout"}
-            buttonClick={actionLogInOut}
+            buttonClick={logOutHandle}
         />
        
       </List>
