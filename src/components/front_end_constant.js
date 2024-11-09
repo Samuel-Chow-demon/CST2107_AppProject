@@ -1,10 +1,12 @@
+import BoardPage from "../pages/BoardPage";
+
 const CONST_LOG_IN_DELAY_MS = 550;
 
 const CONST_PATH = {
     landing : '/',
     signInUp : '/signinup',
-    home : '/home'
-}
+    home : '/home',
+    boardpage: '/boardpage'}
 
 // The constant to be used for whole project
 const SERVER_PORT = 5500;

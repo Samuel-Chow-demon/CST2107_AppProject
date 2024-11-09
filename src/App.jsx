@@ -5,6 +5,7 @@ import Landing from './pages/Landing';
 import {CONST_PATH} from './components/front_end_constant';
 import './App.css';
 import LogInSignUp from './pages/LogInSignUp';
+import BoardPage from './pages/BoardPage';
 import useLocalStorage from './hooks/useLocalStorage';
 import userContext from './context/userContext';
 
@@ -29,6 +30,10 @@ function App() {
       {
         path: CONST_PATH.home,      // '/home'
         element: <Home />
+      },
+      {
+        path: CONST_PATH.boardpage,      // '/board'
+        element: <BoardPage />
       }
     ]
   )
