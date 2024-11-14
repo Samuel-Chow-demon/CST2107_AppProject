@@ -8,6 +8,7 @@ import LogInSignUp from './pages/LogInSignUp';
 import BoardPage from './pages/BoardPage';
 import useLocalStorage from './hooks/useLocalStorage';
 import userContext from './context/userContext';
+import {AuthProvider} from './context/authContext';
 
 function App() {
 
@@ -39,12 +40,14 @@ function App() {
   )
   
   return (
-    <userContext.Provider value={{
-      _currentUser,
-      setCurrentUser
-    }}>
-    {routes}
-    </userContext.Provider>);
+    <AuthProvider>
+      <userContext.Provider value={{
+          _currentUser,
+          setCurrentUser
+        }}>
+        {routes}
+      </userContext.Provider>
+    </AuthProvider>);
 }
 
 export default App

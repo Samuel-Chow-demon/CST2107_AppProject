@@ -50,8 +50,8 @@ function Sidebar() {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        width: 256,
-        minWidth: 256,
+        width: '256px',
+        minWidth: '256px',
         height: '100%',
         bgcolor: 'white',
         borderRadius: '0 24px 24px 0',
