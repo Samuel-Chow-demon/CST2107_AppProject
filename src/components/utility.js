@@ -1,7 +1,8 @@
 import {LANDING_URL} from './front_end_constant.js'
 
 import { getErrorCode } from '../fireStore/error.js';
-import { getAuth, signOut } from "firebase/auth";
+import { signOut } from "firebase/auth";
+import { auth } from '../firebaseConfig';
 
 
 function validateAccountSetupInput (formData, funcInit, funcErrorHandle) 
@@ -63,8 +64,6 @@ function validateAccountSetupInput (formData, funcInit, funcErrorHandle)
 
 async function signOutUser(setCurrentUser) 
 {
-    const auth = getAuth();
-
     try {
         await signOut(auth);
         setCurrentUser(null);
@@ -95,7 +94,8 @@ async function funcReturnLogInPageHandle(setCurrentUser,
     }
 }
 
-async function checkIfUserLoggedInValid(_currentUser, setCurrentUser,
+async function checkIfUserLoggedInValid(firebaseUser,
+                                        _currentUser, setCurrentUser,
                                         needPromptIfError = true,
                                         needDirectBackToLangPageIfError = true)
 {
@@ -108,10 +108,10 @@ async function checkIfUserLoggedInValid(_currentUser, setCurrentUser,
                 };
     }
 
-    console.log(_currentUser);
+    //console.log(_currentUser);
 
-    const auth = getAuth();
-    const user = auth.currentUser;
+    //console.log("Check", firebaseUser);
+    const user = firebaseUser;
 
     if (!user ||
         !_currentUser ||
@@ -129,8 +129,8 @@ async function checkIfUserLoggedInValid(_currentUser, setCurrentUser,
 
         const userTokenFromAuth = await user.getIdTokenResult();
 
-        console.log("Auth  " +  userTokenFromAuth.token);
-        console.log("local  " + _currentUser.token);
+        //console.log("Auth  " +  userTokenFromAuth.token);
+        //console.log("local  " + _currentUser.token);
        
         if (userTokenFromAuth.token != _currentUser.token)
         {

@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 //import { getAnalytics } from "firebase/analytics";
-import { getAuth } from "firebase/auth";
+import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { getFirestore } from "@firebase/firestore";
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -24,5 +24,14 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth();
 const db = getFirestore();
 //const analytics = getAnalytics(app);
+
+setPersistence(auth, browserLocalPersistence)
+  .then(() => {
+    // Now you can sign in the user or do anything related to auth
+    console.log("Persistence set successfully");
+  })
+  .catch((error) => {
+    console.error("Error setting persistence:", error);
+  });
 
 export { auth, db };

@@ -2,23 +2,50 @@ import React, { useContext } from 'react';
 import {checkIfUserLoggedInValid} from '../components/utility.js';
 import HomeSideBar from '../components/HomeSideBar.jsx';
 import userContext from '../context/userContext.js'
+import BoardPage from './BoardPage.jsx';
+import { Box } from '@mui/material';
+import {useAuth} from '../context/authContext'
 
 const {useState, useEffect} = React;
 
 const Home = () => {
 
   const {_currentUser, setCurrentUser} = useContext(userContext);
+  const {firebaseUser, isLoading} = useAuth();
 
   useEffect(() => {
-
-      checkIfUserLoggedInValid(_currentUser, setCurrentUser);
-  }, []); // The empty dependency array ensures this runs only on mount and unmount
+      console.log("refresh");
+      if (!isLoading)
+      {
+        console.log("after load", _currentUser);
+        checkIfUserLoggedInValid(firebaseUser, _currentUser, setCurrentUser);
+      }
+  }, [isLoading, firebaseUser]); // The empty dependency array ensures this runs only on mount and unmount
 
   return (
-    <div className = "w-screen h-screen flex justify-left m-0">
-      <HomeSideBar />
-
-    </div>
+    // <Box sx={{
+    //   display: 'flex',
+    //   flexGrow: '1',
+    //   width: '100vw',
+    //   height: '100hw',
+    //   margin: '0px'
+    // }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'auto 1fr',
+          width: '100vw',
+          height: '100vh'
+        }}>
+          <HomeSideBar />
+          <Box sx={{
+              flexGrow: 1,
+              height: '100%'
+            }}>
+            <BoardPage />
+          </Box>
+      </Box>
+    // </Box>
   )
 }
 
