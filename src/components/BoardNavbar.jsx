@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './BoardNavbar.css';
 import BoardMenu from './BoardMenu';  // Import the sidebar menu
+import { FullscreenExit } from '@mui/icons-material';
 
 const BoardNavbar = ({ toggleLayout, isGridLayout }) => {
   const [isMenuOpen, setMenuOpen] = useState(false);
@@ -19,7 +20,8 @@ const BoardNavbar = ({ toggleLayout, isGridLayout }) => {
             {isGridLayout ? 'Switch to Row Layout' : 'Switch to Grid Layout'}
           </button>
           {/* Menu button on the right */}
-          <button className="menu-btn" onClick={toggleMenu}>
+          <button className="menu-btn" 
+            onClick={toggleMenu}>
             &#x22EE; {/* Vertical ellipsis icon for menu */}
           </button>
         </div>

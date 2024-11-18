@@ -88,6 +88,8 @@ const Board = ({ isGridLayout }) => {
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
+        height: '100%',
+        width: '100%'
       }}
     >
       <DragDropContext onDragEnd={onDragEnd}>

@@ -1,6 +1,6 @@
 .board-menu {
     position: fixed;
-    top: 110px; 
+    top: 85px; 
     right: 0;
     width: 300px;
     height: calc(100vh - 110px);
