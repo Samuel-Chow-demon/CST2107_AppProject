@@ -8,6 +8,7 @@ import DangerousIcon from '@mui/icons-material/Dangerous';
 import CheckIcon from '@mui/icons-material/Check';
 
 const InputEmailBox = ({emailValue, enterEmailCallBk, isEmailError, emailErrorMessage,
+                        disableOpacity = 0.5,
                         disabled = false}) => {
 
   return (
@@ -16,7 +17,7 @@ const InputEmailBox = ({emailValue, enterEmailCallBk, isEmailError, emailErrorMe
             fullWidth
             disabled={disabled}
             sx={{
-                opacity: disabled ? 0.5 : 1,
+                opacity: disabled ? disableOpacity : 1,
             }}
             //id="input-email"
             label="Email"
@@ -41,6 +42,7 @@ const passwordBoxIcon = {
 }
 
 const InputPasswordBox = ({password, enterPasswordCallBk, showPassword, isPasswordError, passwordErrorMessage,
+                            disableOpacity = 0.5,
                             iconType = null, displayLabel = 'Password', disabled = false,
                             handleClickShowPassword = null, handleMouseDownPassword = null, handleMouseUpPassword = null}) =>{
 
@@ -103,7 +105,7 @@ const InputPasswordBox = ({password, enterPasswordCallBk, showPassword, isPasswo
                     //id="input-password"
                     disabled={disabled}
                     sx={{
-                        opacity: disabled ? 0.5 : 1,
+                        opacity: disabled ? disableOpacity : 1,
                     }}
                     type={showPassword ? 'text' : 'password'}
                     label='Password'

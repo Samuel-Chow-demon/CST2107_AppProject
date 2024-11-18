@@ -1,11 +1,9 @@
 import { useTheme } from '@emotion/react';
-import React from 'react'
+import {useState} from 'react'
 import { AppBar, Box, Tab, Tabs, Typography } from '@mui/material';
 import { green, blue, purple } from '@mui/material/colors'; // Import color palette
 import LogIn from './LogIn';
 import SignUp from './SignUp';
-
-const {useState} = React;
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -45,7 +43,7 @@ const LogInSignUp = () => {
   
     return (
     <div className="flex justify-center">
-        <Box className="flex flex-col items-center mt-40" 
+        <Box className="flex flex-col items-center mt-10" 
             sx={{ backgroundColor: 'transparent',
                   width: 600 }}>
             <AppBar position="static"

@@ -7,7 +7,6 @@ import FaceIcon from '@mui/icons-material/Face';
 import CancelIcon from '@mui/icons-material/Cancel';
 import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 
-import {validateAccountSetupInput} from '../components/utility.js';
 import {InputEmailBox, InputPasswordBox, passwordBoxIcon} from '../components/Input.jsx';
 
 import {CONST_LOG_IN_DELAY_MS,
@@ -19,6 +18,8 @@ import { auth } from '../firebaseConfig';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { getErrorCode } from '../fireStore/error.js';
 
+import useInputForm from '../hooks/useInputForm.js'
+
 // Use CSS for styling
 import './SignUp.css'
 
@@ -28,29 +29,21 @@ const SignUpform = ({clickHandleToLogin}) => {
     const initFormData = {
         email : '',
         password : '',
-        confirm_password : '',
+        passwordConfirm : '',
         username : ''
     }
 
-    const [formData, setFormData] = useState(initFormData);
+    // Use the form data hooks
+    const {
+        formData, resetFormData,
+        enterInput,
+        confirmPasswordIcon,
+        showPassword, handleClickShowPassword,
+        isDisableInput, setDisableInput,
+        formInputErrors,
+        validateInput
+    } = useInputForm(initFormData);
 
-    const [showPassword, setShowPassword] = useState(false);
-
-    const [emailError, setEmailError] = useState(false);
-    const [emailErrorMessage, setEmailErrorMessage] = useState('');
-
-    const [passwordError, setPasswordError] = useState(false);
-    const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
-
-    const [passwordConfirmError, setPasswordConfirmError] = useState(false);
-    const [passwordConfirmErrorMessage, setPasswordConfirmErrorMessage] = useState('');
-
-    const [nameError, setNameError] = useState(false);
-    const [nameErrorMessage, setNameErrorMessage] = useState('');
-
-    const [confirmPasswordIcon, setConfirmIconType] = useState(passwordBoxIcon.none);
-
-    const [isDisableSignup, setDisableSignup] = useState(false);
 
     const [showSpinner, setShowSpinner] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
@@ -58,59 +51,6 @@ const SignUpform = ({clickHandleToLogin}) => {
 
 
     // ********************************************** Declare function
-    const handleClickShowPassword = () => setShowPassword((show) => !show);
-
-    const enterEmail = (event)=>{
-
-        setEmailError(false);
-        setEmailErrorMessage('');
-
-        setFormData({
-            ...formData,
-            email: event.target.value
-        })
-    };
-
-    const enterPassword = (event)=>{
-
-        setPasswordError(false);
-        setPasswordErrorMessage('');
-
-        setFormData({
-            ...formData,
-            password: event.target.value
-        })
-    };
-
-    const enterConfirmPassword = (event)=>{
-
-        setPasswordConfirmError(false);
-        setPasswordConfirmErrorMessage('');
-
-        setFormData({
-            ...formData,
-            confirm_password: event.target.value
-        })
-    };
-
-    const enterUsername = (event)=>{
-
-        setNameError(false);
-        setNameErrorMessage('');
-
-        setFormData({
-            ...formData,
-            username: event.target.value
-        })
-    };
-
-    const clearAllInput = (event)=>{
-
-        setFormData({
-            ...formData,
-            username: event.target.value
-        })
-    };
 
     const hideMessageDisplay = () =>{
         setShowSpinner(false);
@@ -130,96 +70,8 @@ const SignUpform = ({clickHandleToLogin}) => {
         icon : <DoneOutlineIcon style={{color:'rgb(81, 155, 72)', fontSize:'36px'}}/>
     }
 
-    // ********************************************** Declare Effect
-
-    // Effect on checking confirm password
-    useEffect(() =>{
-
-        if (formData?.password?.length <= 0)
-        {
-            setFormData({
-                ...formData,
-                confirm_password: ''
-            })
-        }
-
-        if (formData?.confirm_password?.length <= 0)
-        {
-            setConfirmIconType(passwordBoxIcon.none);
-        }
-        else if (formData?.password?.length > 0 &&
-                formData.confirm_password === formData.password)
-        {
-            setConfirmIconType(passwordBoxIcon.correctIcon);
-        }
-        else
-        {
-            setConfirmIconType(passwordBoxIcon.wrongIcon);
-        }
-
-    }, [formData.confirm_password, formData.password]);
-
-
-
-
-    // ********************************************** Create Style
-    const FORM_ITEM_TAILWIND_STYLE = `mt-5 w-full`;
-
 
     // ********************************************** Create Function
-
-    function validateInput () 
-    {
-        const funcInit = () => {
-
-            setEmailError(false);
-            setEmailErrorMessage('');
-
-            setPasswordError(false);
-            setPasswordErrorMessage('');
-
-            setNameError(false);
-            setNameErrorMessage('');
-        };
-
-        const funcErrorHandle = (emailError, passwordError, nameError) => {
-
-            if (emailError.length > 0)
-            {
-                setEmailError(true);
-                setEmailErrorMessage(emailError);
-            }
-    
-            if (passwordError.length > 0)
-            {
-                setPasswordError(true);
-                setPasswordErrorMessage(passwordError);
-
-                setFormData({
-                    ...formData,
-                    confirm_password: ''
-                })
-            }
-
-            if (nameError.length > 0)
-            {
-                setNameError(true);
-                setNameErrorMessage(nameError);
-            }
-        };
-    
-        if (validateAccountSetupInput(formData, funcInit, funcErrorHandle))
-        {
-            if (formData.password != formData.confirm_password)
-            {
-                setPasswordConfirmError(true);
-                setPasswordConfirmErrorMessage('Confirm Password Not Matched');
-                return false;
-            }
-            return true;
-        }
-        return false;
-    }
 
     async function createUser(formData)
     {
@@ -237,11 +89,11 @@ const SignUpform = ({clickHandleToLogin}) => {
 
     const clickSubmit = async (event)=>{
 
-        setDisableSignup(true);
+        setDisableInput(true);
 
         if (validateInput())
         {
-            console.log(SERVER_URL);
+            //console.log(SERVER_URL);
 
             // Here display the loading spinner
             setShowSpinner(true);
@@ -277,14 +129,16 @@ const SignUpform = ({clickHandleToLogin}) => {
             }
             
             // Whatever, reset the form data
-            setFormData(initFormData);
+            resetFormData();
         }
         else
         {
             hideMessageDisplay();
         }
-        setDisableSignup(false);
+        setDisableInput(false);
     };
+
+    const FORM_ITEM_TAILWIND_STYLE = `mt-5 w-full`;
 
     return (
         <div className="flex justify-center">
@@ -304,11 +158,11 @@ const SignUpform = ({clickHandleToLogin}) => {
 
                     <div className={FORM_ITEM_TAILWIND_STYLE}>
                         <InputEmailBox
-                            disabled={isDisableSignup}
+                            disabled={isDisableInput}
                             emailValue = {formData.email}
-                            enterEmailCallBk = {enterEmail}
-                            isEmailError = {emailError}
-                            emailErrorMessage = {emailErrorMessage}
+                            enterEmailCallBk = {enterInput('email')}
+                            isEmailError = {formInputErrors.email.isError}
+                            emailErrorMessage = {formInputErrors.email.message}
                         />
                     </div>
 
@@ -316,54 +170,54 @@ const SignUpform = ({clickHandleToLogin}) => {
                         <TextField 
                             fullWidth
                             required
-                            disabled={isDisableSignup}
+                            disabled={isDisableInput}
                             sx={{
-                                opacity: isDisableSignup ? 0.5 : 1,
+                                opacity: isDisableInput ? 0.5 : 1,
                             }}
-                            error={nameError}
-                            helperText={nameErrorMessage}
+                            error={formInputErrors.username.isError}
+                            helperText={formInputErrors.username.message}
                             label="UserName"
                             value={formData.username}
                             placeholder='Hi, user'
                             size='Normal'
-                            onChange={enterUsername}
+                            onChange={enterInput('username')}
                         />
 
                     </div>
 
                     <div className={FORM_ITEM_TAILWIND_STYLE}>
                         <InputPasswordBox
-                            disabled={isDisableSignup}
+                            disabled={isDisableInput}
                             password = {formData.password}
                             allowShowPassword = {true}
                             iconType = {passwordBoxIcon.showButton}
                             showPassword = {showPassword}
-                            isPasswordError = {passwordError}
-                            passwordErrorMessage = {passwordErrorMessage}
-                            enterPasswordCallBk = {enterPassword}
+                            isPasswordError = {formInputErrors.password.isError}
+                            passwordErrorMessage = {formInputErrors.password.message}
+                            enterPasswordCallBk = {enterInput('password')}
                             handleClickShowPassword = {handleClickShowPassword}
                         />
                     </div>
 
                     <div className={FORM_ITEM_TAILWIND_STYLE}>
                         <InputPasswordBox
-                            disabled={isDisableSignup}
-                            password = {formData.confirm_password}
+                            disabled={isDisableInput}
+                            password = {formData.passwordConfirm}
                             displayLabel = {"Confirm Password"}
                             iconType = {confirmPasswordIcon}
                             showPassword = {false}
-                            isPasswordError = {passwordConfirmError}
-                            passwordErrorMessage = {passwordConfirmErrorMessage}
-                            enterPasswordCallBk = {enterConfirmPassword}
+                            isPasswordError = {formInputErrors.passwordConfirm.isError}
+                            passwordErrorMessage = {formInputErrors.passwordConfirm.message}
+                            enterPasswordCallBk = {enterInput('passwordConfirm')}
                         />
                     </div>
 
                     <div className={FORM_ITEM_TAILWIND_STYLE}>
                         <Button 
                             fullWidth
-                            disabled={isDisableSignup}
+                            disabled={isDisableInput}
                             sx={{
-                                opacity: isDisableSignup ? 0.5 : 1,
+                                opacity: isDisableInput ? 0.5 : 1,
                             }}
                             id="id-button-signup"
                             variant="contained"

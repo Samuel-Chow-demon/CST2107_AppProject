@@ -8,7 +8,6 @@ import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import CancelIcon from '@mui/icons-material/Cancel';
 import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 
-import { validateAccountSetupInput } from '../components/utility.js';
 import {InputEmailBox, InputPasswordBox, passwordBoxIcon} from '../components/Input.jsx';
 
 import {CONST_PATH, CONST_LOG_IN_DELAY_MS} from '../components/front_end_constant.js';
@@ -21,30 +20,29 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { getErrorCode } from '../fireStore/error.js';
 
 import userContext from '../context/userContext.js'
+import useInputForm from '../hooks/useInputForm.js'
 
 
 const LogInform = ({clickHandleToSignUp}) => {
 
     const navigate = useNavigate();
 
-    // ********************************************** Declare useState Variable
     const initFormData = {
         email : '',
         password : '',
         username : 'login'
     }
 
-    const [formData, setFormData] = useState(initFormData);
-
-    const [showPassword, setShowPassword] = useState(false);
-
-    const [emailError, setEmailError] = useState(false);
-    const [emailErrorMessage, setEmailErrorMessage] = useState('');
-
-    const [passwordError, setPasswordError] = useState(false);
-    const [passwordErrorMessage, setPasswordErrorMessage] = useState('');
-
-    const [isDisableLogin, setDisableLogin] = useState(false);
+    // Use the form data hooks
+    const {
+        formData, resetFormData,
+        enterInput,
+        confirmPasswordIcon,
+        showPassword, handleClickShowPassword,
+        isDisableInput, setDisableInput,
+        formInputErrors,
+        validateInput
+    } = useInputForm(initFormData);
 
     const [showSpinner, setShowSpinner] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
@@ -52,35 +50,7 @@ const LogInform = ({clickHandleToSignUp}) => {
 
     const {_currentUser, setCurrentUser} = useContext(userContext);
 
-    // ********************************************** Declare useState Variable
-
-
-
-    // ********************************************** Declare function
-    const handleClickShowPassword = () => setShowPassword((show) => !show);
-
-    const enterEmail = (event)=>{
-
-        setEmailError(false);
-        setEmailErrorMessage('');
-
-        setFormData({
-            ...formData,
-            email: event.target.value
-        })
-    };
-
-    const enterPassword = (event)=>{
-
-        setPasswordError(false);
-        setPasswordErrorMessage('');
-
-        setFormData({
-            ...formData,
-            password: event.target.value
-        })
-    };
-
+ 
     const hideMessageDisplay = () =>{
         setShowSpinner(false);
         setErrorMessage('');
@@ -99,44 +69,19 @@ const LogInform = ({clickHandleToSignUp}) => {
         icon : <DoneOutlineIcon style={{color:'rgb(81, 155, 72)', fontSize:'36px'}}/>
     }
 
-    const FORM_ITEM_TAILWIND_STYLE = `mt-5 w-full`;
+    
 
     // ********************************************** Create Function
-    function validateInput () 
-    {
-        const funcInit = () => {
-
-            setEmailError(false);
-            setEmailErrorMessage('');
-
-            setPasswordError(false);
-            setPasswordErrorMessage('');
-        };
-
-        const funcErrorHandle = (emailError, passwordError) => {
-
-            if (emailError.length > 0)
-            {
-                setEmailError(true);
-                setEmailErrorMessage(emailError);
-            }
-    
-            if (passwordError.length > 0)
-            {
-                setPasswordError(true);
-                setPasswordErrorMessage(passwordError);
-            }
-        };
-    
-        return validateAccountSetupInput(formData, funcInit, funcErrorHandle);
-    }
-
+   
     const clickSubmit = async (event)=>{
 
-        setDisableLogin(true);
+        setDisableInput(true);
+
+        console.log('click');
 
         if (validateInput())
         {
+            console.log('ok');
             try {
 
                 // 1 - Check FireBase Authentication
@@ -205,10 +150,13 @@ const LogInform = ({clickHandleToSignUp}) => {
             }
 
             // Whatever, reset the form data
-            setFormData(initFormData);
+            resetFormData();
         }
-        setDisableLogin(false);
+        console.log('NG');
+        setDisableInput(false);
     };
+
+    const FORM_ITEM_TAILWIND_STYLE = `mt-5 w-full`;
 
     return (
         <div className="flex justify-center">
@@ -230,26 +178,26 @@ const LogInform = ({clickHandleToSignUp}) => {
 
                         <div className={FORM_ITEM_TAILWIND_STYLE}>
                             <InputEmailBox
-                                disabled={isDisableLogin}
+                                disabled={isDisableInput}
                                 emailValue = {formData.email}
-                                enterEmailCallBk = {enterEmail}
-                                isEmailError = {emailError}
-                                emailErrorMessage = {emailErrorMessage}
+                                enterEmailCallBk = {enterInput('email')}
+                                isEmailError = {formInputErrors.email.isError}
+                                emailErrorMessage = {formInputErrors.email.message}
                             />
                         </div>
 
                         <div className={FORM_ITEM_TAILWIND_STYLE}>
                             <InputPasswordBox
-                                disabled={isDisableLogin}
+                                disabled={isDisableInput}
                                 sx={{
-                                    opacity: isDisableLogin ? 0.5 : 1,
+                                    opacity: isDisableInput ? 0.5 : 1,
                                 }}
                                 password = {formData.password}
                                 iconType = {passwordBoxIcon.showButton}
                                 showPassword = {showPassword}
-                                isPasswordError = {passwordError}
-                                passwordErrorMessage = {passwordErrorMessage}
-                                enterPasswordCallBk = {enterPassword}
+                                isPasswordError = {formInputErrors.password.isError}
+                                passwordErrorMessage = {formInputErrors.password.message}
+                                enterPasswordCallBk = {enterInput('password')}
                                 handleClickShowPassword = {handleClickShowPassword}
                             />
                         </div>
@@ -257,7 +205,7 @@ const LogInform = ({clickHandleToSignUp}) => {
                         <div className={FORM_ITEM_TAILWIND_STYLE}>
                             <Button 
                                 fullWidth
-                                disabled={isDisableLogin}
+                                disabled={isDisableInput}
                                 id="id-button-login"
                                 variant="contained" 
                                 onClick={clickSubmit}>
