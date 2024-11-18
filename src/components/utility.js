@@ -1,23 +1,86 @@
 import {LANDING_URL} from './front_end_constant.js'
 
 import { getErrorCode } from '../fireStore/error.js';
-import { signOut } from "firebase/auth";
+import { signOut, EmailAuthProvider,
+         updatePassword, updateProfile, updateEmail,
+         reauthenticateWithCredential } from "firebase/auth";
 import { auth } from '../firebaseConfig';
 
+const confirmPassword = async (currentFirebaseUser, email, password) => {
+    try {
 
+        if (!currentFirebaseUser) {
+            throw new Error("No user is signed in.");
+        }
 
+        // Create an EmailAuthCredential object
+        const credential = EmailAuthProvider.credential(email, password);
 
+        // Reauthenticate the user
+        await reauthenticateWithCredential(user, credential);
 
+        console.log("Password confirmed OK");
+        return true;
+    } catch (error) {
+        console.error("Error confirming password:", error.message);
+        return false;
     }
+};
 
+const updateUserProfile = async ({currentFirebaseUser, currentPassword,
+                                  newPassword = "",
+                                  newEmail = "",
+                                  newUsername = ""
+                                }) => {
+    try {
 
+        if (!currentFirebaseUser) {
+            throw new Error("No user is signed in.");
+        }
+
+        // Reauthenticate the user
+        const credential = EmailAuthProvider.credential(currentFirebaseUser.email, currentPassword);
+        await reauthenticateWithCredential(user, credential);
+
+        // Update email
+        if (newEmail != "")
+        {
+            await updateEmail(currentFirebaseUser, newEmail);
+            console.log("Updated Email OK");
+        }
+
+        // Update password
+        if (newPassword != "")
+        {
+            await updatePassword(currentFirebaseUser, newPassword);
+            console.log("Updated password OK");
+        }
+
+        // Update username
+        if (newUsername != "")
+        {
+            await updateProfile(currentFirebaseUser, { displayName: newUsername });
+            console.log("Display name updated successfully!");
+        }
+        
+        console.log("Updated OK");
+        return "";
+
+    } catch (error) {
+
+        const errMessage = getErrorCode(error.code);
+        console.error("Error updating profile:", error.message, errMessage);
+        return errMessage;
     }
+};
 
 async function signOutUser(setCurrentUser) 
 {
     try {
+        console.log("User signed out _ 1");
         await signOut(auth);
         setCurrentUser(null);
+        console.log("User signed out _ 2");
         return true;
     } catch (error) {
         console.error("Error signing out:", error);
@@ -60,6 +123,7 @@ async function checkIfUserLoggedInValid(firebaseUser,
 
     //console.log(_currentUser);
 
+    console.log("Check", firebaseUser);
     const user = firebaseUser;
 
     if (!user ||
@@ -102,5 +166,27 @@ async function checkIfUserLoggedInValid(firebaseUser,
     }
 }
 
+function capitalizeFirstLetter(str) 
+{
+    if (!str) return ''; // Handle empty strings
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+function getRandomRGBString(opacity = 1)
+{
+    const r = Math.floor(Math.random() * 255);
+    const g = Math.floor(Math.random() * 255);
+    const b = Math.floor(Math.random() * 255);
+    return {
+        solid : `rgb(${r}, ${g}, ${b})`,
+        opacity : `rgba(${r}, ${g}, ${b}, ${opacity})`
+    };
+}
+
+export {funcReturnLogInPageHandle,
         checkIfUserLoggedInValid,
+        signOutUser,
+        capitalizeFirstLetter,
+        getRandomRGBString,
+        confirmPassword, updateUserProfile
 };

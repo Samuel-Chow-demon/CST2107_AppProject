@@ -1,4 +1,4 @@
-import { useRoutes } from 'react-router-dom';
+import { Navigate, useRoutes } from 'react-router-dom';
 import {useState} from 'react';
 import Home from './pages/Home';
 import Landing from './pages/Landing';
@@ -9,6 +9,7 @@ import BoardPage from './pages/BoardPage';
 import useLocalStorage from './hooks/useLocalStorage';
 import userContext from './context/userContext';
 import {AuthProvider} from './context/authContext';
+import UserProfile from './pages/UserProfile';
 
 function App() {
 
@@ -30,11 +31,25 @@ function App() {
       },
       {
         path: CONST_PATH.home,      // '/home'
-        element: <Home />
-      },
-      {
-        path: CONST_PATH.boardpage,      // '/board'
-        element: <BoardPage />
+        element: <Home />,
+        children: [
+          {
+            path: CONST_PATH.userProfile.slice(1),   // '/home/userprofile', slice(1) remove the '/' from the constant
+            element: <UserProfile />
+          },
+          {
+            path: CONST_PATH.boardpage.slice(1),      // '/home/boardpage', slice(1) remove the '/' from the constant
+            element: <BoardPage />
+          },
+          {
+            index: true,                                  // Default child route for '/home'
+            element: <Navigate to={CONST_PATH.boardpage.slice(1)} replace />  // Redirect to '/home/boardpage'
+          },
+          {
+            path: "*",                                    // default to home/boardpage
+            element: <Navigate to={CONST_PATH.boardpage.slice(1)} replace />
+          }
+        ]
       }
     ]
   )

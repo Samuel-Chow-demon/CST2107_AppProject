@@ -42,6 +42,8 @@ const Home = () => {
                   height: '100%'
                 }}>
                 <AppNavbar />
+                {/* use Outlet can repalce the child component */}
+                <Outlet />
               </Box>
           </Box>
       </>
