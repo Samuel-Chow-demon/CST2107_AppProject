@@ -16,6 +16,7 @@ function useLocalStorage(key, initialValue) {
     const [value, setValue] = useState(calculateDefaultvalue);
 
     const updateValue = (newValue) => {
+        //console.log("set Local storage", newValue)
         setValue(newValue)
     }
 

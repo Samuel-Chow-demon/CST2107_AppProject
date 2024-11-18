@@ -1,10 +1,12 @@
 import React, { useContext } from 'react';
 import {checkIfUserLoggedInValid} from '../components/utility.js';
 import HomeSideBar from '../components/HomeSideBar.jsx';
+import AppNavbar from '../components/AppNavbar';
 import userContext from '../context/userContext.js'
-import BoardPage from './BoardPage.jsx';
 import { Box } from '@mui/material';
 import {useAuth} from '../context/authContext'
+import { Outlet } from 'react-router-dom';
+import { CONST_PATH } from '../components/front_end_constant.js';
 
 const {useState, useEffect} = React;
 
@@ -23,29 +25,26 @@ const Home = () => {
   }, [isLoading, firebaseUser]); // The empty dependency array ensures this runs only on mount and unmount
 
   return (
-    // <Box sx={{
-    //   display: 'flex',
-    //   flexGrow: '1',
-    //   width: '100vw',
-    //   height: '100hw',
-    //   margin: '0px'
-    // }}>
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: 'auto 1fr',
-          width: '100vw',
-          height: '100vh'
-        }}>
-          <HomeSideBar />
-          <Box sx={{
-              flexGrow: 1,
-              height: '100%'
+      <>
+        <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'auto 1fr',
+              width: '100vw',
+              height: '100vh'
             }}>
-            <BoardPage />
+              <HomeSideBar />
+              <Box sx={{
+                  display:'flex',
+                  flexDirection:'column',
+                  justifyContent: 'center',
+                  width: 'calc(100vw - 256px)',
+                  height: '100%'
+                }}>
+                <AppNavbar />
+              </Box>
           </Box>
-      </Box>
-    // </Box>
+      </>
   )
 }
 

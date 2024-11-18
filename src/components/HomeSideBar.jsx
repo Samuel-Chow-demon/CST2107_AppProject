@@ -64,11 +64,11 @@ function Sidebar() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          height: 80,
+          height: '79px',
           boxShadow: 1
         }}
       >
-        <img src={iconSimpleWork} alt="" style={{ marginRight: 8, height: '300%' }} />
+        <img src={iconSimpleWork} alt="" style={{ marginRight: 8, height: '310%' }} />
         {/* <Typography variant="h4" color="orange" sx={{ textTransform: 'uppercase', marginRight: 1 }}>
           Simple Work
         </Typography>

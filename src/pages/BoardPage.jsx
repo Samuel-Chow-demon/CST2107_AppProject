@@ -1,6 +1,5 @@
 // BoardPage.jsx
 import React, { useState } from 'react';
-import AppNavbar from '../components/AppNavbar';
 import BoardNavbar from '../components/BoardNavbar';
 import Board from '../components/Board';
 import './BoardPage.css';
@@ -26,14 +25,11 @@ const BoardPage = () => {
         display:'flex',
         flexDirection:'column',
         justifyContent: 'center',
-        width: '100vw',
+        width: '100%',
         height: '100%'
       }}>
-        <AppNavbar />
         <BoardNavbar toggleLayout={toggleLayout} isGridLayout={isGridLayout} />
-        <div className="board-content">
-          <Board isGridLayout={isGridLayout} />
-        </div>
+        <Board isGridLayout={isGridLayout} />
     </Box>
   );
 };

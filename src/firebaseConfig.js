@@ -28,7 +28,7 @@ const db = getFirestore();
 setPersistence(auth, browserLocalPersistence)
   .then(() => {
     // Now you can sign in the user or do anything related to auth
-    console.log("Persistence set successfully");
+    //console.log("Persistence set successfully");
   })
   .catch((error) => {
     console.error("Error setting persistence:", error);
