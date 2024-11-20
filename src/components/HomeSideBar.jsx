@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { CONST_PATH } from './front_end_constant';
 import userContext from '../context/userContext';
 import { signOutUser } from './utility';
+import { indigo } from '@mui/material/colors';
 
 function Sidebar() {
 
@@ -54,7 +55,7 @@ function Sidebar() {
         minWidth: '256px',
         height: '100%',
         bgcolor: 'white',
-        borderRadius: '0 24px 24px 0',
+        // borderRadius: '0 24px 24px 0',
         overflow: 'hidden'
       }}
     >
@@ -64,11 +65,13 @@ function Sidebar() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          backgroundColor: indigo[100],
           height: '79px',
-          boxShadow: 1
+          boxShadow: 1,
+          overflow: 'hidden'
         }}
       >
-        <img src={iconSimpleWork} alt="" style={{ marginRight: 8, height: '310%' }} />
+        <img src={iconSimpleWork} alt="" style={{ marginRight: 8, height: '310%'}} />
         {/* <Typography variant="h4" color="orange" sx={{ textTransform: 'uppercase', marginRight: 1 }}>
           Simple Work
         </Typography>

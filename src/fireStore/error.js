@@ -9,7 +9,7 @@ export const getErrorCode = (code) => {
         case AuthErrorCodes.CREDENTIAL_ALREADY_IN_USE:
             return "Credential Email Already In Use";
         case AuthErrorCodes.INVALID_LOGIN_CREDENTIALS:
-            return "Invalid Credentials";
+            return "Invalid Credentials Or Password";
         case AuthErrorCodes.INVALID_EMAIL:
             return "Please Provide A Correct Email";
         case AuthErrorCodes.WEAK_PASSWORD:

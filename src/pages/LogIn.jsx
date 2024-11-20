@@ -5,15 +5,12 @@ import {//createTheme, ThemeProvider,
         Paper, Typography, Avatar, Button } from '@mui/material';
 
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
-import CancelIcon from '@mui/icons-material/Cancel';
-import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 
 import {InputEmailBox, InputPasswordBox, passwordBoxIcon} from '../components/Input.jsx';
 
 import {CONST_PATH, CONST_LOG_IN_DELAY_MS} from '../components/front_end_constant.js';
 
 import './Login.css';
-import { DisplayMessage } from '../components/display.jsx';
 
 import { auth } from '../firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -21,6 +18,7 @@ import { getErrorCode } from '../fireStore/error.js';
 
 import userContext from '../context/userContext.js'
 import useInputForm from '../hooks/useInputForm.js'
+import useDisplayMessage from '../hooks/useDisplayMessage.jsx';
 
 
 const LogInform = ({clickHandleToSignUp}) => {
@@ -44,42 +42,25 @@ const LogInform = ({clickHandleToSignUp}) => {
         validateInput
     } = useInputForm(initFormData);
 
-    const [showSpinner, setShowSpinner] = useState(false);
-    const [errorMessage, setErrorMessage] = useState('');
-    const [okMessage, setOkMessage] = useState('');
+    const {
+        setDisplaySpinner,
+        hideDisplay, setDisplayOKMsg,
+        setDisplayErrorMsg,
+        DisplayMessageComponent
+      } = useDisplayMessage();
 
     const {_currentUser, setCurrentUser} = useContext(userContext);
-
- 
-    const hideMessageDisplay = () =>{
-        setShowSpinner(false);
-        setErrorMessage('');
-        setOkMessage('');
-    }
-
-    const errorMessageControl = {
-        message : errorMessage,
-        color: 'rgb(224, 124, 111)',
-        icon : <CancelIcon style={{color:'rgb(224, 124, 111)', fontSize:'36px'}}/>
-    }
-
-    const okMessageControl = {
-        message : okMessage,
-        color: 'rgb(81, 155, 72)',
-        icon : <DoneOutlineIcon style={{color:'rgb(81, 155, 72)', fontSize:'36px'}}/>
-    }
-
-    
 
     // ********************************************** Create Function
    
     const clickSubmit = async (event)=>{
 
+        setDisplaySpinner(true);
         setDisableInput(true);
 
         console.log('click');
 
-        if (validateInput())
+        if (validateInput({byPassPasswordConfirm : true}))
         {
             console.log('ok');
             try {
@@ -115,8 +96,7 @@ const LogInform = ({clickHandleToSignUp}) => {
                 //const loginData = logintokenJSON.data;
 
                 // Here Display Log In Success / Error Component
-                hideMessageDisplay();
-                setOkMessage("User Logged In Successfully");
+                setDisplayOKMsg("User Logged In Successfully");
 
                 // Wait for the next browser repaint using requestAnimationFrame
                 await new Promise(resolve => requestAnimationFrame(resolve));
@@ -126,7 +106,9 @@ const LogInform = ({clickHandleToSignUp}) => {
                     userName : user.displayName,
                     email : user.email,
                     uid : user.uid,
-                    token : accesstoken
+                    token : accesstoken,
+                    loggedIn : true,
+                    isUpdating : false
                 });
 
                 // Set a Timeout then jump to the Home Page
@@ -141,9 +123,8 @@ const LogInform = ({clickHandleToSignUp}) => {
                 //alert(`Error : ${error}`);
 
                 // Here display the LogIn Fail Component
-                hideMessageDisplay();
                 const errMessage = getErrorCode(error.code);
-                setErrorMessage(`Login User ${formData.email} Fail (${errMessage})`);
+                setDisplayErrorMsg(`Login User ${formData.email} Fail (${errMessage})`);
 
                 // remove the whatever if any fail
                 setCurrentUser(null);
@@ -154,6 +135,7 @@ const LogInform = ({clickHandleToSignUp}) => {
         }
         console.log('NG');
         setDisableInput(false);
+        setDisplaySpinner(false);
     };
 
     const FORM_ITEM_TAILWIND_STYLE = `mt-5 w-full`;
@@ -170,11 +152,8 @@ const LogInform = ({clickHandleToSignUp}) => {
                             <Typography component={'span'} variant='h4' id='id-app-name'>SimpleWork</Typography>
                         </div>
 
-                        <DisplayMessage
-                            showSpinner = {showSpinner}
-                            errorMsg = {errorMessageControl}
-                            okMsg={okMessageControl}
-                        />
+                        {/* return a Display Message Component */}
+                        {DisplayMessageComponent()}
 
                         <div className={FORM_ITEM_TAILWIND_STYLE}>
                             <InputEmailBox

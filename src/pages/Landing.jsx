@@ -12,7 +12,7 @@ import bkgrd4 from '../assets/bkgrd4.png'
 import bkgrd5 from '../assets/bkgrd5.png'
 import bkgrd6 from '../assets/bkgrd6.png'
 import bkgrd7 from '../assets/bkgrd7.png'
-import iconSimpleWork from '../assets/SimpleWorkSmall.svg'
+import iconSimpleWork from '../assets/SimpleWorkSmallWhitebkg.svg'
 
 import './Landing.css';
 import { useNavigate } from 'react-router-dom';
@@ -93,7 +93,7 @@ const LandingPage = () => {
 
     return (
       <>
-        {_currentUser  && (
+        {_currentUser?.isLoggedIn && (
             <div className="text-center p-5 flex justify-center items-center">
             <h2 style={{ whiteSpace: 'pre-line' }}>{textUserDisplay}</h2>
             <Avatar 
@@ -149,7 +149,7 @@ const LandingPage = () => {
 
   const ButtonLogInOutComponent = () => {
 
-    const isLoggedIn = _currentUser != null;
+    const isLoggedIn = _currentUser != null && _currentUser.isLoggedIn;
     const borderRadius = isLoggedIn ? '50%' : '4px';
     const bkgrdColor = isLoggedIn ? orange[600] :indigo[600];
     const hoverBkgrdColor = isLoggedIn ? orange[400] :indigo[400];
