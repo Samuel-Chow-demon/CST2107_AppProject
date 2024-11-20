@@ -60,7 +60,7 @@ const LogInform = ({clickHandleToSignUp}) => {
 
         console.log('click');
 
-        if (validateInput())
+        if (validateInput({byPassPasswordConfirm : true}))
         {
             console.log('ok');
             try {

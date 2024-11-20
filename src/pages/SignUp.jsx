@@ -22,6 +22,7 @@ import useInputForm from '../hooks/useInputForm.js'
 
 // Use CSS for styling
 import './SignUp.css'
+import useDisplayMessage from '../hooks/useDisplayMessage.jsx';
 
 const SignUpform = ({clickHandleToLogin}) => {
 

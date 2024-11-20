@@ -88,7 +88,7 @@ const useInputForm = (initFormData) => {
 
     }, [formData.passwordConfirm, formData.password, formInputErrors.password.isError]);
 
-    function validateFieldInput (byPassPasswordCheck = false) 
+    function validateFieldInput ({byPassPSChk = false, byPassPSConfirm = false}) 
     {
         const PASSWORD_MIN_LENGTH = 6;
 
@@ -109,7 +109,7 @@ const useInputForm = (initFormData) => {
         const passwordPolicy2 = /^(?=.*[0-9]).*$/;
         const passwordPolicy3 = /^(?=.*[^a-zA-Z0-9]).*$/;
 
-        if (!byPassPasswordCheck)
+        if (!byPassPSChk)
         {
             if (!formData.password || formData.password.length < PASSWORD_MIN_LENGTH) 
             {
@@ -148,29 +148,26 @@ const useInputForm = (initFormData) => {
             isError = true;
         }
 
-        // If no input error
-        if (!isError)
+        // Check if the password and passwordConfirm match
+        // only check if the formdata has passwordConfirm object
+        if (!byPassPSChk && !byPassPSConfirm &&
+            'passwordConfirm' in formData &&    
+            formData.password != formData.passwordConfirm)
         {
-            // Check if the password and passwordConfirm match
-            // only check if the formdata has passwordConfirm object
-            if (!byPassPasswordCheck &&
-                typeof formData?.passwordConfirm === 'object' &&    
-                formData.password != formData.passwordConfirm)
-            {
-                setError('passwordConfirm', true, 'Confirm Password Not Matched');
-                isError = true;
-            }
+            setError('passwordConfirm', true, 'Confirm Password Not Matched');
+            isError = true;
         }
+        
 
         return !isError;
     }
 
 
-    function validateInput(byPassPasswordCheck = false) 
+    function validateInput({byPassPasswordCheck = false, byPassPasswordConfirm = false}) 
     {
         setFormInputErrors(formInputErrorInit);
     
-        return validateFieldInput(byPassPasswordCheck);
+        return validateFieldInput({byPassPSChk : byPassPasswordCheck, byPassPSConfirm : byPassPasswordConfirm});
     }
 
     return {

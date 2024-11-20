@@ -1,9 +1,10 @@
 import { useTheme } from '@emotion/react';
-import {useState} from 'react'
+import {useContext, useEffect, useState} from 'react'
 import { AppBar, Box, Tab, Tabs, Typography } from '@mui/material';
 import { green, blue, purple } from '@mui/material/colors'; // Import color palette
 import LogIn from './LogIn';
 import SignUp from './SignUp';
+import userContext from '../context/userContext';
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -36,6 +37,14 @@ const LogInSignUp = () => {
 
     const theme = useTheme();
     const [value, setValue] = useState(0);
+    const {_currentUser, setCurrentUser} = useContext(userContext);
+
+    useEffect(()=>{
+      if (_currentUser)
+      {
+        setCurrentUser(null);
+      }
+    }, []);
   
     const handleChange = (event, newValue) => {
       setValue(newValue);

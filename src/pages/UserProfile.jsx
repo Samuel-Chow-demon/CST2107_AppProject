@@ -52,7 +52,7 @@ const UserProfile = () => {
 
     useEffect(()=>{
         
-        if (!isLoading)
+        if (!isLoading && _currentUser.loggedIn)
         {
             console.log("profile", firebaseUser);
             setFormData({
@@ -65,12 +65,18 @@ const UserProfile = () => {
     }, [isLoading, firebaseUser]);
 
     const editProfile = useCallback((bFlag)=>{
+        hideDisplay();
         setDisableInput(bFlag);
     }, [setDisableInput]);
 
+    const enterField = useCallback((field)=>(event)=>{
+        hideDisplay();
+        enterInput(field)(event);
+    }, [enterInput]);
+
     const proceedChange = async ()=>{
 
-        if (validateInput(!formData.password)) // no new password input can by pass the checking
+        if (validateInput({byPassPasswordCheck : !formData.password})) // if no new password input, it can by pass the checking
         {
             setDisplaySpinner(true);
 
@@ -100,16 +106,15 @@ const UserProfile = () => {
                     ...prevData,
                     userName : firebaseUser.displayName,
                     email : firebaseUser.email,
-                    token : userTokenFromAuth,
+                    token : userTokenFromAuth.token,
                     isUpdating : false
                 }))
 
-                setFormData({
-                    ...formData,
+                setFormData((prevData)=>({
+                    ...prevData,
                     email : firebaseUser.email,
-                    username : firebaseUser.displayName,
-                    oldPassword : ''
-                })
+                    username : firebaseUser.displayName
+                }));
 
                 setDisplayOKMsg("Profile Updated Successfully");
 
@@ -118,6 +123,15 @@ const UserProfile = () => {
                     hideDisplay();
                 }, 2000);
             }
+
+            // Whatever, clear the password items
+            setFormData((prevData)=>({
+                ...prevData,
+                oldPassword: '',
+                password : '',
+                passwordConfirm : ''
+            }));
+
         }
     }
 
@@ -257,14 +271,14 @@ const UserProfile = () => {
                     value={formData.username}
                     placeholder='Hi, user'
                     size='Normal'
-                    onChange={enterInput('username')}
+                    onChange={enterField('username')}
                 />
 
                 <InputEmailBox
                     disabled={isDisableInput}
                     disableOpacity={0.8}
                     emailValue = {formData.email}
-                    enterEmailCallBk = {enterInput('email')}
+                    enterEmailCallBk = {enterField('email')}
                     isEmailError = {formInputErrors.email.isError}
                     emailErrorMessage = {formInputErrors.email.message}
                 />
@@ -279,7 +293,7 @@ const UserProfile = () => {
                     showPassword = {showPassword}
                     isPasswordError = {formInputErrors.password.isError}
                     passwordErrorMessage = {formInputErrors.password.message}
-                    enterPasswordCallBk = {enterInput('password')}
+                    enterPasswordCallBk = {enterField('password')}
                     handleClickShowPassword = {handleClickShowPassword}
                 />
 
@@ -292,7 +306,7 @@ const UserProfile = () => {
                     showPassword = {false}
                     isPasswordError = {formInputErrors.passwordConfirm.isError}
                     passwordErrorMessage = {formInputErrors.passwordConfirm.message}
-                    enterPasswordCallBk = {enterInput('passwordConfirm')}
+                    enterPasswordCallBk = {enterField('passwordConfirm')}
                 />
 
                 <InputPasswordBox
@@ -305,7 +319,7 @@ const UserProfile = () => {
                     showPassword = {false}
                     isPasswordError = {formInputErrors.oldPassword?.isError}
                     passwordErrorMessage = {formInputErrors.oldPassword?.message}
-                    enterPasswordCallBk = {enterInput('oldPassword')}
+                    enterPasswordCallBk = {enterField('oldPassword')}
                 />
                 
             </Box>
