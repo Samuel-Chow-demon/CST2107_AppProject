@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from 'react';
+import { useState, useEffect } from 'react';
 import { passwordBoxIcon } from '../components/Input.jsx';
 
 // Current Form Input
@@ -88,7 +88,7 @@ const useInputForm = (initFormData) => {
 
     }, [formData.passwordConfirm, formData.password, formInputErrors.password.isError]);
 
-    function validateFieldInput () 
+    function validateFieldInput (byPassPasswordCheck = false) 
     {
         const PASSWORD_MIN_LENGTH = 6;
 
@@ -109,21 +109,24 @@ const useInputForm = (initFormData) => {
         const passwordPolicy2 = /^(?=.*[0-9]).*$/;
         const passwordPolicy3 = /^(?=.*[^a-zA-Z0-9]).*$/;
 
-        if (!formData.password || formData.password.length < PASSWORD_MIN_LENGTH) 
+        if (!byPassPasswordCheck)
         {
-            passwordError = 'Password must be at least 6 characters long.';
-        }
-        else if (!passwordPolicy1.test(formData.password))
-        {
-            passwordError = 'Password must include at least ONE Upper case letter.';
-        }
-        else if (!passwordPolicy2.test(formData.password))
-        {
-            passwordError = 'Password must include ONE numerical letter.';
-        }
-        else if (!passwordPolicy3.test(formData.password))
-        {
-            passwordError = 'Password must include ONE special character.';
+            if (!formData.password || formData.password.length < PASSWORD_MIN_LENGTH) 
+            {
+                passwordError = 'Password must be at least 6 characters long.';
+            }
+            else if (!passwordPolicy1.test(formData.password))
+            {
+                passwordError = 'Password must include at least ONE Upper case letter.';
+            }
+            else if (!passwordPolicy2.test(formData.password))
+            {
+                passwordError = 'Password must include ONE numerical letter.';
+            }
+            else if (!passwordPolicy3.test(formData.password))
+            {
+                passwordError = 'Password must include ONE special character.';
+            }
         }
 
         if (passwordError)
@@ -138,12 +141,20 @@ const useInputForm = (initFormData) => {
             isError = true;
         }
 
+        if (formData.oldPassword != null && // if the form need to have oldPassword
+            formData.oldPassword.length <= 0)
+        {
+            setError('oldPassword', true, 'Please Enter Current Password To Proceed Changes');
+            isError = true;
+        }
+
         // If no input error
         if (!isError)
         {
             // Check if the password and passwordConfirm match
             // only check if the formdata has passwordConfirm object
-            if (typeof formData?.passwordConfirm === 'object' &&    
+            if (!byPassPasswordCheck &&
+                typeof formData?.passwordConfirm === 'object' &&    
                 formData.password != formData.passwordConfirm)
             {
                 setError('passwordConfirm', true, 'Confirm Password Not Matched');
@@ -155,11 +166,11 @@ const useInputForm = (initFormData) => {
     }
 
 
-    function validateInput() 
+    function validateInput(byPassPasswordCheck = false) 
     {
         setFormInputErrors(formInputErrorInit);
     
-        return validateFieldInput();
+        return validateFieldInput(byPassPasswordCheck);
     }
 
     return {

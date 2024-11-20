@@ -12,7 +12,7 @@ import bkgrd4 from '../assets/bkgrd4.png'
 import bkgrd5 from '../assets/bkgrd5.png'
 import bkgrd6 from '../assets/bkgrd6.png'
 import bkgrd7 from '../assets/bkgrd7.png'
-import iconSimpleWork from '../assets/SimpleWorkSmall.svg'
+import iconSimpleWork from '../assets/SimpleWorkSmallWhitebkg.svg'
 
 import './Landing.css';
 import { useNavigate } from 'react-router-dom';

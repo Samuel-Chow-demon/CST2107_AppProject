@@ -44,12 +44,32 @@ const SignUpform = ({clickHandleToLogin}) => {
         validateInput
     } = useInputForm(initFormData);
 
-    const {
-        setDisplaySpinner,
-        hideDisplay, setDisplayOKMsg,
-        setDisplayErrorMsg,
-        DisplayMessageComponent
-      } = useDisplayMessage();
+
+    const [showSpinner, setShowSpinner] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [okMessage, setOkMessage] = useState('');
+
+
+    // ********************************************** Declare function
+
+    const hideMessageDisplay = () =>{
+        setShowSpinner(false);
+        setErrorMessage('');
+        setOkMessage('');
+    }
+
+    const errorMessageControl = {
+        message : errorMessage,
+        color: 'rgb(224, 124, 111)',
+        icon : <CancelIcon style={{color:'rgb(224, 124, 111)', fontSize:'36px'}}/>
+    }
+
+    const okMessageControl = {
+        message : okMessage,
+        color: 'rgb(81, 155, 72)',
+        icon : <DoneOutlineIcon style={{color:'rgb(81, 155, 72)', fontSize:'36px'}}/>
+    }
+
 
     // ********************************************** Create Function
 
@@ -76,7 +96,7 @@ const SignUpform = ({clickHandleToLogin}) => {
             //console.log(SERVER_URL);
 
             // Here display the loading spinner
-            setDisplaySpinner(true);
+            setShowSpinner(true);
 
             // Do Post API
             try {
@@ -86,7 +106,8 @@ const SignUpform = ({clickHandleToLogin}) => {
                 console.log(user);
 
                 // Here means register success
-                setDisplayOKMsg("New User Registered Successfully");
+                hideMessageDisplay();
+                setOkMessage("New User Registered Successfully");
 
                 // Wait for the next browser repaint using requestAnimationFrame
                 await new Promise(resolve => requestAnimationFrame(resolve));
@@ -103,7 +124,8 @@ const SignUpform = ({clickHandleToLogin}) => {
 
                 // Here display the Sign Up Fail Component
                 const errMessage = getErrorCode(error.code);
-                setDisplayErrorMsg(`Register User ${formData.email} Fail (${errMessage})`);
+                hideMessageDisplay();
+                setErrorMessage(`Register User ${formData.email} Fail (${errMessage})`);
             }
             
             // Whatever, reset the form data
@@ -111,7 +133,7 @@ const SignUpform = ({clickHandleToLogin}) => {
         }
         else
         {
-            hideDisplay();
+            hideMessageDisplay();
         }
         setDisableInput(false);
     };
@@ -128,8 +150,11 @@ const SignUpform = ({clickHandleToLogin}) => {
                         <Typography component={'span'} variant='h4'>Sign Up</Typography>
                     </div>
 
-                    {/* return a Display Message Component */}
-                    {DisplayMessageComponent()}
+                    <DisplayMessage 
+                        showSpinner = {showSpinner}
+                        errorMsg = {errorMessageControl}
+                        okMsg={okMessageControl}
+                    />
 
                     <div className={FORM_ITEM_TAILWIND_STYLE}>
                         <InputEmailBox

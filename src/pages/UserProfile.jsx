@@ -1,11 +1,15 @@
-import { Avatar, Box, TextField } from '@mui/material'
-import {useContext, useEffect, useState} from 'react'
+import { Avatar, Box, TextField, Typography } from '@mui/material'
+import {memo, useCallback, useContext, useEffect, useState} from 'react'
 import userContext from '../context/userContext';
 import useInputForm from '../hooks/useInputForm';
 import { useAuth } from '../context/authContext';
-import { getRandomRGBString } from '../components/utility';
-import { grey } from '@mui/material/colors';
+import { capitalizeFirstLetter, getRandomRGBString, updateUserProfile } from '../components/utility';
+import { blue, blueGrey, green, grey } from '@mui/material/colors';
 import { InputEmailBox, InputPasswordBox, passwordBoxIcon } from '../components/Input';
+import EditNoteIcon from '@mui/icons-material/EditNote';
+import CloseIcon from '@mui/icons-material/Close';
+import SaveAltIcon from '@mui/icons-material/SaveAlt';
+import useDisplayMessage from '../hooks/useDisplayMessage';
 
 const UserProfile = () => {
 
@@ -35,6 +39,13 @@ const UserProfile = () => {
         validateInput
     } = useInputForm(profileUser);
 
+    const {
+        setDisplaySpinner,
+        hideDisplay, setDisplayOKMsg,
+        setDisplayErrorMsg,
+        DisplayMessageComponent
+      } = useDisplayMessage();
+
     useEffect(()=>{
         setDisableInput(true);
     }, []);
@@ -51,7 +62,64 @@ const UserProfile = () => {
             })
 
         }
-    }, [isLoading]);
+    }, [isLoading, firebaseUser]);
+
+    const editProfile = useCallback((bFlag)=>{
+        setDisableInput(bFlag);
+    }, [setDisableInput]);
+
+    const proceedChange = async ()=>{
+
+        if (validateInput(!formData.password)) // no new password input can by pass the checking
+        {
+            setDisplaySpinner(true);
+
+            setCurrentUser((prevData)=>({
+                ...prevData,
+                isUpdating : true
+            }))
+
+            const errorMessage = await updateUserProfile({currentFirebaseUser: firebaseUser,
+                                     currentPassword : formData.oldPassword,
+                                     newPassword : formData.password,
+                                     newEmail : formData.email,
+                                     newUsername : formData.username
+            });
+
+            if (errorMessage)
+            {
+                setDisplayErrorMsg(errorMessage);
+            }
+            else
+            {
+                setDisableInput(true);
+
+                const userTokenFromAuth = await firebaseUser.getIdTokenResult();
+
+                setCurrentUser((prevData)=>({
+                    ...prevData,
+                    userName : firebaseUser.displayName,
+                    email : firebaseUser.email,
+                    token : userTokenFromAuth,
+                    isUpdating : false
+                }))
+
+                setFormData({
+                    ...formData,
+                    email : firebaseUser.email,
+                    username : firebaseUser.displayName,
+                    oldPassword : ''
+                })
+
+                setDisplayOKMsg("Profile Updated Successfully");
+
+                // Set Timer to hide the display Component
+                setTimeout(()=>{
+                    hideDisplay();
+                }, 2000);
+            }
+        }
+    }
 
   return (
     <>
@@ -95,6 +163,87 @@ const UserProfile = () => {
                     height: '100%'
                 }}>
 
+                <Box sx={{
+                        margin: '1rem',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        
+                    }}>
+
+                    <Box sx={{
+                            display:'flex',
+                            alignItems: 'center'
+                        }}>
+
+                        <Typography sx={{
+                                marginRight: '10rem',
+                                fontSize: '2rem',
+                                color: grey[700]
+                            }}>
+                            {capitalizeFirstLetter(_currentUser.userName)}'s Profile
+                        </Typography>
+                    </Box>
+
+                    {
+                        isDisableInput ?
+
+                        // Disable to show edit icon
+                        (<Avatar sx={{ 
+                            backgroundColor: blue[700],
+                            color: blueGrey,
+                            height: '3rem',
+                            width: '3rem',
+                            boxShadow: "0px 5px 20px rgba(0, 0, 0, 0.4)", // Shadow
+                            '&:hover' : {
+                                backgroundColor: blue[200],
+                                color: blueGrey[800]
+                            }
+                            }}
+                            onClick={()=>editProfile(false)}>
+                                <EditNoteIcon sx={{ fontSize: '2rem'}} />
+                        </Avatar>) : 
+                        // Not Disable show procee changes and cancel icon
+                        (
+                            <Box sx={{display:'flex', justifyContent:'space-around', width:'auto', gap:3}}>
+                                <Avatar sx={{
+                                      backgroundColor: green[700],
+                                      color: blueGrey,
+                                      height: '3rem',
+                                      width: '3rem',
+                                      boxShadow: "0px 5px 20px rgba(0, 0, 0, 0.4)", // Shadow
+                                      marginRight: '1px',
+                                      '&:hover': {
+                                            backgroundColor: green[400],
+                                            color: blueGrey[800]
+                                        }
+                                    }}
+                                    onClick={proceedChange}>
+                                    <SaveAltIcon sx={{ fontSize: '2rem' }} />
+                                </Avatar>
+                                  
+                                <Avatar sx={{
+                                      backgroundColor: grey[700],
+                                      color: blueGrey,
+                                      height: '3rem',
+                                      width: '3rem',
+                                      boxShadow: "0px 5px 20px rgba(0, 0, 0, 0.4)", // Shadow
+                                      marginRight: '0.5rem',
+                                      '&:hover': {
+                                          backgroundColor: grey[500],
+                                          color: blueGrey[800]
+                                      }
+                                  }}
+                                    onClick={()=>editProfile(true)}>
+                                    <CloseIcon sx={{ fontSize: '2rem' }} />
+                                </Avatar>
+                            </Box>
+                        )
+                    }
+
+                </Box>
+
+                {DisplayMessageComponent()}
+
                 <TextField
                     fullWidth 
                     required
@@ -126,7 +275,7 @@ const UserProfile = () => {
                     disabled={isDisableInput}
                     password = {formData.password}
                     allowShowPassword = {true}
-                    iconType = {passwordBoxIcon.showButton}
+                    iconType = {isDisableInput ? passwordBoxIcon.none : passwordBoxIcon.showButton}
                     showPassword = {showPassword}
                     isPasswordError = {formInputErrors.password.isError}
                     passwordErrorMessage = {formInputErrors.password.message}
@@ -154,8 +303,8 @@ const UserProfile = () => {
                     allowShowPassword = {false}
                     iconType = {passwordBoxIcon.none}
                     showPassword = {false}
-                    isPasswordError = {false}
-                    passwordErrorMessage = {""}
+                    isPasswordError = {formInputErrors.oldPassword?.isError}
+                    passwordErrorMessage = {formInputErrors.oldPassword?.message}
                     enterPasswordCallBk = {enterInput('oldPassword')}
                 />
                 
@@ -167,4 +316,4 @@ const UserProfile = () => {
   )
 }
 
-export default UserProfile
+export default memo(UserProfile)

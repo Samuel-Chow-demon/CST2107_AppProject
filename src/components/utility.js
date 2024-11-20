@@ -6,7 +6,7 @@ import { signOut, EmailAuthProvider,
          reauthenticateWithCredential } from "firebase/auth";
 import { auth } from '../firebaseConfig';
 
-const confirmPassword = async (currentFirebaseUser, email, password) => {
+const confirmPassword = async (currentFirebaseUser, password) => {
     try {
 
         if (!currentFirebaseUser) {
@@ -14,7 +14,7 @@ const confirmPassword = async (currentFirebaseUser, email, password) => {
         }
 
         // Create an EmailAuthCredential object
-        const credential = EmailAuthProvider.credential(email, password);
+        const credential = EmailAuthProvider.credential(currentFirebaseUser.email, password);
 
         // Reauthenticate the user
         await reauthenticateWithCredential(user, credential);
@@ -40,7 +40,7 @@ const updateUserProfile = async ({currentFirebaseUser, currentPassword,
 
         // Reauthenticate the user
         const credential = EmailAuthProvider.credential(currentFirebaseUser.email, currentPassword);
-        await reauthenticateWithCredential(user, credential);
+        await reauthenticateWithCredential(currentFirebaseUser, credential);
 
         // Update email
         if (newEmail != "")
@@ -78,8 +78,11 @@ async function signOutUser(setCurrentUser)
 {
     try {
         console.log("User signed out _ 1");
+        setCurrentUser((prevState)=>({
+            ...prevState,
+            loggedIn: false
+        }));
         await signOut(auth);
-        setCurrentUser(null);
         console.log("User signed out _ 2");
         return true;
     } catch (error) {

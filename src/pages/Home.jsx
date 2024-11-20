@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { memo, useContext } from 'react';
 import {checkIfUserLoggedInValid} from '../components/utility.js';
 import HomeSideBar from '../components/HomeSideBar.jsx';
 import AppNavbar from '../components/AppNavbar';
@@ -16,13 +16,27 @@ const Home = () => {
   const {firebaseUser, isLoading} = useAuth();
 
   useEffect(() => {
+    if (_currentUser)
+    {
       console.log("refresh");
-      if (!isLoading)
+      if (_currentUser.loggedIn)
       {
-        console.log("after load", _currentUser);
-        checkIfUserLoggedInValid(firebaseUser, _currentUser, setCurrentUser);
+        if (!isLoading && !_currentUser.isUpdating)
+        {
+          console.log("after load", _currentUser);
+          checkIfUserLoggedInValid(firebaseUser, _currentUser, setCurrentUser);
+        }
       }
-  }, [isLoading, firebaseUser]); // The empty dependency array ensures this runs only on mount and unmount
+      else
+      {
+        setCurrentUser(null); // here clear local storage of logged out
+      }
+    }
+    else
+    {
+      checkIfUserLoggedInValid(firebaseUser, _currentUser, setCurrentUser);
+    }
+  }, [isLoading, firebaseUser, _currentUser]); // The empty dependency array ensures this runs only on mount and unmount
 
   return (
       <>
@@ -50,4 +64,4 @@ const Home = () => {
   )
 }
 
-export default Home
+export default memo(Home)
