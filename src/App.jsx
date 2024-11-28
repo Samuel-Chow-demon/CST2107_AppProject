@@ -10,6 +10,8 @@ import useLocalStorage from './hooks/useLocalStorage';
 import userContext from './context/userContext';
 import {AuthProvider} from './context/authContext';
 import UserProfile from './pages/UserProfile';
+import ProjectForm from './components/ProjectForm';
+import TaskForm from './components/TaskForm';
 
 function App() {
 
@@ -28,6 +30,14 @@ function App() {
       {
         path: CONST_PATH.signInUp,   // '/signinup'
         element: <LogInSignUp />
+      },
+      {
+        path: CONST_PATH.projectForm, // '/projectform'
+        element: <ProjectForm />
+      },
+      {
+        path: CONST_PATH.taskForm, // '/taskform'
+        element: <TaskForm />
       },
       {
         path: CONST_PATH.home,      // '/home'

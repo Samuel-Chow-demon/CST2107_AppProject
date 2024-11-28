@@ -7,7 +7,10 @@ const CONST_PATH = {
     signInUp : '/signinup',
     home : '/home',
     boardpage: '/boardpage',
-    userProfile: '/userprofile'};
+    userProfile: '/userprofile', 
+    projectForm: '/projectform',
+    taskForm: '/taskform'};
+    
 
 // The constant to be used for whole project
 const SERVER_PORT = 5500;
