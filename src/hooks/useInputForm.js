@@ -21,6 +21,14 @@ const useInputForm = (initFormData) => {
 
     const [isDisableInput, setDisableInput] = useState(false);
 
+    // other register Err chk list of object
+    // {
+    //     'field' : 'fieldName',
+    //     'condition' : ()=>{return true or false}  function
+    //     'errMsg' : 'message'
+    // }
+    const [otherRegisterFieldErrChk, setOtherRegisterFieldErrChk] = useState([]);
+
     const formInputErrorInit = {
         email: {
             'isError' : false,
@@ -40,7 +48,14 @@ const useInputForm = (initFormData) => {
         }
     }
 
-    const [formInputErrors, setFormInputErrors] = useState(formInputErrorInit);
+    const InitFormInputErrorObj = Object.keys(initFormData).reduce((acc, key) => {
+        acc[key] = { isError: false, message: '' };
+        return acc;
+    }, {...formInputErrorInit});
+
+    const [formInputErrors, setFormInputErrors] = useState(
+        InitFormInputErrorObj
+    );
 
     const setError = (field, isError, message) => {
         setFormInputErrors((prevErrors) => ({
@@ -49,13 +64,14 @@ const useInputForm = (initFormData) => {
         }));
     };
 
-    const enterInput = (field) => (event) => {
+    const enterInput = (field, specificVal = null) => (event = null) => {
 
         setError(field, false, "");
 
         setFormData((prevFormData) => ({
             ...prevFormData,
-            [`${field}`]: event.target.value
+            //[`${field}`]: specificVal ? specificVal : event.target.value
+            [`${field}`]: specificVal ?? event?.target?.value ?? prevFormData[field]
         }));
     };
 
@@ -86,7 +102,7 @@ const useInputForm = (initFormData) => {
             setConfirmIconType(passwordBoxIcon.wrongIcon);
         }
 
-    }, [formData.passwordConfirm, formData.password, formInputErrors.password.isError]);
+    }, [formData.passwordConfirm, formData.password, formInputErrors.password['isError']]);
 
     function validateFieldInput ({byPassPSChk = false, byPassPSConfirm = false}) 
     {
@@ -95,7 +111,8 @@ const useInputForm = (initFormData) => {
         let isError = false;
         
         // Check the Email must be chars + @ + chars + . + chars
-        if (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)) 
+        if ('email' in formData &&
+            (!formData.email || !/\S+@\S+\.\S+/.test(formData.email)))
         {
             setError('email', true, 'Please enter a valid email.');
             isError = true;
@@ -109,7 +126,8 @@ const useInputForm = (initFormData) => {
         const passwordPolicy2 = /^(?=.*[0-9]).*$/;
         const passwordPolicy3 = /^(?=.*[^a-zA-Z0-9]).*$/;
 
-        if (!byPassPSChk)
+        if (!byPassPSChk &&
+            'password' in formData)
         {
             if (!formData.password || formData.password.length < PASSWORD_MIN_LENGTH) 
             {
@@ -135,13 +153,15 @@ const useInputForm = (initFormData) => {
             isError = true;
         }
         
-        if (!formData.username)
+        if ('username' in formData &&
+            !formData.username)
         {
             setError('username', true, 'Username cannot be empty');
             isError = true;
         }
 
-        if (formData.oldPassword != null && // if the form need to have oldPassword
+        if ('oldPassword' in formData && 
+            formData.oldPassword != null && // if the form need to have oldPassword
             formData.oldPassword.length <= 0)
         {
             setError('oldPassword', true, 'Please Enter Current Password To Proceed Changes');
@@ -157,15 +177,26 @@ const useInputForm = (initFormData) => {
             setError('passwordConfirm', true, 'Confirm Password Not Matched');
             isError = true;
         }
-        
 
+        if (otherRegisterFieldErrChk.length > 0)
+        {
+            otherRegisterFieldErrChk.forEach((registerFieldObj)=>{
+
+                if (!registerFieldObj['condition'](formData))
+                {
+                    setError(registerFieldObj['field'], true, registerFieldObj['errMsg']);
+                    isError = true;
+                }
+            })
+        }
+        
         return !isError;
     }
 
 
     function validateInput({byPassPasswordCheck = false, byPassPasswordConfirm = false}) 
     {
-        setFormInputErrors(formInputErrorInit);
+        setFormInputErrors(InitFormInputErrorObj);
     
         return validateFieldInput({byPassPSChk : byPassPasswordCheck, byPassPSConfirm : byPassPasswordConfirm});
     }
@@ -177,7 +208,8 @@ const useInputForm = (initFormData) => {
         showPassword, handleClickShowPassword,
         isDisableInput, setDisableInput,
         formInputErrors,
-        validateInput
+        validateInput,
+        setOtherRegisterFieldErrChk
     };
 };
 

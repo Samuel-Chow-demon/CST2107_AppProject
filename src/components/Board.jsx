@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import bgImage from '../assets/bg-1.jpg';
+//import bgImage from '../assets/bg-1.jpg';
 
 const initialData = {
   columns: [],
 };
 
-const Board = ({ isGridLayout }) => {
+const Board = ({ isGridLayout, bgImage, bkgrdColor }) => {
   const [data, setData] = useState(initialData);
   const [isAddingList, setIsAddingList] = useState(false);
   const [newListTitle, setNewListTitle] = useState("");
@@ -84,7 +84,8 @@ const Board = ({ isGridLayout }) => {
     <div
       className="board-container"
       style={{
-        backgroundImage: `url(${bgImage})`,
+        backgroundColor: bkgrdColor,
+        backgroundImage: bgImage ? `url(${bgImage})` : 'none',
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',

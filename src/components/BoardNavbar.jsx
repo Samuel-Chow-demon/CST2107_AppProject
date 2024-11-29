@@ -3,7 +3,7 @@ import './BoardNavbar.css';
 import BoardMenu from './BoardMenu';  // Import the sidebar menu
 import { FullscreenExit } from '@mui/icons-material';
 
-const BoardNavbar = ({ toggleLayout, isGridLayout }) => {
+const BoardNavbar = ({ toggleLayout, isGridLayout, boardName }) => {
   const [isMenuOpen, setMenuOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -13,7 +13,7 @@ const BoardNavbar = ({ toggleLayout, isGridLayout }) => {
   return (
     <>
       <nav className="board-navbar">
-        <h1 className="board-title">Board Name</h1>
+        <h1 className="board-title">{boardName}</h1>
         <div className="navbar-controls">
           {/* Toggle Layout button */}
           <button className="toggle-layout-btn" onClick={toggleLayout}>

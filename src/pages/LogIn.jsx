@@ -19,6 +19,7 @@ import { getErrorCode } from '../fireStore/error.js';
 import userContext from '../context/userContext.js'
 import useInputForm from '../hooks/useInputForm.js'
 import useDisplayMessage from '../hooks/useDisplayMessage.jsx';
+import { useUserDB } from '../context/userDBContext.jsx';
 
 
 const LogInform = ({clickHandleToSignUp}) => {
@@ -50,6 +51,8 @@ const LogInform = ({clickHandleToSignUp}) => {
       } = useDisplayMessage();
 
     const {_currentUser, setCurrentUser} = useContext(userContext);
+
+    const { setUserDBUpdate } = useUserDB()
 
     // ********************************************** Create Function
    
@@ -110,6 +113,9 @@ const LogInform = ({clickHandleToSignUp}) => {
                     loggedIn : true,
                     isUpdating : false
                 });
+
+                // Toggle to trigger userDBContext to update the user DB and check the Workspace DB
+                setUserDBUpdate(prevValue=>!prevValue);
 
                 // Set a Timeout then jump to the Home Page
                 setTimeout(()=>{

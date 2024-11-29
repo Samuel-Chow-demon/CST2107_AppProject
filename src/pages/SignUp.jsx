@@ -72,7 +72,7 @@ const SignUpform = ({clickHandleToLogin}) => {
 
         setDisableInput(true);
 
-        if (validateInput())
+        if (validateInput({}))
         {
             //console.log(SERVER_URL);
 

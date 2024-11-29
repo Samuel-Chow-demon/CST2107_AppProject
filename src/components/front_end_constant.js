@@ -7,6 +7,7 @@ const CONST_PATH = {
     signInUp : '/signinup',
     home : '/home',
     boardpage: '/boardpage',
+    workspace: '/workspace',
     userProfile: '/userprofile'};
 
 // The constant to be used for whole project
