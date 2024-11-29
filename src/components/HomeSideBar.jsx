@@ -86,14 +86,14 @@ function Sidebar() {
 
         <ListItemComponent 
             IconComponent={<Dashboard fontSize="large" sx={{ color: '#6d727e' }} />}
-            itemText={"Dashboard"}
-            buttonClick={()=>navigate(CONST_PATH.home + CONST_PATH.boardpage)}
+            itemText={"Workspace"}
+            buttonClick={()=>navigate(CONST_PATH.home + CONST_PATH.workspace)}
         />
-        <ListItemComponent 
+        {/* <ListItemComponent 
             IconComponent={<ControlPointIcon fontSize="large" sx={{ color: '#6c727f' }} />}
             itemText={"Add WorkSpace"}
             // buttonClick={}
-        />
+        /> */}
         <ListItemComponent 
             IconComponent={<AccountCircle fontSize="large" sx={{ color: '#6e727d' }} />}
             itemText={"Profile"}

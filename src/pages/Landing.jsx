@@ -20,7 +20,7 @@ import { CONST_PATH } from '../components/front_end_constant';
 import { signOutUser } from '../components/utility';
 import userContext from '../context/userContext.js'
 
-import HomeIcon from '@mui/icons-material/Home';
+import WarehouseIcon from '@mui/icons-material/Warehouse';
 
 // GridItem component
 const GridItem = ({ item, index, moveItem, id }) => {
@@ -93,7 +93,7 @@ const LandingPage = () => {
 
     return (
       <>
-        {_currentUser?.isLoggedIn && (
+        {_currentUser?.loggedIn && (
             <div className="text-center p-5 flex justify-center items-center">
             <h2 style={{ whiteSpace: 'pre-line' }}>{textUserDisplay}</h2>
             <Avatar 
@@ -103,12 +103,15 @@ const LandingPage = () => {
                 width: '4em',
                 height: '4em',
                 background: teal[500],
+                transition: 'transform 0.3s, box-shadow 0.3s',
                 '&:hover': {
                   backgroundColor: teal[300], // Hover background color
+                  boxshadow: 6,
+                  transform: 'scale(1.3)'
                 },
                 boxShadow: '0px 20px 20px rgba(10, 20, 0, 0.3)'
               }}>
-            <HomeIcon 
+            <WarehouseIcon 
               sx= {{
                 fontSize: '3em'
               }}
@@ -149,7 +152,7 @@ const LandingPage = () => {
 
   const ButtonLogInOutComponent = () => {
 
-    const isLoggedIn = _currentUser != null && _currentUser.isLoggedIn;
+    const isLoggedIn = _currentUser != null && _currentUser.loggedIn;
     const borderRadius = isLoggedIn ? '50%' : '4px';
     const bkgrdColor = isLoggedIn ? orange[600] :indigo[600];
     const hoverBkgrdColor = isLoggedIn ? orange[400] :indigo[400];
@@ -184,8 +187,11 @@ const LandingPage = () => {
               width: '120px',
               borderRadius: borderRadius,
               background: bkgrdColor,
+              transition: 'transform 0.3s, box-shadow 0.3s',
               '&:hover': {
                 backgroundColor: hoverBkgrdColor, // Hover background color
+                boxshadow: 6,
+                transform: 'scale(1.3)'
               },
               boxShadow: '0px 20px 20px rgba(10, 20, 100, 0.5)'
             }}

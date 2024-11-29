@@ -10,6 +10,9 @@ import useLocalStorage from './hooks/useLocalStorage';
 import userContext from './context/userContext';
 import {AuthProvider} from './context/authContext';
 import UserProfile from './pages/UserProfile';
+import { WorkSpaceDBProvider } from './context/workspaceDBContext';
+import WorkSpaceBoard from './pages/WorkSpaceBoard';
+import { UserDBProvider } from './context/userDBContext';
 
 function App() {
 
@@ -38,16 +41,20 @@ function App() {
             element: <UserProfile />
           },
           {
-            path: CONST_PATH.boardpage.slice(1),      // '/home/boardpage', slice(1) remove the '/' from the constant
+            path: CONST_PATH.boardpage.slice(1) + '/:id',      // '/home/boardpage', slice(1) remove the '/' from the constant, then add the "/:id" to pass the workspace id
             element: <BoardPage />
           },
           {
-            index: true,                                  // Default child route for '/home'
-            element: <Navigate to={CONST_PATH.boardpage.slice(1)} replace />  // Redirect to '/home/boardpage'
+            path: CONST_PATH.workspace.slice(1),      // '/home/workspace', slice(1) remove the '/' from the constant
+            element: <WorkSpaceBoard />
           },
           {
-            path: "*",                                    // default to home/boardpage
-            element: <Navigate to={CONST_PATH.boardpage.slice(1)} replace />
+            index: true,                                  // Default child route for '/home'
+            element: <Navigate to={CONST_PATH.workspace.slice(1)} replace />  // Redirect to '/home/workspace'
+          },
+          {
+            path: "*",                                    // default to home/workspace
+            element: <Navigate to={CONST_PATH.workspace.slice(1)} replace />
           }
         ]
       }
@@ -60,7 +67,11 @@ function App() {
           _currentUser,
           setCurrentUser
         }}>
-        {routes}
+          <WorkSpaceDBProvider>
+            <UserDBProvider>
+              {routes}
+            </UserDBProvider>
+          </WorkSpaceDBProvider>
       </userContext.Provider>
     </AuthProvider>);
 }
