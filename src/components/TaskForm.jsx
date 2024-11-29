@@ -13,10 +13,8 @@ const TaskForm = ({ onSubmit }) => {
     startDate: "",
     attachments: null,
     dependencies: "",
-    recurring: false,
-    notifications: false,
-    storyPoints: "",
-    colorTag: "#000000",
+    notifications: false, // Temporarily remarked
+    colorTag: "#000000", // Temporarily remarked
   });
 
   const handleInputChange = (e) => {
@@ -30,19 +28,8 @@ const TaskForm = ({ onSubmit }) => {
     }
   };
 
-  const handleChecklistChange = (index, value) => {
-    const newChecklist = [...formData.checklist];
-    newChecklist[index] = value;
-    setFormData({ ...formData, checklist: newChecklist });
-  };
-
-  const addChecklistItem = () => {
-    setFormData({ ...formData, checklist: [...formData.checklist, ""] });
-  };
-
-  const removeChecklistItem = (index) => {
-    const newChecklist = formData.checklist.filter((_, i) => i !== index);
-    setFormData({ ...formData, checklist: newChecklist });
+  const handleChecklistChange = (value) => {
+    setFormData({ ...formData, checklist: [...formData.checklist, value] });
   };
 
   const handleSubmit = (e) => {
@@ -55,13 +42,11 @@ const TaskForm = ({ onSubmit }) => {
       priority: "Medium",
       assignee: "",
       labels: [],
-      checklist: [""],
+      checklist: [],
       startDate: "",
       attachments: null,
       dependencies: "",
-      recurring: false,
       notifications: false,
-      storyPoints: "",
       colorTag: "#000000",
     });
   };
@@ -88,15 +73,26 @@ const TaskForm = ({ onSubmit }) => {
         />
       </label>
 
-      <label>
-        Due Date
-        <input
-          type="date"
-          name="dueDate"
-          value={formData.dueDate}
-          onChange={handleInputChange}
-        />
-      </label>
+      <div className="date-row">
+        <label>
+          Start Date
+          <input
+            type="date"
+            name="startDate"
+            value={formData.startDate}
+            onChange={handleInputChange}
+          />
+        </label>
+        <label>
+          Due Date
+          <input
+            type="date"
+            name="dueDate"
+            value={formData.dueDate}
+            onChange={handleInputChange}
+          />
+        </label>
+      </div>
 
       <label>
         Priority
@@ -123,25 +119,38 @@ const TaskForm = ({ onSubmit }) => {
 
       <label>
         Checklist
-        {formData.checklist.map((item, index) => (
-          <div key={index} className="checklist-item">
-            <input
-              type="text"
-              value={item}
-              onChange={(e) => handleChecklistChange(index, e.target.value)}
-            />
-            <button
-              type="button"
-              onClick={() => removeChecklistItem(index)}
-              className="remove-btn"
-            >
-              Remove
-            </button>
-          </div>
-        ))}
-        <button type="button" onClick={addChecklistItem} className="add-btn">
-          Add Item
-        </button>
+        <div className="checklist-input">
+          <input
+            type="text"
+            placeholder="Add checklist item"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && e.target.value.trim() !== "") {
+                handleChecklistChange(e.target.value.trim());
+                e.target.value = "";
+              }
+            }}
+          />
+          <button
+            type="button"
+            className="add-btn"
+            onClick={() => {
+              const inputField = document.querySelector(".checklist-input input");
+              if (inputField.value.trim() !== "") {
+                handleChecklistChange(inputField.value.trim());
+                inputField.value = "";
+              }
+            }}
+          >
+            +
+          </button>
+        </div>
+        <select className="checklist-dropdown">
+          {formData.checklist.map((item, index) => (
+            <option key={index} value={item}>
+              {item}
+            </option>
+          ))}
+        </select>
       </label>
 
       <label>
@@ -155,16 +164,6 @@ const TaskForm = ({ onSubmit }) => {
       </label>
 
       <label>
-        Start Date
-        <input
-          type="date"
-          name="startDate"
-          value={formData.startDate}
-          onChange={handleInputChange}
-        />
-      </label>
-
-      <label>
         Dependencies
         <input
           type="text"
@@ -174,17 +173,8 @@ const TaskForm = ({ onSubmit }) => {
         />
       </label>
 
-      <label>
-        Recurring Task
-        <input
-          type="checkbox"
-          name="recurring"
-          checked={formData.recurring}
-          onChange={handleInputChange}
-        />
-      </label>
-
-      <label>
+      {/* Temporarily remarked Enable Notifications */}
+      {/* <label>
         Enable Notifications
         <input
           type="checkbox"
@@ -192,19 +182,10 @@ const TaskForm = ({ onSubmit }) => {
           checked={formData.notifications}
           onChange={handleInputChange}
         />
-      </label>
+      </label> */}
 
-      <label>
-        Story Points
-        <input
-          type="number"
-          name="storyPoints"
-          value={formData.storyPoints}
-          onChange={handleInputChange}
-        />
-      </label>
-
-      <label>
+      {/* Temporarily remarked Color Tag */}
+      {/* <label>
         Color Tag
         <input
           type="color"
@@ -212,9 +193,11 @@ const TaskForm = ({ onSubmit }) => {
           value={formData.colorTag}
           onChange={handleInputChange}
         />
-      </label>
+      </label> */}
 
-      <button type="submit" className="submit-btn">Create Task</button>
+      <button type="submit" className="submit-btn">
+        Create Task
+      </button>
     </form>
   );
 };

@@ -1,204 +1,129 @@
-/* Global Styling for Better User Experience */
-body {
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(120deg, #e0e7ff, #f3f4f6);
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-}
-
-/* Form Container Styling */
+/* General Form Styling */
 .project-form {
-  background: linear-gradient(145deg, #229d51, #f3f4f6);
-  border-radius: 16px;
-  padding: 2rem;
   max-width: 800px;
-  width: 100%;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
-  animation: fadeIn 0.8s ease-out;
-  overflow: hidden;
-}
-
-/* Smooth Fade-in Animation */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
 }
 
 /* Label Styling */
 .project-form label {
-  position: relative;
+  display: block;
   font-size: 1rem;
-  color: #374151;
-  font-weight: 600;
-}
-
-/* Input and Textarea Styling */
-.project-form input,
-.project-form textarea,
-.project-form select {
-  width: 100%;
-  padding: 0.8rem 1rem;
-  margin-top: 0.5rem;
-  font-size: 1rem;
-  color: #374151;
-  background-color: #f9fafb;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease-in-out;
-}
-
-/* Focus State for Inputs */
-.project-form input:focus,
-.project-form textarea:focus,
-.project-form select:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
-  background: #ffffff;
-}
-
-/* Floating Placeholder Effect */
-.project-form input::placeholder,
-.project-form textarea::placeholder {
-  opacity: 0.5;
-  transition: transform 0.2s, opacity 0.2s;
-}
-
-.project-form input:focus::placeholder,
-.project-form textarea:focus::placeholder {
-  transform: translateY(-20px);
-  opacity: 0;
-}
-
-/* Fieldset and Legend Styling */
-.project-form fieldset {
-  border: 2px solid #e5e7eb;
-  padding: 1.5rem;
-  border-radius: 12px;
-  background: #f9fafb;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
-  transition: border-color 0.3s;
-}
-
-.project-form legend {
-  font-size: 1rem;
-  font-weight: bold;
-  color: #1f2937;
-  padding: 0 0.5rem;
-}
-
-.project-form fieldset:hover {
-  border-color: #3b82f6;
-}
-
-/* Team Member and Goal Item Styling */
-.team-member,
-.goal-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
+  color: #333;
   margin-bottom: 1rem;
 }
 
-.team-member input,
-.goal-item input {
+.project-form input,
+.project-form textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+/* Date Row Styling */
+.date-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.date-row label {
   flex: 1;
 }
 
-/* Button Styling */
-.project-form button {
-  padding: 0.75rem 1.5rem;
+/* Team Member Section */
+.team-member-container {
+  margin-top: 1.5rem;
+}
+
+.team-member-input {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.team-member-input input {
+  flex: 1;
+  padding: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.team-member-input .add-btn {
+  background-color: #4a90e2;
+  color: white;
   border: none;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: bold;
+  padding: 0.8rem;
+  border-radius: 8px;
+  font-size: 1.2rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
 }
 
-.project-form button:hover {
-  transform: translateY(-3px);
+.team-member-input .add-btn:hover {
+  background-color: #357ab8;
 }
 
-.add-btn,
-.remove-btn {
-  background: linear-gradient(145deg, #3b82f6, #60a5fa);
+/* Team Member List */
+.team-member-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+.team-member-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.team-member-item:last-child {
+  border-bottom: none;
+}
+
+.team-member-item .avatar {
+  background-color: #4a90e2;
   color: white;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  border-radius: 50%;
+  margin-right: 1rem;
 }
 
-.add-btn:hover,
-.remove-btn:hover {
-  background: linear-gradient(145deg, #2563eb, #3b82f6);
+.team-member-item .remove-btn {
+  background: none;
+  border: none;
+  color: #e63946;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: color 0.3s ease;
 }
 
+.team-member-item .remove-btn:hover {
+  color: #b22222;
+}
+
+/* Submit Button */
 .submit-btn {
-  background: linear-gradient(145deg, #22c55e, #4ade80);
+  background-color: #28a745;
   color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .submit-btn:hover {
-  background: linear-gradient(145deg, #16a34a, #22c55e);
-}
-
-/* Custom File Input Styling */
-.project-form input[type="file"] {
-  padding: 0.6rem;
-  font-size: 0.9rem;
-  border: none;
-  background: #f1f5f9;
-  border-radius: 6px;
-}
-
-/* Color Picker */
-.project-form input[type="color"] {
-  width: 50px;
-  height: 30px;
-  border: none;
-  cursor: pointer;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .project-form {
-    padding: 1.5rem;
-  }
-
-  .team-member,
-  .goal-item {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-}
-
-/* Success and Error Messages */
-.success-message,
-.error-message {
-  padding: 1rem;
-  font-size: 1rem;
-  font-weight: bold;
-  text-align: center;
-  border-radius: 8px;
-  margin-top: 1rem;
-}
-
-.success-message {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.error-message {
-  background: #fee2e2;
-  color: #b91c1c;
+  background-color: #218838;
 }

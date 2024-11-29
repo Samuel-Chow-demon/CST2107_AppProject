@@ -7,53 +7,35 @@ const ProjectForm = ({ onSubmit }) => {
     description: "",
     startDate: "",
     endDate: "",
-    teamMembers: [{ name: "", role: "" }],
-    colorTheme: "#3f51b5",
-    visibility: "Private",
-    labels: [],
+    teamMembers: [],
     attachments: null,
-    goals: [""],
+    goals: "",
   });
 
+  const [teamMember, setTeamMember] = useState("");
+
   const handleInputChange = (e) => {
-    const { name, value, type, checked, files } = e.target;
-    if (type === "checkbox") {
-      setFormData({ ...formData, [name]: checked });
-    } else if (type === "file") {
+    const { name, value, type, files } = e.target;
+    if (type === "file") {
       setFormData({ ...formData, [name]: files });
     } else {
       setFormData({ ...formData, [name]: value });
     }
   };
 
-  const handleTeamChange = (index, field, value) => {
-    const newTeam = [...formData.teamMembers];
-    newTeam[index][field] = value;
-    setFormData({ ...formData, teamMembers: newTeam });
+  const handleAddTeamMember = () => {
+    if (teamMember.trim() !== "") {
+      setFormData({
+        ...formData,
+        teamMembers: [...formData.teamMembers, teamMember.trim()],
+      });
+      setTeamMember(""); // Clear the input field
+    }
   };
 
-  const addTeamMember = () => {
-    setFormData({ ...formData, teamMembers: [...formData.teamMembers, { name: "", role: "" }] });
-  };
-
-  const removeTeamMember = (index) => {
-    const newTeam = formData.teamMembers.filter((_, i) => i !== index);
-    setFormData({ ...formData, teamMembers: newTeam });
-  };
-
-  const handleGoalChange = (index, value) => {
-    const newGoals = [...formData.goals];
-    newGoals[index] = value;
-    setFormData({ ...formData, goals: newGoals });
-  };
-
-  const addGoal = () => {
-    setFormData({ ...formData, goals: [...formData.goals, ""] });
-  };
-
-  const removeGoal = (index) => {
-    const newGoals = formData.goals.filter((_, i) => i !== index);
-    setFormData({ ...formData, goals: newGoals });
+  const handleRemoveTeamMember = (index) => {
+    const updatedTeamMembers = formData.teamMembers.filter((_, i) => i !== index);
+    setFormData({ ...formData, teamMembers: updatedTeamMembers });
   };
 
   const handleSubmit = (e) => {
@@ -80,95 +62,70 @@ const ProjectForm = ({ onSubmit }) => {
           name="description"
           value={formData.description}
           onChange={handleInputChange}
+          required
         />
       </label>
 
+      <div className="date-row">
+        <label>
+          Start Date
+          <input
+            type="date"
+            name="startDate"
+            value={formData.startDate}
+            onChange={handleInputChange}
+          />
+        </label>
+        <label>
+          End Date
+          <input
+            type="date"
+            name="endDate"
+            value={formData.endDate}
+            onChange={handleInputChange}
+          />
+        </label>
+      </div>
+
       <label>
-        Start Date
+        Goals
         <input
-          type="date"
-          name="startDate"
-          value={formData.startDate}
+          type="text"
+          name="goals"
+          value={formData.goals}
           onChange={handleInputChange}
+          placeholder="Enter project goals"
         />
       </label>
 
-      <label>
-        End Date
-        <input
-          type="date"
-          name="endDate"
-          value={formData.endDate}
-          onChange={handleInputChange}
-        />
-      </label>
-
-      <fieldset>
-        <legend>Team Members</legend>
-        {formData.teamMembers.map((member, index) => (
-          <div key={index} className="team-member">
-            <input
-              type="text"
-              placeholder="Name"
-              value={member.name}
-              onChange={(e) => handleTeamChange(index, "name", e.target.value)}
-            />
-            <input
-              type="text"
-              placeholder="Role"
-              value={member.role}
-              onChange={(e) => handleTeamChange(index, "role", e.target.value)}
-            />
-            <button type="button" onClick={() => removeTeamMember(index)}>
-              Remove
-            </button>
-          </div>
-        ))}
-        <button type="button" onClick={addTeamMember}>
-          Add Member
-        </button>
-      </fieldset>
-
-      <label>
-        Color Theme
-        <input
-          type="color"
-          name="colorTheme"
-          value={formData.colorTheme}
-          onChange={handleInputChange}
-        />
-      </label>
-
-      <label>
-        Visibility
-        <select
-          name="visibility"
-          value={formData.visibility}
-          onChange={handleInputChange}
-        >
-          <option value="Private">Private</option>
-          <option value="Public">Public</option>
-        </select>
-      </label>
-
-      <fieldset>
-        <legend>Project Goals</legend>
-        {formData.goals.map((goal, index) => (
-          <div key={index} className="goal-item">
-            <input
-              type="text"
-              value={goal}
-              onChange={(e) => handleGoalChange(index, e.target.value)}
-            />
-            <button type="button" onClick={() => removeGoal(index)}>
-              Remove
-            </button>
-          </div>
-        ))}
-        <button type="button" onClick={addGoal}>
-          Add Goal
-        </button>
-      </fieldset>
+      <div className="team-member-container">
+        <div className="team-member-input">
+          <input
+            type="text"
+            placeholder="Add team member"
+            value={teamMember}
+            onChange={(e) => setTeamMember(e.target.value)}
+          />
+          <button type="button" className="add-btn" onClick={handleAddTeamMember}>
+            +
+          </button>
+        </div>
+        <ul className="team-member-list">
+          {formData.teamMembers.map((member, index) => (
+            <li key={index} className="team-member-item">
+              <span className="avatar">{member.charAt(0).toUpperCase()}</span>
+              <span>{member}</span>
+              <button
+                type="button"
+                className="remove-btn"
+                onClick={() => handleRemoveTeamMember(index)}
+              >
+                ✖
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       <label>
         Attachments
