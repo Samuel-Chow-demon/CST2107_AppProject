@@ -6,9 +6,9 @@ import Popover from '@mui/material/Popover';
 import Box from '@mui/material/Box';
 import { grey } from '@mui/material/colors';
 
-const useColorPicker = (buttonPlaceHolder="") => {
+const useColorPicker = (buttonPlaceHolder="", initColor="") => {
 
-  const [color, setColor] = useState('#A0ffA0');
+  const [color, setColor] = useState(initColor ? initColor : "A0ffA0");
   // const [draggingColor, setDraggingColor] = useState(color); // Local state for dragging
   // const [isDragging, setIsDragging] = useState(false);
 
@@ -49,7 +49,7 @@ const useColorPicker = (buttonPlaceHolder="") => {
             transition: 'transform 0.3s, box-shadow 0.3s',
             '&:hover': {
                 boxshadow: 6,
-                transform: 'scale(1.1)'
+                transform: 'scale(1.05)'
             }
           }}
         >

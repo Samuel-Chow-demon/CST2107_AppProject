@@ -186,10 +186,17 @@ function getRandomRGBString(opacity = 1)
     };
 }
 
+function getRandomPurpleColor() {
+    const hue = Math.floor(Math.random() * 31) + 260; // Random hue between 260 and 290
+    const saturation = Math.floor(Math.random() * 21) + 60; // Saturation between 60% and 80%
+    const lightness = Math.floor(Math.random() * 21) + 40; // Lightness between 40% and 60%
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  }
+
 export {funcReturnLogInPageHandle,
         checkIfUserLoggedInValid,
         signOutUser,
         capitalizeFirstLetter,
-        getRandomRGBString,
+        getRandomRGBString, getRandomPurpleColor,
         confirmPassword, updateUserProfile
 };
