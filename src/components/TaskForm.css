@@ -1,0 +1,120 @@
+/* Global Form Container Styling */
+.task-form {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: 'Arial', sans-serif;
+}
+
+/* Label and Input Container */
+.task-form label {
+  display: block;
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.task-form input,
+.task-form textarea,
+.task-form select {
+  width: 100%;
+  padding: 0.8rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+/* Input Focus State */
+.task-form input:focus,
+.task-form textarea:focus,
+.task-form select:focus {
+  border-color: #4a90e2;
+  box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
+  outline: none;
+}
+
+/* Date Row Styling */
+.date-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.date-row label {
+  flex: 1;
+}
+
+/* Checklist Section */
+.checklist-input {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checklist-input input {
+  flex: 1;
+  padding: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.checklist-input button {
+  background-color: #4a90e2;
+  color: #fff;
+  border: none;
+  padding: 0.8rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: background-color 0.3s ease;
+}
+
+.checklist-input button:hover {
+  background-color: #357ab8;
+}
+
+.checklist-dropdown {
+  margin-top: 0.5rem;
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+/* File Input Styling */
+.task-form input[type="file"] {
+  padding: 0.8rem;
+  font-size: 1rem;
+}
+
+/* Submit Button */
+.submit-btn {
+  display: inline-block;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.submit-btn:hover {
+  background-color: #218838;
+  transform: scale(1.02);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .date-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
