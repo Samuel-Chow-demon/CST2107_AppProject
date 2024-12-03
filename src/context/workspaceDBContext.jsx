@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { deleteDoc, addDoc, doc, getDoc, getDocs, limit, query, setDoc, where, updateDoc, arrayRemove } from 'firebase/firestore';
+import { deleteDoc, addDoc, doc, getDoc, getDocs, limit, query, setDoc, where, updateDoc, arrayRemove, onSnapshot } from 'firebase/firestore';
 import { userCollectionRef, workSpaceCollectionRef,
     projectCollectionRef, projectStateCollectionRef,
-    taskCollectionRef, commentCollectionRef} from '../fireStore/database';
-import userContext from './userContext';
+    taskCollectionRef, commentCollectionRef} from '../fireStore/database.js';
+import userContext from './userContext.js';
 import { arrayUnion } from 'firebase/firestore';
 import {getCollectionDocByRefAndID,
         getCollectionDocByRefAndMatchField,
@@ -42,32 +42,70 @@ const WorkSpaceDBProvider = ({children})=>{
     // Load to get the current user included workspace
     useEffect(()=>{
 
+        let unsubscribeWS;
+
         const getFireBaseWS = async ()=>{
 
             try
             {
-                const queryDoc = query(workSpaceCollectionRef, where("userUIDs", "array-contains", _currentUser.uid))
+                // const queryDoc = query(workSpaceCollectionRef, where("userUIDs", "array-contains", _currentUser.uid))
             
-                const wsQuerySnapShot = await getDocs(queryDoc);
+                // const wsQuerySnapShot = await getDocs(queryDoc);
 
-                if (!wsQuerySnapShot.empty)
+                // if (!wsQuerySnapShot.empty)
+                // {
+                //     const allWorkSpace = []
+                //     wsQuerySnapShot.forEach((doc)=>{
+                //         allWorkSpace.push({
+                //             id : doc.id,
+                //             ...doc.data()           // expand the content to the object of allWorkSpace
+                //         })
+                //     })
+                //     setworkingWorkSpace(allWorkSpace);
+                // }
+                // else
+                // {
+                //     setworkingWorkSpace([]); // empty
+                // }
+
+                // Unsubscribe every render to avoid memory leaks, then below do the subscribe again
+                if (unsubscribeWS)
                 {
-                    const allWorkSpace = []
-                    wsQuerySnapShot.forEach((doc)=>{
-                        allWorkSpace.push({
-                            id : doc.id,
-                            ...doc.data()           // expand the content to the object of allWorkSpace
-                        })
-                    })
-                    setworkingWorkSpace(allWorkSpace);
+                    unsubscribeWS();
                 }
-                else
-                {
-                    setworkingWorkSpace([]); // empty
-                }
+
+                // Real-time listener for project collection, more efficiency since not to raise the DB connection for each project document ID
+                unsubscribeWS = onSnapshot(
+                    query(workSpaceCollectionRef, where('userUIDs', "array-contains", _currentUser.uid)),
+                    (snapshot) => {
+                        const allWorkSpace = [];
+                        snapshot.forEach((doc) => {
+                            allWorkSpace.push({
+                                id: doc.id,
+                                ...doc.data()
+                            });
+                        });
+
+                        setworkingWorkSpace(allWorkSpace);
+
+                        setWSIsLoading(false);
+                    },
+                    (error) => {
+                        console.error("Real-time Listening Workspace DB Fail", error);
+                        setAlertProject({
+                            ...alertProject,
+                            message: 'Real-time Listening Workspace DB Fail',
+                            color: 'error',
+                            isOpen: true,
+                            hideDuration: 2000,
+                        });
+                        setWSIsLoading(false);
+                    }
+                );
             }
             catch(error)
             {
+                setWSIsLoading(false);
                 console.log("Get Firebase Current Working WorkSpace Fail", error);
                 setAlertWorkSpace({...alertWorkSpace, message:'Get Firebase Current Working WorkSpace Fail', color: 'error', isOpen: true, hideDuration: 2000 });
             }
@@ -77,8 +115,15 @@ const WorkSpaceDBProvider = ({children})=>{
             _currentUser.uid)
         {
             getFireBaseWS()
-            setWSIsLoading(false)
         }
+
+        // Cleanup on unmount
+        return () => {
+            if (unsubscribeWS)
+            {
+                unsubscribeWS();
+            }
+        };
 
     }, [isWorkSpaceUpdate, _currentUser?.loggedIn, _currentUser?.isUpdating])
 
@@ -86,22 +131,19 @@ const WorkSpaceDBProvider = ({children})=>{
         setAlertWorkSpace({...alertWorkSpace, message:'', isOpen: false });
     }, []);
 
-    const createWorkSpace = async ({name, bkgrdColor, Img, creatorUID})=>{
+    const createWorkSpace = async ({formData})=>{
 
         try
         {
+            setAlertWorkSpace({...alertWorkSpace, message:'', color: 'success', isOpen: false});
             setWSIsLoading(true);
 
             const workSpaceRef = await addDoc(workSpaceCollectionRef, {
-                name : name,
-                bkgrdColor : bkgrdColor,
-                img : Img,
-                creatorUID: creatorUID,
-                userUIDs : [creatorUID],
+                ...formData,
                 projectIDs : []
             });
 
-            await joinWorkSpace({workspaceID:workSpaceRef.id, userUID:creatorUID});
+            await joinWorkSpace({workspaceID:workSpaceRef.id, userUID:formData.creatorUID});
 
             triggerRefreshWorkSpace();
             setAlertWorkSpace({...alertWorkSpace, message:`Success Added New WorkSpace ${name}`, color: 'success', isOpen: true, hideDuration: 1500 });
@@ -110,6 +152,32 @@ const WorkSpaceDBProvider = ({children})=>{
         {
             console.log("Add Firebase WorkSpace Fail", error);
             setAlertWorkSpace({...alertWorkSpace, message:'Add New WorkSpace Fail', color: 'error', isOpen: true, hideDuration: 2000 });
+        }
+    }
+
+    const editWorkSpace = async ({formData, workspaceID}) => {
+
+        try {
+            const { docRef: workspaceRef, docObj: workspaceDoc, docData: workspaceData } = await getCollectionDocByRefAndID(workSpaceCollectionRef, workspaceID);
+
+            if (workspaceDoc.exists()) 
+            {
+                setAlertWorkSpace({...alertWorkSpace, message:'', color: 'success', isOpen: false});
+                setWSIsLoading(true);
+
+                await setDoc(workspaceRef, formData, {merge: true});
+
+                triggerRefreshWorkSpace();
+                setAlertWorkSpace({ ...alertWorkSpace, message: `Success Modify WorkSpace ${workspaceData.name}`, color: 'success', isOpen: true, hideDuration: 1500 });
+            }
+            else {
+                console.log("Firebase Project Not Exist", error);
+                setAlertWorkSpace({ ...alertWorkSpace, message: `WorkSpace Not Exist`, color: 'error', isOpen: true, hideDuration: 2000 });
+            }
+        }
+        catch (error) {
+            console.log("Modify Firebase Project Fail", error);
+            setAlertWorkSpace({ ...alertWorkSpace, message: 'Modify WorkSpace Fail', color: 'error', isOpen: true, hideDuration: 2000 });
         }
     }
 
@@ -261,6 +329,7 @@ const WorkSpaceDBProvider = ({children})=>{
                     }
                 });
 
+                const workSpaceName = workSpaceData.name;
                 await deleteDoc(workSpaceDocRef);
 
                 // Update User Collection
@@ -269,7 +338,7 @@ const WorkSpaceDBProvider = ({children})=>{
                 })
 
                 triggerRefreshWorkSpace();
-                setAlertWorkSpace({...alertWorkSpace, message:`Success Remove WorkSpace ${workSpaceData.name}`, color: 'success', isOpen: true, hideDuration: 1500 });
+                setAlertWorkSpace({...alertWorkSpace, message:`Success Remove WorkSpace ${workSpaceName}`, color: 'success', isOpen: true, hideDuration: 1500 });
             }
             else
             {
@@ -286,10 +355,10 @@ const WorkSpaceDBProvider = ({children})=>{
 
     return (
         <workspaceContext.Provider value={{
-            workingWorkSpace,
+            workingWorkSpace, 
             alertWorkSpace, setAlertWorkSpace,
-            isWSLoading,
-            createWorkSpace, joinWorkSpace, removeWorkSpace, leaveWorkSpace
+            isWSLoading, setWSIsLoading, isWorkSpaceUpdate,
+            createWorkSpace, joinWorkSpace, removeWorkSpace, leaveWorkSpace, editWorkSpace
         }}>
             {children}
         </workspaceContext.Provider>

@@ -10,8 +10,8 @@ import bkgrd2 from '../assets/bg-2.jpg';
 import bkgrd3 from '../assets/bg-3.jpg';
 import bkgrd4 from '../assets/bg-4.jpg';
 
-const usePicturePicker = () => {
-    const [selectedPicture, setSelectedPicture] = useState("");
+const usePicturePicker = (initPicture="") => {
+    const [selectedPicture, setSelectedPicture] = useState(initPicture);
     const [imagesLoaded, setImagesLoaded] = useState(false);
 
     const PicturePicker = () => {

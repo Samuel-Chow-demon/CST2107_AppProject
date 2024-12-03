@@ -10,13 +10,13 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import CreateWorkSpaceForm from '../components/CreateWorkSpaceForm';
+import WorkSpaceForm from '../components/WorkSpaceForm';
 import userContext from '../context/userContext';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import RemoveWorkSpaceForm from '../components/RemoveWorkSpaceForm';
 import { useNavigate } from 'react-router-dom';
 import { CONST_PATH } from '../components/front_end_constant';
+import RemoveForm from '../components/RemoveForm';
 
 const WorkSpaceBoard = () => {
 
@@ -40,6 +40,7 @@ const WorkSpaceBoard = () => {
         workingWorkSpace, alertWorkSpace, setAlertWorkSpace,
         isWSLoading,
         createWorkSpace, joinWorkSpace, removeWorkSpace, leaveWorkSpace } = useWorkSpaceDB();
+
 
     // const WorkSpaceFormComponents = useCreateWorkSpaceForm({createWorkSpace, setOpenDialog});
 
@@ -104,7 +105,7 @@ const WorkSpaceBoard = () => {
                         }}
                             elevation={0}>
 
-                            <CreateWorkSpaceForm createWorkSpaceDB={createWorkSpace} setOpenDialog={setOpenDialog} />
+                            <WorkSpaceForm setOpenDialog={setOpenDialog} />
 
                         </Paper>
                     </DialogContent>
@@ -142,10 +143,10 @@ const WorkSpaceBoard = () => {
                         }}
                             elevation={0}>
 
-                            <RemoveWorkSpaceForm removeWorkSpaceDB={removeWorkSpace} setOpenDialog={setOpenRemoveDialog}
-                                                 workspaceName={removeWorkSpaceInfo.workspaceName} 
-                                                 workspaceID={removeWorkSpaceInfo.workspaceID} 
-                                                 creatorUID={removeWorkSpaceInfo.creatorUID}/>
+                            <RemoveForm removeFromDB={()=>{removeWorkSpace({workspaceID:removeWorkSpaceInfo.workspaceID, userUID:removeWorkSpaceInfo.creatorUID})}}
+                                                categoryName={'WorkSpace'}
+                                                targetName={removeWorkSpaceInfo.workspaceName}
+                                                setOpenDialog={setOpenRemoveDialog}/>
 
                         </Paper>
                     </DialogContent>
@@ -219,15 +220,15 @@ const WorkSpaceBoard = () => {
 
     //leaveWorkSpace({workspaceID:id, userUID:_currentUser.uid})
 
-    const handleOpenRemoveOrLeaveWorkSpaceDialog = ({ id, workspaceName, creatorUID})=>{
+    const handleOpenRemoveOrLeaveWorkSpaceDialog = (ws)=>{
 
         // If current user uid is the creator, allow Remove
-        if (creatorUID === _currentUser.uid)
+        if (ws.creatorUID === _currentUser.uid)
         {
             setRemoveWorkSpaceInfo({
-                workspaceName : workspaceName,
-                workspaceID : id,
-                creatorUID : creatorUID});
+                workspaceName : ws.name,
+                workspaceID : ws.id,
+                creatorUID : ws.creatorUID});
 
             setOpenRemoveDialog(true);
         }
@@ -235,14 +236,14 @@ const WorkSpaceBoard = () => {
         else
         {
             setLeaveWorkSpaceInfo({
-                workspaceName : workspaceName,
-                workspaceID : id});
+                workspaceName : ws.name,
+                workspaceID : ws.id});
 
             setOpenLeaveDialog(true);
         }
     }
 
-    const ProjectCardComponent = ({ id, name, bkgrdColor, img, creatorUID }) => {
+    const WSCardComponent = ({ ws }) => {
 
         return (
             <>
@@ -257,15 +258,15 @@ const WorkSpaceBoard = () => {
                         transform: 'scale(1.1)'
                     }
                     }}
-                    onClick={() => navigateToWorkSpace(id)}
+                    onClick={() => navigateToWorkSpace(ws.id)}
                     >
 
                     <HtmlTooltip
                             title={
                                 <Fragment>
                                     <Typography sx={{
-                                        color:(creatorUID == _currentUser.uid) ? red[400] : grey[600]
-                                    }}>{`${creatorUID == _currentUser.uid ? "Remove" : "Leave"} ${name}`}</Typography>
+                                        color:(ws.creatorUID == _currentUser.uid) ? red[400] : grey[600]
+                                    }}>{`${ws.creatorUID == _currentUser.uid ? "Remove" : "Leave"} ${ws.name}`}</Typography>
                                 </Fragment>
                             }
                         >
@@ -278,9 +279,10 @@ const WorkSpaceBoard = () => {
                                             transform: 'scale(1.3)'
                                         }}}
                             aria-label="delete" size="large"
-                            onClick={() => {handleOpenRemoveOrLeaveWorkSpaceDialog({ id:id, workspaceName:name, creatorUID:creatorUID }) }}>
+                            onClick={(e) => {e.stopPropagation();
+                                             handleOpenRemoveOrLeaveWorkSpaceDialog(ws) }}>
                             {
-                                (creatorUID == _currentUser.uid) ? <DeleteForeverIcon fontSize="inherit" /> : <ExitToAppIcon fontSize="inherit" />
+                                (ws.creatorUID == _currentUser.uid) ? <DeleteForeverIcon fontSize="inherit" /> : <ExitToAppIcon fontSize="inherit" />
                             }
                         </IconButton>
                     </HtmlTooltip>
@@ -288,8 +290,8 @@ const WorkSpaceBoard = () => {
                     <Box
                         sx={{
                             height: '70%',
-                            backgroundColor: bkgrdColor,
-                            backgroundImage: img ? `url(${img})` : 'none',
+                            backgroundColor: ws.bkgrdColor,
+                            backgroundImage: ws.img ? `url(${ws.img})` : 'none',
                             backgroundSize: 'cover',
                             backgroundPosition: 'center'
                         }}
@@ -299,7 +301,7 @@ const WorkSpaceBoard = () => {
                             Project
                         </Typography> */}
                         <Typography gutterBottom variant="h5" sx={{ color: 'text.secondary' }}>
-                            {name}
+                            {ws.name}
                         </Typography>
                     </CardContent>
                 </Card>
@@ -379,12 +381,8 @@ const WorkSpaceBoard = () => {
                             {
                                 workingWorkSpace.length > 0 &&
                                 workingWorkSpace.map((ws, index) => {
-                                    return <ProjectCardComponent key={index}
-                                        id={ws.id}
-                                        creatorUID={ws.creatorUID}
-                                        name={ws.name}
-                                        bkgrdColor={ws.bkgrdColor}
-                                        img={ws.img} />
+                                    return <WSCardComponent key={index}
+                                            ws={ws} />
                                 })
 
                             }

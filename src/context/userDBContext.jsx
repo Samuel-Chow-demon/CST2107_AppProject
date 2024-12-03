@@ -143,18 +143,59 @@ const UserDBProvider = ({children})=>{
         catch(error)
         {
             console.log(`Add User {userName} Fail`, error);
-            setAlertWorkSpace({...alertWorkSpace, message:'Add New WorkSpace Fail', color: 'error', isOpen: true, hideDuration: 2000 });
+            setAlertUserDB({...alertUserDB, message:'Add New User Fail', color: 'error', isOpen: true, hideDuration: 2000 });
             return null;
+        }
+    }
+
+    const getAllUserDoc = async()=>{
+
+        try
+        {
+            const querySnapshot = await getDocs(userCollectionRef);
+            const userDocDataList = querySnapshot.docs.map(doc => ({
+                ...doc.data() // Document data
+            }));
+
+            return userDocDataList;
+        }
+        catch (error)
+        {
+            console.log(`Get All User Docs Fail`, error);
+            setAlertUserDB({...alertUserDB, message:'Get All User Fail', color: 'error', isOpen: true, hideDuration: 2000 });
+            return [];
+        }
+    }
+
+    const getUserDocData = async(requestUserUIDList)=>{
+
+        try
+        {
+            const querySnapshot = await getDocs(userCollectionRef);
+            const userDocDataList = querySnapshot.docs
+                .filter(doc=>requestUserUIDList.includes(doc.data().uid))
+                .map(doc => ({
+                    ...doc.data() // Document data
+                    }));
+
+            return userDocDataList;
+        }
+        catch (error)
+        {
+            console.log(`Get User Docs Fail`, error);
+            setAlertUserDB({...alertUserDB, message:'Get User Doc Data Fail', color: 'error', isOpen: true, hideDuration: 2000 });
+            return [];
         }
     }
 
     return (
         <userDBContext.Provider value={{
             userInfoDB,
-            alertUserDB,
+            alertUserDB, setAlertUserDB,
             isUserDBLoading,
             setUserDBUpdate,
-            createUserDB
+            createUserDB,
+            getAllUserDoc, getUserDocData
         }}>
             {children}
         </userDBContext.Provider>

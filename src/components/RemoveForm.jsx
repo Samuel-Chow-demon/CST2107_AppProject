@@ -3,10 +3,10 @@ import {useEffect, memo, useCallback} from 'react'
 import useInputForm from '../hooks/useInputForm';
 import { grey, red } from '@mui/material/colors';
 
-const RemoveWorkSpaceForm = ({removeWorkSpaceDB, workspaceName, setOpenDialog, workspaceID, creatorUID})=>{
+const RemoveForm = ({removeFromDB, categoryName, targetName, setOpenDialog})=>{
 
-    const removeWorkSpaceForm = {
-        'inputWorkSpaceName' : "",
+    const removeTargetForm = {
+        'inputTargetName' : "",
       }
 
     const {
@@ -14,17 +14,17 @@ const RemoveWorkSpaceForm = ({removeWorkSpaceDB, workspaceName, setOpenDialog, w
         enterInput, isDisableInput, setDisableInput,
         formInputErrors,
         setOtherRegisterFieldErrChk,
-        validateInput } = useInputForm(removeWorkSpaceForm);
+        validateInput } = useInputForm(removeTargetForm);
 
     useEffect(()=>{
 
             setOtherRegisterFieldErrChk([
-                {'field' : 'inputWorkSpaceName', 'condition' : (inputFormData)=>inputFormData.inputWorkSpaceName === workspaceName, 'errMsg' : 'Workspace Name Not Matched'}
+                {'field' : 'inputTargetName', 'condition' : (inputFormData)=>inputFormData.inputTargetName === targetName, 'errMsg' : `${categoryName} Name Not Matched`}
             ])
       
           }, [])
 
-    const handleNameChange = useCallback((e) => enterInput('inputWorkSpaceName')(e), [enterInput]);
+    const handleNameChange = useCallback((e) => enterInput('inputTargetName')(e), [enterInput]);
 
     const proceedRemoveWorkSpace = ()=>{
 
@@ -32,7 +32,7 @@ const RemoveWorkSpaceForm = ({removeWorkSpaceDB, workspaceName, setOpenDialog, w
         {
             setDisableInput(true)
   
-            removeWorkSpaceDB({workspaceID:workspaceID, userUID:creatorUID});
+            removeFromDB();
   
             setDisableInput(false)
             setOpenDialog(false)
@@ -51,9 +51,9 @@ const RemoveWorkSpaceForm = ({removeWorkSpaceDB, workspaceName, setOpenDialog, w
                 }}
                 error={error}
                 helperText={helperText}
-                label="Enter Workspace Name To Remove"
+                label={`Enter ${categoryName} Name To Remove`}
                 value={value}
-                placeholder={`Workspace Name : [${workspaceName}]`}
+                placeholder={`${categoryName} Name : [${targetName}]`}
                 size='Normal'
                 onChange={onChange}
             />
@@ -72,9 +72,9 @@ const RemoveWorkSpaceForm = ({removeWorkSpaceDB, workspaceName, setOpenDialog, w
                     fullWidth
                     required
                     disabled={isDisableInput}
-                    error={formInputErrors['inputWorkSpaceName'].isError}
-                    helperText={formInputErrors['inputWorkSpaceName'].message}
-                    value={formData['inputWorkSpaceName']}
+                    error={formInputErrors['inputTargetName'].isError}
+                    helperText={formInputErrors['inputTargetName'].message}
+                    value={formData['inputTargetName']}
                     onChange={handleNameChange}
                 />
             </>
@@ -108,4 +108,4 @@ const RemoveWorkSpaceForm = ({removeWorkSpaceDB, workspaceName, setOpenDialog, w
             </>);
 }
 
-export default memo(RemoveWorkSpaceForm)
+export default memo(RemoveForm)
