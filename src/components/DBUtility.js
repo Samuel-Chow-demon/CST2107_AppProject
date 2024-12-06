@@ -7,6 +7,23 @@ const getCollectionDocByRefAndID = async(collectionRef, ID)=>{
     return {docRef, docObj, docData};
 }
 
+const getCollectionDocsByMultipleRefAndID = async (collectionRef, IDArray) => {
+    if (!Array.isArray(IDArray))
+    {
+        throw new Error("IDs must be an array");
+    }
+    
+    const docPromises = IDArray.map(async (ID) => {
+        const docRef = doc(collectionRef, ID);
+        const docObj = await getDoc(docRef);
+        const docData = docObj.exists() ? docObj.data() : null;
+        return { docRef, docObj, docData };
+    });
+
+    const idsDocs = await Promise.all(docPromises);
+    return idsDocs;
+};
+
 const getCollectionDocByRefAndMatchField = async(collectionRef, field, value)=>{
 
     // can have multiple docs that match
@@ -51,6 +68,7 @@ const reclusiveRemoveDoc = async(collectionRef, innerIDFieldName, ID)=>{
 }
 
 export {getCollectionDocByRefAndID,
+        getCollectionDocsByMultipleRefAndID,
         getCollectionDocByRefAndMatchField,
         reclusiveRemoveDoc
 };

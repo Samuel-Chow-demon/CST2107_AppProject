@@ -16,7 +16,7 @@ const WorkSpaceForm = ({setOpenDialog, currentWSForm = {}})=>{
         setWSIsLoading,
         createWorkSpace, editWorkSpace } = useWorkSpaceDB();
 
-    const isEditMode = Object.keys(currentWSForm).length !== 0;
+    const isEditMode = Object.keys(currentWSForm).length > 0;
 
     const { alertUserDB, setAlertUserDB, getUserDocData } = useUserDB();
     const [allUserInWorkSpaceDoc, setAllUserInWorkSpaceDoc] = useState([]);
@@ -65,7 +65,7 @@ const WorkSpaceForm = ({setOpenDialog, currentWSForm = {}})=>{
     useEffect(()=>{
 
             setOtherRegisterFieldErrChk([
-                {'field' : 'name', 'condition' : (inputFormData)=>inputFormData.name.length > 0, 'errMsg' : 'Workspace Name Cannot Empty'}
+                {'field' : 'name', 'condition' : (inputFormData)=>inputFormData.name.length > 0, 'errMsg' : 'Workspace Name Cannot Be Empty'}
             ])
       
           }, [])
@@ -185,10 +185,12 @@ const WorkSpaceForm = ({setOpenDialog, currentWSForm = {}})=>{
                     onChange={handleInputChange('name')}
                 />
                 <ColorPicker />
-                <Box
-                    sx={{display: 'grid', gridTemplateColumns: '5rem 10rem', gap:2}}> 
-                    <Typography sx={{display:'flex', justifyContent:'center', alignItems:'center'}}>Image :</Typography>
-                    <PicturePicker />
+                <Box sx={{display: 'flex', justifyContent:'center', alignItems:'center'}}>
+                    <Box
+                        sx={{display: 'grid', gridTemplateColumns: '5rem 10rem', gap:2}}> 
+                        <Typography sx={{display:'flex', justifyContent:'center', alignItems:'center'}}>Image :</Typography>
+                        <PicturePicker />
+                    </Box>
                 </Box>
                 {
                     isEditMode &&

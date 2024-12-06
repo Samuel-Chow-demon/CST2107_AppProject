@@ -6,37 +6,37 @@ import { Box, Button, Chip, Popover, TextField, Typography } from "@mui/material
 import { blue, grey } from "@mui/material/colors";
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { useColorPicker } from "../hooks/useColorPicker";
-import { useProjectDB } from "../context/projectDBContext";
 import dayjs from "dayjs";
+import { useTaskDB } from "../context/taskDBContext";
 
-const ProjectFormV2 = ({allUserInWorkSpaceDoc, setOpenDialog, currentProjectForm = {}}) => {
+const TaskFormV2 = ({allUserInProjectDoc, stateID, setOpenDialog, currentTaskForm = {}}) => {
 
   const {_currentUser, setCurrentUser} = useContext(userContext);
 
   const {
-    createProject, editProject, setProjIsLoading
-  } = useProjectDB();
+    createTask, editTask
+  } = useTaskDB();
 
-  const isEditMode = Object.keys(currentProjectForm).length > 0;
+  const isEditMode = Object.keys(currentTaskForm).length > 0;
 
-  const [dateRange, setDateRange] = useState(isEditMode ? [dayjs(currentProjectForm.startDateISO),
-                                                            dayjs(currentProjectForm.endDateISO)] : [null, null]);
+  const [dateRange, setDateRange] = useState(isEditMode ? [dayjs(currentTaskForm.startDateISO),
+                                                            dayjs(currentTaskForm.endDateISO)] : [null, null]);
 
   const [anchorEl, setAnchorEl] = useState(null); // Popover anchor
   const addedUserRef = useRef(null);
   const open = Boolean(anchorEl);
   const idPopOver = open ? "user-popover" : undefined;
 
-  const {color, ColorPicker} = useColorPicker("Project Color", isEditMode ? currentProjectForm.projectColor : "");
+  //const {color, ColorPicker} = useColorPicker("Project Color", isEditMode ? currentTaskForm.projectColor : "");
 
-  const createProjectForm = {
-    name : "",
+  const createTaskForm = {
+    title : "",
     description : "",
     startDateISO : "",
     endDateISO : "",
     memberUIDs : [_currentUser.uid],
     creatorUID : _currentUser.uid,
-    projectColor: ""
+    stateID : stateID
 }
 
   const {
@@ -44,12 +44,12 @@ const ProjectFormV2 = ({allUserInWorkSpaceDoc, setOpenDialog, currentProjectForm
     enterInput, isDisableInput, setDisableInput,
     formInputErrors,
     setOtherRegisterFieldErrChk,
-    validateInput } = useInputForm(isEditMode ? currentProjectForm : createProjectForm);
+    validateInput } = useInputForm(isEditMode ? currentTaskForm : createTaskForm);
 
   useEffect(()=>{
 
       setOtherRegisterFieldErrChk([
-          {'field' : 'name', 'condition' : (inputFormData)=>inputFormData.name.length > 0, 'errMsg' : 'Project Name Cannot Empty'}
+          {'field' : 'title', 'condition' : (inputFormData)=>inputFormData.title.length > 0, 'errMsg' : 'Task Name Cannot Empty'}
       ])
 
     }, [])
@@ -61,55 +61,29 @@ const ProjectFormV2 = ({allUserInWorkSpaceDoc, setOpenDialog, currentProjectForm
 
   }, [dateRange])
 
-  useEffect(()=>{
+  // useEffect(()=>{
 
-    enterInput('projectColor', color)()
+  //   enterInput('projectColor', color)()
 
-  }, [color])
+  // }, [color])
 
   const handleInputChange = useCallback((field)=>(e) => enterInput(field)(e), [enterInput]);
 
-  const proceedActionProject = async()=>{
+  const proceedActionTask = async()=>{
 
     if (validateInput({byPassPasswordCheck:true, byPassPasswordConfirm :true}))
     {
         setDisableInput(true)
-        setProjIsLoading(true)
+        //setTaskIsLoading(true)
         setOpenDialog(false)
 
         isEditMode ? 
-        await editProject({formData:formData, projectID:currentProjectForm.id}) : await createProject({formData:formData});
+        await editTask({formData:formData, taskID:currentTaskForm.id}) : await createTask({formData:formData});
 
         setDisableInput(false)
-        setProjIsLoading(false)
+        //setTaskIsLoading(false)
     }
 }
-
-  // const MemoizedTextField = memo(({value, label, placeholder,
-  //                                   onChange, error, helperText,
-  //                                   disabled,
-  //                                   required = true, multiLineRows = 1 }) => {
-  //   return (
-  //       <TextField
-  //           fullWidth
-  //           autoFocus
-  //           required={required}
-  //           multiline={multiLineRows > 1}
-  //           rows={multiLineRows}
-  //           disabled={disabled}
-  //           sx={{
-  //               opacity: disabled ? 0.5 : 1,
-  //           }}
-  //           error={error}
-  //           helperText={helperText}
-  //           label={label}
-  //           value={value}
-  //           placeholder={placeholder}
-  //           size='Normal'
-  //           onChange={onChange}
-  //       />
-  //     );
-  // });
 
   const DisplayAddedUserComponent = ()=>{
     return (
@@ -118,13 +92,13 @@ const ProjectFormV2 = ({allUserInWorkSpaceDoc, setOpenDialog, currentProjectForm
           <Box sx={{ display: 'flex',
                     justifyContent: 'space-around',
                     padding: 2,
-                    alignItems: 'left', border: allUserInWorkSpaceDoc.length > 0 ? '1px solid' : 'none',
+                    alignItems: 'left', border: allUserInProjectDoc.length > 0 ? '1px solid' : 'none',
                     borderColor:grey[500], gap: 2,
                     borderRadius:'4px' }}>
 
           {
-              allUserInWorkSpaceDoc.length > 0 ?
-              allUserInWorkSpaceDoc
+              allUserInProjectDoc.length > 0 ?
+              allUserInProjectDoc
                 .filter((user)=>formData['memberUIDs'].includes(user.uid))
                 .map((user, index)=>(
 
@@ -196,8 +170,8 @@ const DisplayUserListComponent = memo(() => {
           disableEnforceFocus // Prevent Popover from enforcing focus when open
       >
           <Box sx={{ display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center',  gap: 2, margin:'1.5rem', width: '25rem' }}>
-              {allUserInWorkSpaceDoc.length > 0 ? (
-                  allUserInWorkSpaceDoc
+              {allUserInProjectDoc.length > 0 ? (
+                  allUserInProjectDoc
                   .filter((user)=>!formData['memberUIDs'].includes(user.uid))
                     .map((user, index) => (
                       <Box
@@ -231,7 +205,7 @@ const DisplayUserListComponent = memo(() => {
   )
 });
 
-  const ProjectActionComponent = memo(()=>(
+  const TaskActionComponent = memo(()=>(
 
     <Box sx={{display:'flex', justifyContent:'space-between', alignItems:'center', border:'none', padding:'2px', gap:2}}>
         <Button sx={{
@@ -240,7 +214,7 @@ const DisplayUserListComponent = memo(() => {
                     backgroundColor:blue[300]
                 }
             }} 
-            onClick={proceedActionProject}>{isEditMode ? 'Edit' : 'Create'}</Button>
+            onClick={proceedActionTask}>{isEditMode ? 'Edit' : 'Create'}</Button>
         <Button sx={{
                 '&:hover':{
                     color:grey[100],
@@ -264,13 +238,13 @@ const DisplayUserListComponent = memo(() => {
             sx={{
                 opacity: isDisableInput ? 0.5 : 1,
             }}
-            error={formInputErrors['name'].isError}
-            label={"Project Title"}
-            placeholder={"Enter Project Title Or Name"}
+            error={formInputErrors['title'].isError}
+            label={"Task Title"}
+            placeholder={"Enter Task Title Or Name"}
             size='Normal'
-            helperText={formInputErrors['name'].message}
-            value={formData['name']}
-            onChange={handleInputChange('name')}
+            helperText={formInputErrors['title'].message}
+            value={formData['title']}
+            onChange={handleInputChange('title')}
         />
 
       <TextField
@@ -297,11 +271,11 @@ const DisplayUserListComponent = memo(() => {
       <Box ref={addedUserRef} sx={{width:'100%', height:'100%'}}>
         <DisplayUserListComponent />
       </Box>
-      <ColorPicker />
+      {/* <ColorPicker /> */}
 
-      <ProjectActionComponent />
+      <TaskActionComponent />
     </div>
   );
 };
 
-export default memo(ProjectFormV2);
+export default memo(TaskFormV2);

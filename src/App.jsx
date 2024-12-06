@@ -41,7 +41,9 @@ function App() {
             element: <UserProfile />
           },
           {
-            path: CONST_PATH.boardpage.slice(1) + '/:id',      // '/home/boardpage', slice(1) remove the '/' from the constant, then add the "/:id" to pass the workspace id
+            // '/home/boardpage', slice(1) remove the '/' from the constant, then add the "/:id" to pass the workspace id
+            // And the projectID is optional when it is route to particular workspace project,
+            path: CONST_PATH.boardpage.slice(1) + '/:id/:projectID?',
             element: <BoardPage />
           },
           {

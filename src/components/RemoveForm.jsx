@@ -24,7 +24,7 @@ const RemoveForm = ({removeFromDB, categoryName, targetName, setOpenDialog})=>{
       
           }, [])
 
-    const handleNameChange = useCallback((e) => enterInput('inputTargetName')(e), [enterInput]);
+    const handleInputChange = useCallback((field)=>(e) => enterInput(field)(e), [enterInput]);
 
     const proceedRemoveWorkSpace = ()=>{
 
@@ -60,7 +60,7 @@ const RemoveForm = ({removeFromDB, categoryName, targetName, setOpenDialog})=>{
           );
       });
 
-      const WorkSpaceFormComponents = memo(()=>(
+      const RemoveFormComponents = memo(()=>(
             <>
                 <Typography sx={{
                     color: red[800],
@@ -75,12 +75,12 @@ const RemoveForm = ({removeFromDB, categoryName, targetName, setOpenDialog})=>{
                     error={formInputErrors['inputTargetName'].isError}
                     helperText={formInputErrors['inputTargetName'].message}
                     value={formData['inputTargetName']}
-                    onChange={handleNameChange}
+                    onChange={handleInputChange('inputTargetName')}
                 />
             </>
         ));
 
-      const WorkSpaceActionComponent = memo(()=>(
+      const RemoveActionComponent = memo(()=>(
 
             <Box sx={{display:'flex', justifyContent:'space-around', alignItems:'center', border:'none', gap:2}}>
                 <Button sx={{
@@ -103,8 +103,8 @@ const RemoveForm = ({removeFromDB, categoryName, targetName, setOpenDialog})=>{
         ));
 
     return (<>
-                <WorkSpaceFormComponents />
-                <WorkSpaceActionComponent />
+                <RemoveFormComponents />
+                <RemoveActionComponent />
             </>);
 }
 

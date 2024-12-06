@@ -18,19 +18,25 @@ import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import userContext from '../context/userContext.js';
 import RemoveForm from '../components/RemoveForm.jsx';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
+import { CONST_PATH } from '../components/front_end_constant.js';
+import { useNavigate } from 'react-router-dom';
 
-const ProjectBoard = ({ isGridLayout }) => {
+const ProjectBoard = ({ isGridLayout, workSpaceID }) => {
 
+  const navigate = useNavigate();
+  
   const {
-    workingProjects, workSpaceData,
+    workingProjects, workSpaceData, allUserInWorkSpaceDoc,
     alertProject, setAlertProject,
     isProjLoading,
     removeProject, leaveProject
   } = useProjectDB();
 
-  const { alertUserDB, setAlertUserDB, getUserDocData } = useUserDB();
-  const [allUserInWorkSpaceDoc, setAllUserInWorkSpaceDoc] = useState([]);
-  const [isLoadedAllUser, setLoadedAllUser] = useState(false);
+  //const { alertUserDB, setAlertUserDB, getUserDocData } = useUserDB();
+  const { alertUserDB, setAlertUserDB } = useUserDB();
+  //const [allUserInWorkSpaceDoc, setAllUserInWorkSpaceDoc] = useState([]);
+
+  //const [isLoadedAllUser, setLoadedAllUser] = useState(false);
 
   const [openAddProjDialog, setOpenAddProjDialog] = useState(false);
 
@@ -49,19 +55,19 @@ const ProjectBoard = ({ isGridLayout }) => {
   const {_currentUser, setCurrentUser} = useContext(userContext);
   const [editProjectForm, setEditProjectForm] = useState({});
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    const getWorkSpaceUserDoc = async () => {
-      setAllUserInWorkSpaceDoc(await getUserDocData(workSpaceData.userUIDs));
-      setLoadedAllUser(true);
-    }
+  //   const getWorkSpaceUserDoc = async () => {
+  //     setAllUserInWorkSpaceDoc(await getUserDocData(workSpaceData.userUIDs));
+  //     setLoadedAllUser(true);
+  //   }
 
-    if (!isProjLoading)
-    {
-      getWorkSpaceUserDoc();
-    }
+  //   if (!isProjLoading)
+  //   {
+  //     getWorkSpaceUserDoc();
+  //   }
 
-  }, [isProjLoading, workSpaceData])
+  // }, [isProjLoading, workSpaceData])
 
   useEffect(() => {
 
@@ -236,9 +242,9 @@ const LeaveProjectDialog = memo(() => {
   );
 });
 
-  const navigateToProject = (id) => {
-    // const path = `${CONST_PATH.home}${CONST_PATH.boardpage}/${id}`;
-    // navigate(path);
+  const navigateToProject = (projID) => {
+    const path = `${CONST_PATH.home}${CONST_PATH.boardpage}/${workSpaceID}/${projID}`;
+    navigate(path);
 }
 
   const handleOpenRemoveOrLeaveProjectDialog = (proj) => {
@@ -382,7 +388,8 @@ const LeaveProjectDialog = memo(() => {
 
   return (
     <>
-      {(isProjLoading || !isLoadedAllUser) ?
+      {//(isProjLoading || !isLoadedAllUser) ?
+        (isProjLoading) ?
         <Box sx={{
             display: 'flex',
             flexDirection: 'column',
@@ -480,4 +487,4 @@ const LeaveProjectDialog = memo(() => {
   );
 };
 
-export default ProjectBoard;
+export default memo(ProjectBoard);

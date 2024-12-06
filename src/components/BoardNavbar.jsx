@@ -6,15 +6,17 @@ import { useUserDB } from '../context/userDBContext';
 import Alert from './Alert';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import { Box, Button, Dialog, DialogContent, DialogTitle, Paper } from '@mui/material';
-import { green, grey } from '@mui/material/colors';
+import { blue, green, grey } from '@mui/material/colors';
 import AddUserToWorkSpaceForm from './AddUserToWorkSpaceForm';
 import Draggable from 'react-draggable';
 import { useWorkSpaceDB } from '../context/workspaceDBContext';
 import userContext from '../context/userContext';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import { useNavigate } from 'react-router-dom';
 
-// if projectID = "" means navbar is at the workspace board
-const BoardNavbar = ({ toggleLayout, isGridLayout, workSpaceData,
-  workspaceID, projectID = "" }) => {
+// if projectDataWithID = {} means navbar is at the workspace board
+const BoardNavbar = ({ toggleLayout, isGridLayout, workSpaceDataWithID,
+                        projectDataWithID = {} }) => {
 
   const [isMenuOpen, setMenuOpen] = useState(false);
   const [allUserDoc, setAllUserDoc] = useState([]);
@@ -23,9 +25,13 @@ const BoardNavbar = ({ toggleLayout, isGridLayout, workSpaceData,
   const {_currentUser, setCurrentUser} = useContext(userContext);
 
   const { alertUserDB, setAlertUserDB, getAllUserDoc, getUserDocData } = useUserDB()
-  const { joinWorkSpace, alertWorkSpace, setAlertWorkSpace } = useWorkSpaceDB();
+  const { alertWorkSpace, setAlertWorkSpace } = useWorkSpaceDB();
 
   const [allUserInWorkSpaceDoc, setAllUserInWorkSpaceDoc] = useState([]);
+
+  const isAtWorkSpaceBoard = Object.keys(projectDataWithID).length == 0;
+
+  const navigate = useNavigate();
 
   const toggleMenu = () => {
     setMenuOpen(!isMenuOpen);
@@ -34,10 +40,10 @@ const BoardNavbar = ({ toggleLayout, isGridLayout, workSpaceData,
   useEffect(() => {
 
     const getAllUserDBDoc = async () => {
-      if (workSpaceData)
+      if (workSpaceDataWithID)
       {
         setAllUserDoc(await getAllUserDoc());
-        setAllUserInWorkSpaceDoc(await getUserDocData(workSpaceData.userUIDs));
+        setAllUserInWorkSpaceDoc(await getUserDocData(workSpaceDataWithID.userUIDs));
         setLoadedAllUser(true);
       }
     }
@@ -46,7 +52,7 @@ const BoardNavbar = ({ toggleLayout, isGridLayout, workSpaceData,
     setAlertWorkSpace({ ...alertWorkSpace, message: '', isOpen: false });
     getAllUserDBDoc();
 
-  }, [workSpaceData])
+  }, [workSpaceDataWithID])
 
   const PaperComponent = memo(({ nodeRef, ...props }) => {
     return (
@@ -87,8 +93,8 @@ const BoardNavbar = ({ toggleLayout, isGridLayout, workSpaceData,
             }}
               elevation={0}>
 
-              <AddUserToWorkSpaceForm allUserDocs={allUserDoc} joinWorkSpace={joinWorkSpace} creatorUID={workSpaceData.creatorUID}
-                                      workspaceID={workspaceID} setOpenDialog={setOpenAddUserDialog} uid={_currentUser.uid}
+              <AddUserToWorkSpaceForm allUserDocs={allUserDoc} creatorUID={workSpaceDataWithID.creatorUID}
+                                      workspaceID={workSpaceDataWithID.id} setOpenDialog={setOpenAddUserDialog} uid={_currentUser.uid}
                                       allUserInWorkSpaceDoc={allUserInWorkSpaceDoc} />
 
             </Paper>
@@ -102,10 +108,27 @@ const BoardNavbar = ({ toggleLayout, isGridLayout, workSpaceData,
     <>
       <nav className="board-navbar">
         <AddUserDialog />
-        <h1 className="board-title">{workSpaceData.name}</h1>
+        <Button variant="contained" startIcon={<ArrowBackIosIcon />}
+          sx={{
+            fontSize: '14px',
+            marginX: '2rem',
+            width: 'auto',
+            backgroundColor: blue[700],
+            color: grey[200],
+            '&:hover': {
+              backgroundColor: blue[300],
+              color: grey[800]
+            }
+          }}
+          onClick={() => navigate(-1)}
+        >
+          Back
+        </Button>
+
+        <h1 className="board-title">{isAtWorkSpaceBoard ? workSpaceDataWithID.name : `Project : ${projectDataWithID.name}`}</h1>
 
         {
-          isLoadedAllUser && projectID == "" &&
+          isLoadedAllUser && isAtWorkSpaceBoard &&
           <Button variant="contained" endIcon={<AddCircleOutlineIcon />}
             sx={{
               fontSize: '14px',
