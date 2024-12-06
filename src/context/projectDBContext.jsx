@@ -9,6 +9,7 @@ import {getCollectionDocByRefAndID,
         getCollectionDocByRefAndMatchField,
         reclusiveRemoveDoc} from '../components/DBUtility.js'
 import { useWorkSpaceDB } from './workspaceDBContext.jsx';
+import { useUserDB } from './userDBContext.jsx';
 
 const projectContext = createContext();
 
@@ -25,6 +26,9 @@ const ProjectDBProvider = ({children, workingWorkSpaceID})=>{
     const [isProjectUpdate, setProjectUpdate] = useState(false)
 
     const [workSpaceData, setWorkSpaceData] = useState({});
+
+    const { getUserDocData } = useUserDB();
+    const [allUserInWorkSpaceDoc, setAllUserInWorkSpaceDoc] = useState([]);
 
     const [projectInfo, setProjectInfo] = useState({
         name : "",
@@ -63,6 +67,8 @@ const ProjectDBProvider = ({children, workingWorkSpaceID})=>{
                 if (workSpaceDoc.exists())
                 {
                     setWorkSpaceData(workSpaceData);
+
+                    setAllUserInWorkSpaceDoc(await getUserDocData(workSpaceData.userUIDs));
 
                     // for (const projectID of workSpaceData.projectIDs)
                     // {
@@ -367,9 +373,9 @@ const ProjectDBProvider = ({children, workingWorkSpaceID})=>{
 
     return (
         <projectContext.Provider value={{
-            workingProjects, workSpaceData,
+            workingProjects, workSpaceData, allUserInWorkSpaceDoc,
             alertProject, setAlertProject,
-            isProjLoading, setProjIsLoading,
+            isProjLoading, setProjIsLoading, isProjectUpdate,
             createProject, joinProject, removeProject, leaveProject, editProject
         }}>
             {children}

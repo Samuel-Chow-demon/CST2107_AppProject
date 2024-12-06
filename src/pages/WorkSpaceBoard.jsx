@@ -17,6 +17,7 @@ import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { useNavigate } from 'react-router-dom';
 import { CONST_PATH } from '../components/front_end_constant';
 import RemoveForm from '../components/RemoveForm';
+import BorderColorIcon from '@mui/icons-material/BorderColor';
 
 const WorkSpaceBoard = () => {
 
@@ -35,6 +36,7 @@ const WorkSpaceBoard = () => {
    
 
     const {_currentUser, setCurrentUser} = useContext(userContext);
+    const [editWSForm, setEditWSForm] = useState({});
 
     const {
         workingWorkSpace, alertWorkSpace, setAlertWorkSpace,
@@ -105,7 +107,8 @@ const WorkSpaceBoard = () => {
                         }}
                             elevation={0}>
 
-                            <WorkSpaceForm setOpenDialog={setOpenDialog} />
+                            <WorkSpaceForm setOpenDialog={setOpenDialog}
+                                            currentWSForm={{}} />
 
                         </Paper>
                     </DialogContent>
@@ -243,6 +246,12 @@ const WorkSpaceBoard = () => {
         }
     }
 
+    const handleOpenEditOrCreateWSDialog = (ws = {})=>{
+
+        setEditWSForm(ws);  // empty form object means create form
+        setOpenDialog(true);
+      }
+
     const WSCardComponent = ({ ws }) => {
 
         return (
@@ -260,6 +269,36 @@ const WorkSpaceBoard = () => {
                     }}
                     onClick={() => navigateToWorkSpace(ws.id)}
                     >
+
+                    <HtmlTooltip
+                        title={
+                            <Fragment>
+                                <Typography sx={{
+                                    color: grey[600]
+                                }}>Edit</Typography>
+                            </Fragment>
+                        }
+                    >
+                        <IconButton style={{ position: 'absolute', left: '10px', top: '10px',
+                            width: 40, height: 40, padding: 2,
+                            backgroundColor: grey[200], opacity: 0.8
+                        }}
+                            sx={{
+                                transition: 'transform 0.3s, box-shadow 0.3s',
+                                '&:hover': {
+                                    boxshadow: 6,
+                                    transform: 'scale(1.3)'
+                                }
+                            }}
+                            aria-label="edit" size="large"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenEditOrCreateWSDialog(ws);
+                            }}>
+                            <BorderColorIcon fontSize="inherit" />
+
+                        </IconButton>
+                    </HtmlTooltip>
 
                     <HtmlTooltip
                             title={
@@ -368,7 +407,7 @@ const WorkSpaceBoard = () => {
                                 borderColor: grey[500],
                                 borderRadius: '8px'
                             }}
-                                onClick={()=>setOpenDialog(true)}
+                                onClick={handleOpenEditOrCreateWSDialog}
                             >
                                 Add WorkSpace
                                 <AddCircleIcon className="icon" sx={{

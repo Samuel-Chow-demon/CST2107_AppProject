@@ -2,8 +2,9 @@ import { Box, Button, Chip, Popover, TextField, Typography } from '@mui/material
 import { useEffect, memo, useCallback, useState, useRef, forwardRef } from 'react'
 import useInputForm from '../hooks/useInputForm';
 import { green, grey, red } from '@mui/material/colors';
+import { useWorkSpaceDB } from '../context/workspaceDBContext';
 
-const AddUserToWorkSpaceForm = ({ allUserDocs, joinWorkSpace, allUserInWorkSpaceDoc,
+const AddUserToWorkSpaceForm = ({ allUserDocs, allUserInWorkSpaceDoc,
                                     workspaceID, setOpenDialog, creatorUID, uid }) => {
 
     const addUserToWSForm = {
@@ -16,6 +17,8 @@ const AddUserToWorkSpaceForm = ({ allUserDocs, joinWorkSpace, allUserInWorkSpace
 
     const [matchList, setMatchList] = useState([]);
     const [addedUserList, setAddedUserList] = useState([]);
+
+    const { joinWorkSpace} = useWorkSpaceDB();
 
     const [anchorEl, setAnchorEl] = useState(null); // Popover anchor
     const searchTextFieldRef = useRef(null);
