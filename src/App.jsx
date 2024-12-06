@@ -12,6 +12,7 @@ import {AuthProvider} from './context/authContext';
 import UserProfile from './pages/UserProfile';
 import { WorkSpaceDBProvider } from './context/workspaceDBContext';
 import WorkSpaceBoard from './pages/WorkSpaceBoard';
+import BoardDemoPage from './pages/BoardDemoPage';
 import { UserDBProvider } from './context/userDBContext';
 
 function App() {
@@ -33,6 +34,10 @@ function App() {
         element: <LogInSignUp />
       },
       {
+        path: '/board-demo', // New demo path
+        element: <BoardDemoPage />
+      },  
+      {
         path: CONST_PATH.home,      // '/home'
         element: <Home />,
         children: [
@@ -53,7 +58,7 @@ function App() {
           {
             index: true,                                  // Default child route for '/home'
             element: <Navigate to={CONST_PATH.workspace.slice(1)} replace />  // Redirect to '/home/workspace'
-          },
+          },        
           {
             path: "*",                                    // default to home/workspace
             element: <Navigate to={CONST_PATH.workspace.slice(1)} replace />

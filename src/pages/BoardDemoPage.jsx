@@ -12,7 +12,7 @@ const initialData = {
   ],
 };
 
-const Board = () => {
+const BoardDemo = () => {
   const [data, setData] = useState(initialData);
   const [editing, setEditing] = useState({ type: null, id: null });
   const inputRefs = useRef({});
@@ -113,20 +113,16 @@ const Board = () => {
   return (
     <div
       style={{
-        height: "100vh",
-        width: "100vw",
-        margin: 0,
-        padding: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        marginTop: "20px",
+        padding: "20px",
         backgroundImage: `url(${bgImage})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
+        minHeight: "100vh",
       }}
     >
       <DragDropContext onDragEnd={onDragEnd}>
-        <div style={{ display: "flex", gap: "20px", overflowX: "auto" }}>
+        <div style={{ display: "flex", gap: "20px" }}>
           {data.columns.map((column) => (
             <Droppable key={column.id} droppableId={column.id}>
               {(provided) => (
@@ -139,7 +135,6 @@ const Board = () => {
                     padding: "16px",
                     boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                     width: "250px",
-                    minHeight: "150px",
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
@@ -274,4 +269,4 @@ const Board = () => {
   );
 };
 
-export default Board;
+export default BoardDemo;

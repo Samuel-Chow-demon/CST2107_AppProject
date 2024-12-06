@@ -12,10 +12,11 @@ const initialData = {
   ],
 };
 
-const Board = () => {
+const BoardDemo = () => {
   const [data, setData] = useState(initialData);
   const [editing, setEditing] = useState({ type: null, id: null });
   const inputRefs = useRef({});
+  const [draggingCardId, setDraggingCardId] = useState(null);
 
   const addColumn = () => {
     const newColumn = {
@@ -75,8 +76,13 @@ const Board = () => {
     setEditing({ type: null, id: null });
   };
 
+  const onDragStart = (result) => {
+    setDraggingCardId(result.draggableId);
+  };
+
   const onDragEnd = (result) => {
     const { source, destination } = result;
+    setDraggingCardId(null);
 
     if (!destination) return;
 
@@ -113,20 +119,16 @@ const Board = () => {
   return (
     <div
       style={{
-        height: "100vh",
-        width: "100vw",
-        margin: 0,
-        padding: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        marginTop: "20px",
+        padding: "20px",
         backgroundImage: `url(${bgImage})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
+        minHeight: "100vh",
       }}
     >
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div style={{ display: "flex", gap: "20px", overflowX: "auto" }}>
+      <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+        <div style={{ display: "flex", gap: "20px" }}>
           {data.columns.map((column) => (
             <Droppable key={column.id} droppableId={column.id}>
               {(provided) => (
@@ -139,7 +141,6 @@ const Board = () => {
                     padding: "16px",
                     boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                     width: "250px",
-                    minHeight: "150px",
                   }}
                 >
                   <div style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
@@ -193,9 +194,6 @@ const Board = () => {
                             marginBottom: "8px",
                             backgroundColor: "#e0e0e0",
                             borderRadius: "4px",
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
                             ...provided.draggableProps.style,
                           }}
                           onDoubleClick={() =>
@@ -212,30 +210,32 @@ const Board = () => {
                                 border: "1px solid #ddd",
                                 padding: "4px 8px",
                                 borderRadius: "4px",
-                                width: "80%",
+                                width: "100%",
                               }}
                             />
                           ) : (
-                            <span style={{ flex: 1 }}>{task.content || "Untitled"}</span>
+                            <span>{task.content || "Untitled"}</span>
                           )}
-                          <button
-                            onClick={() => deleteCard(column.id, task.id)}
-                            style={{
-                              backgroundColor: "transparent",
-                              border: "none",
-                              color: "#f44336",
-                              fontSize: "16px",
-                              cursor: "pointer",
-                              marginLeft: "8px",
-                            }}
-                          >
-                            -
-                          </button>
                         </div>
                       )}
                     </Draggable>
                   ))}
                   {provided.placeholder}
+                  {draggingCardId && (
+                    <div
+                      style={{
+                        padding: "8px",
+                        backgroundColor: "#ff0000",
+                        color: "#fff",
+                        textAlign: "center",
+                        borderRadius: "4px",
+                      }}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={() => deleteCard(column.id, draggingCardId)}
+                    >
+                      Drop to Delete
+                    </div>
+                  )}
                   <button
                     onClick={() => addCard(column.id)}
                     style={{
@@ -274,4 +274,4 @@ const Board = () => {
   );
 };
 
-export default Board;
+export default BoardDemo;
