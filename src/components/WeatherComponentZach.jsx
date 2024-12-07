@@ -61,13 +61,6 @@ const App = () => {
           )}
         </div>
       )}
-
-      {/* Other app components */}
-      <div className="main-content">
-        <h1>Welcome, Zacharie</h1>
-        <p>Manage your projects and tasks efficiently with SimpleWork.</p>
-        {/* Add your Trello-like app components here */}
-      </div>
     </div>
   );
 };
