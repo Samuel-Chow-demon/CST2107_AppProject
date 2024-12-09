@@ -4,6 +4,7 @@ import { Typography } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import userContext from '../context/userContext';
 import { capitalizeFirstLetter } from './utility';
+import WeatherComponent from './WeatherApiComponentZach';
 
 const AppNavbar = () => {
 
@@ -11,7 +12,8 @@ const AppNavbar = () => {
 
   return (
     <nav className="app-navbar">
-      <div className="navbar-section">
+      {/* <div className="navbar-section" style={{display:'flex', justifyContent:'space-around', alignItems:'center'}}></div> */}
+      <div style={{display:'flex', justifyContent:'space-around', alignItems:'center'}}>
         <Typography sx={{
           fontSize: '2rem',
           fontFamily: 'Pacifico',
@@ -20,6 +22,7 @@ const AppNavbar = () => {
           Welcome, {capitalizeFirstLetter(_currentUser?.userName)}
         </Typography>
         {/* Add app-wide buttons/icons here */}
+        <WeatherComponent />
       </div>
     </nav>
   );
