@@ -146,28 +146,29 @@ const BoardNavbar = ({ toggleLayout, isGridLayout, workSpaceDataWithID,
           </Button>
         }
 
-        <Box sx={{
+        {/* <Box sx={{
           display: 'flex',
           justifyContent: 'flex-end',
           flexGrow: 1
         }}>
           <div className="navbar-controls">
-            {/* Toggle Layout button */}
+
             <button className="toggle-layout-btn" onClick={toggleLayout}>
               {isGridLayout ? 'Switch to Row Layout' : 'Switch to Grid Layout'}
             </button>
-            {/* Menu button on the right */}
+
             <button className="menu-btn"
               onClick={toggleMenu}>
-              &#x22EE; {/* Vertical ellipsis icon for menu */}
+              &#x22EE;
             </button>
           </div>
-        </Box>
+        </Box> */}
+
       </nav>
       <Alert alertConfig={alertUserDB} />
       <Alert alertConfig={alertWorkSpace} />
       {/* Sidebar */}
-      <BoardMenu isOpen={isMenuOpen} closeMenu={toggleMenu} />
+      {/* <BoardMenu isOpen={isMenuOpen} closeMenu={toggleMenu} /> */}
     </>
   );
 };

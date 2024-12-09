@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './App.css'; // Import the CSS styles for the app
+import './WeatherApiComponentZach.css'
 
-const App = () => {
+const WeatherComponent = () => {
   const [weather, setWeather] = useState(null);
   const [location, setLocation] = useState({ latitude: null, longitude: null });
   const [error, setError] = useState(null);
@@ -39,9 +39,9 @@ const App = () => {
   };
 
   return (
-    <div className="app">
+    <div style={{display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center'}}>
       {/* Toggle Button */}
-      <button className="toggle-weather-button" onClick={toggleWeather}>
+      <button className="toggle-weather-button" style={{width: 'auto', height: 'auto'}} onClick={toggleWeather} onBlur={toggleWeather}>
         {showWeather ? 'Hide Weather' : 'Show Weather'}
       </button>
 
@@ -65,4 +65,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default WeatherComponent;
