@@ -5,7 +5,6 @@ import { blue, blueGrey, grey, red } from '@mui/material/colors';
 import AddIcon from '@mui/icons-material/Add';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import StateForm from './StateForm';
 import RemoveForm from './RemoveForm';
 import { useStateDB } from '../context/stateDBContext';
 import ReactDraggable from 'react-draggable';
@@ -14,114 +13,63 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import TaskFormV2 from './TaskFormV2';
+import StateForm_V2 from './StateForm_V2';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import { Task } from '@mui/icons-material';
+import { useTaskDB } from '../context/taskDBContext';
+import { useCommentDB } from '../context/commentDBContext';
+import Alert from '../components/Alert.jsx';
 
-const TaskCardComponent = ({ task, index, provided, snapshot }) => (
-  <Box
-    ref={provided.innerRef}
-    {...provided.draggableProps}
-    {...provided.dragHandleProps}
-    sx={{
-      padding: 1,
-      marginBottom: 1,
-      backgroundColor: '#fff',
-      border: '1px solid #ddd',
-      borderRadius: '4px',
-      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-      transform: snapshot.isDragging ? 'scale(1.05)' : 'scale(1)',
-      boxShadow: snapshot.isDragging
-        ? '0 4px 8px rgba(0, 0, 0, 0.2)'
-        : 'none',
+const TaskCardComponent = ({ task, provided, index, snapshot,
+                             onClickOpenAddOrEditTask }) => (
+  <div
+    style={{
+      padding: "8px",
+      marginBottom: "8px",
+      backgroundColor: "#e0e0e0",
+      borderRadius: "4px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      ...provided.draggableProps.style,
     }}
+    onDoubleClick={()=>onClickOpenAddOrEditTask(task)} // open current Task Form
   >
     {task.title}
-  </Box>
+  </div>
 );
 
-const StateActionComponent = ({ onClickEdit, onClickRemove, onClose }) => {
-  const componentRef = useRef(null);
-
-  const handleClickOutside = (event) => {
-    if (componentRef.current && !componentRef.current.contains(event.target)) 
-      {
-      onClose();
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener("mousedown", handleClickOutside);
-
-    // Cleanup the event listener on component unmount
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  return (
-    <Box ref={componentRef} 
-        sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center', 
-            padding: "5px",
-            gap: '10px',
-            background: blueGrey[700],
-            borderRadius: '4px',
-            width : 'auto',
-            height : 'auto'
-          }}>
-
-      <Button sx={{
-              width: '100%',
-              backgroundColor: blueGrey[100],
-              '&:hover':{
-                  color:grey[300],
-                  backgroundColor:grey[600]
-              }
-          }}
-          onClick={onClickEdit}>
-          Edit
-      </Button>
-      <Button sx={{
-              width: '100%',
-              backgroundColor: blueGrey[100],
-              '&:hover':{
-                  color:grey[100],
-                  backgroundColor:red[300]
-              }
-          }} 
-          onClick={onClickRemove}>
-          Remove
-      </Button>
-      
-    </Box>
-  );
-}
-
-const StateCardComponent = ({ state, stateIndex, snapshot, setRemoveStateObj, setOpenRemoveDialog,
+const StateCardComponent = ({ state, stateIndex, snapshot, removeState, removeTask, setRemoveItemObj, setOpenRemoveDialog,
                               setOpenTaskDialog, setCurrentTaskStateID, setEditTaskForm}) => {
 
-  const [openActionBox, setOpenActionBox] = useState(false);
   const [openStateForm, setOpenStateForm] = useState(false);
 
-  const onClickEdit = ()=>{
-    setOpenActionBox(false);
-    setOpenRemoveDialog(false);
-    setOpenTaskDialog(false);
-
-    setOpenStateForm(true);
-
-  };
   const onClickRemove = ()=>{
-    setOpenActionBox(false);
     setOpenTaskDialog(false);
 
-    setRemoveStateObj(state);
+    setRemoveItemObj({
+      removeFromDB : ()=>{removeState({stateID:state.id})},
+      dialogTitle : "Remove State",
+      categoryName : "State",
+      targetName : state.name
+    })
+    setOpenRemoveDialog(true);
+  };
+
+  const onClickRemoveTask = (task)=>{
+    setOpenTaskDialog(false);
+
+    setRemoveItemObj({
+      removeFromDB : ()=>{removeTask({taskID:task.id})},
+      dialogTitle : "Remove Task",
+      categoryName : "Task",
+      targetName : task.title
+    })
     setOpenRemoveDialog(true);
   };
 
   const onClickOpenAddOrEditTask = (editTaskForm={})=>{
-    setOpenActionBox(false);
     setOpenRemoveDialog(false)
     setCurrentTaskStateID(state.id);
     setEditTaskForm(editTaskForm); // if empty object means at the Add New Task Button
@@ -131,132 +79,163 @@ const StateCardComponent = ({ state, stateIndex, snapshot, setRemoveStateObj, se
 
 
   return (
-  <Card
-    sx={{
-        display: 'flex',
-        position: 'relative',
-        flexDirection: 'column',
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-        userSelect:'none',
-        gap: '5px',
-        backgroundColor: grey[700],
-        color:'white',
-        minHeight: '150px',
-        height: 'auto',
-        width: '15rem',
-        borderRadius: '8px',
-        paddingTop: '1rem',
-        paddingBottom: '1rem',
-        fontSize: '1.2rem',
-        boxShadow: snapshot.isDragging ? '0 4px 8px rgba(0, 0, 0, 0.2)' : 'none',
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-        transform: snapshot.isDragging ? 'scale(1.02)' : 'scale(1)',
+  <div
+    style={{
+      position:'relative',
+      backgroundColor: "#fff",
+      borderRadius: "8px",
+      padding: "16px",
+      boxShadow: "0 4px 8px rgba(0,0,0,0.2)",
+      width: "250px",
+      minHeight: '10rem'
     }}
     >
 
     {
-      openStateForm &&
-      <Box sx={{ width : '90%', zIndex: 99, display:'flex', justifyContent:'center'}}>
-        <StateForm projectID={state.projectID} setFormOpen={setOpenStateForm} currentStateForm={state}/>
-      </Box>
-    }
-    {
-      openActionBox &&
-      <Box sx={{ width : '90%', zIndex: 98}}>
-        <StateActionComponent onClickEdit={onClickEdit} onClickRemove={onClickRemove} onClose={()=>setOpenActionBox(false)} />
-      </Box>
-    }
-
-    {state.name}
-
-    <IconButton style={{ position: 'absolute', right: '5px', top: '5px',
-                        width: 40, height: 40, padding: 2,
-                        backgroundColor: 'transparent', opacity: 0.8
-                    }}
-                sx={{
-                    transition: 'transform 0.3s, box-shadow 0.3s',
-                    '&:hover': {
-                        boxshadow: 6,
-                        transform: 'scale(1.3)'
-                    }
-                }}
-        aria-label="edit" size="large"
-        onClick={(e) => {
-            e.stopPropagation();
-            setOpenActionBox(!openActionBox);
-        }}
-        onMouseDown={(e) => e.preventDefault()}
+      openStateForm ?
+      <div style={{width:'100%', color:'inhert'}}>
+        <StateForm_V2 projectID={state.projectID} setFormOpen={setOpenStateForm} currentStateForm={state}/>
+      </div>
+      :
+      (
+        <h3
+          onDoubleClick={() => setOpenStateForm(true)}
+          style={{
+            margin: 0,
+            fontSize: "16px",
+            fontWeight: "bold",
+            cursor: "pointer",
+          }}
         >
-        <MoreVertIcon fontSize="inherit" />
+          {state.name || "Untitled"}
+        </h3>
+      )
+    }
 
-    </IconButton>
-
-    <Box sx={{
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-      gap: 2,
-      fontSize: '1.1rem',
-      color: grey[700],
-      width: '12rem',
-      height: '2rem',
-      cursor: 'pointer',
-      transition: 'transform 0.3s, box-shadow 0.3s',
-      '&:hover': {
-        boxshadow: 6,
-        transform: 'scale(1.05)',
-        borderColor: grey[300],
-        backgroundColor: "#dee3bf",
-        color: grey[700],
-        '& .icon': {
-          color: grey[700]
-        }
-      },
-      border: '2px solid',
-      borderColor: grey[500],
-      borderRadius: '8px',
-      backgroundColor: "#c2c7a5"
-    }}
-      onClick={() => onClickOpenAddOrEditTask()}
-    >
-      <AddIcon className="icon" sx={{
-        fontSize: 15,
-        color: grey[700]
-      }}
-      />
-      Add Task
-    </Box>
-
-    <CardContent>
-
-      {/* Droppable Area for Tasks inside the Card */}
-      <Droppable droppableId={`state-${stateIndex}`} type="item">
-        {(provided, snapshot) => (
-          <Box
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-            sx={{ minHeight: '100px' }}
+    {
+      !openStateForm &&
+      <IconButton style={{ position: 'absolute', right: '10px', top: '10px', zIndex:99,
+                          width: 24, height: 24, padding: 2, color:grey[500],
+                          backgroundColor: 'transparent', opacity: 0.8
+                      }}
+                  sx={{
+                      transition: 'transform 0.3s, box-shadow 0.3s',
+                      '&:hover': {
+                          boxshadow: 6,
+                          transform: 'scale(1.3)'
+                      }
+                  }}
+          aria-label="edit" size="large"
+          onClick={(e) => {
+              e.stopPropagation();
+              onClickRemove();
+          }}
+          onMouseDown={(e) => e.preventDefault()}
           >
-            { state.tasks.length > 0 &&
-              state.tasks.map((task, index) => (
-              <Draggable key={task.id} draggableId={task.id} index={index}>
-                {(provided, snapshot) => (
-                  <TaskCardComponent task={task} index={index} provided={provided} snapshot={snapshot} />
-                )}
-              </Draggable>
-            ))}
-            {provided.placeholder}
-          </Box>
-        )}
-      </Droppable>
-    </CardContent>
-  </Card>
+          <DeleteForeverIcon fontSize="inherit" sx={{
+            '&:hover': {
+              color: red[400]
+            }
+          }} />
+
+      </IconButton>
+    }
+
+    <Button
+      onClick={() => onClickOpenAddOrEditTask()}
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        backgroundColor: "#0079bf",
+        color: "#fff",
+        border: "none",
+        borderRadius: "4px",
+        padding: "4px 8px",
+        cursor: "pointer",
+        marginTop: "8px",
+        width: "100%",
+        marginBottom: "8px",
+        '&:hover':{
+          backgroundColor:blue[400]
+        }
+      }}
+    >
+      + Add Task
+    </Button>
+
+    {/* Droppable Area for Tasks inside the Card */}
+    <Droppable droppableId={`state-${stateIndex}`} type="item">
+      {(provided, snapshot) => (
+        <div
+          ref={provided.innerRef}
+          {...provided.droppableProps}
+          style={{
+            position: "relative",
+            width: "100%",
+            overflowY: "auto", // Enable vertical scrolling
+            minHeight: '1rem',
+            //maxHeight: "500px", // Adjust based on your layout
+          }}
+        >
+          {state.tasks.length > 0 &&
+            state.tasks.map((task, index) => (
+            <Draggable key={task.id} draggableId={task.id} index={index}>
+              {(provided, snapshot) => (
+
+                <div
+                  ref={provided.innerRef}
+                  {...provided.draggableProps}
+                  {...provided.dragHandleProps}
+                  style={{
+                    padding: "8px",
+                    marginBottom: "8px",
+                    backgroundColor: "#e0e0e0",
+                    borderRadius: "4px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    ...provided.draggableProps.style,
+                  }}
+                  onClick={()=>onClickOpenAddOrEditTask(task)} // open current Task Form
+                >
+                  {/* <TaskCardComponent task={task} index={index} provided={provided} snapshot={snapshot}
+                                      onClickOpenAddOrEditTask={onClickOpenAddOrEditTask} /> */}
+
+                  <Typography sx={{
+                    marginLeft:'1rem',
+                    transition: 'transform 0.3s',
+                    '&:hover': {
+                      transform: 'scale(1.3)',
+                      color: blue[800]
+                    }
+                  }}>{task.title}</Typography>
+                
+                  <RemoveCircleOutlineIcon fontSize="inherit" sx={{
+                    transition: 'transform 0.3s',
+                    '&:hover': {
+                      transform: 'scale(1.3)',
+                      color: red[400]
+                    }
+                  }}
+                  onClick={(e)=>{
+                    e.stopPropagation();
+                    onClickRemoveTask(task);
+                  }}
+                  />
+                </div>
+              )}
+            </Draggable>
+          ))}
+          {provided.placeholder}
+        </div>
+      )}
+    </Droppable>
+  </div>
   );
 }
 
-const NestedDraggableGrid = ({workingStatesWithTasks, allUserInProjectDoc}) => {
+//const NestedDraggableGrid_V2 = ({workingStatesWithTasks, setworkingStatesWithTasks, allUserInProjectDoc}) => {
+const NestedDraggableGrid_V2 = ({stateCards, setStateCards, allUserInProjectDoc}) => {
 
     // workingStatesWithTasks would in the structure as 
     // [{
@@ -268,22 +247,40 @@ const NestedDraggableGrid = ({workingStatesWithTasks, allUserInProjectDoc}) => {
     //  ...
     // ]
 
-  const [stateCards, setStateCards] = useState(workingStatesWithTasks);
+  //const [stateCards, setStateCards] = useState(workingStatesWithTasks);
 
   const [openRemoveDialog, setOpenRemoveDialog] = useState(false);
-  const [removeStateObj, setRemoveStateObj] = useState({});
 
   const [openTaskDialog, setOpenTaskDialog] = useState(false);
   const [currentTaskStateID, setCurrentTaskStateID] = useState("");
   const [editTaskForm, setEditTaskForm] = useState({});
 
+  const [removeItemObj, setRemoveItemObj] = useState({
+    removeFromDB : ()=>{},
+    dialogTitle : "",
+    categoryName : "",
+    targetName : ""
+  })
+
   const {
-    moveState
+    moveState, leaveJoinState, removeState
   } = useStateDB();
 
+  const {
+    removeTask
+  } = useTaskDB();
+
+  const {
+    alertComment, setAlertComment
+  } = useCommentDB();
+
   useEffect(()=>{
-    setStateCards(workingStatesWithTasks)
-  }, [workingStatesWithTasks]);
+    setAlertComment({ ...alertComment, message: '', isOpen: false });
+  }, [])
+
+  // useEffect(()=>{
+  //   setStateCards(workingStatesWithTasks)
+  // }, [workingStatesWithTasks]);
 
   const handleDragEnd = (result) => {
     const { draggableId, source, destination } = result;
@@ -291,11 +288,11 @@ const NestedDraggableGrid = ({workingStatesWithTasks, allUserInProjectDoc}) => {
     if (!destination) return; // Drop outside the droppable area
 
     // Log the details
-    console.log("Dragged Item ID:", draggableId);
-    console.log("Source Index:", source.index);
-    console.log("Source Droppable ID:", source.droppableId);
-    console.log("Destination Index:", destination.index);
-    console.log("Destination Droppable ID:", destination.droppableId);
+    // console.log("Dragged Item ID:", draggableId);
+    // console.log("Source Index:", source.index);
+    // console.log("Source Droppable ID:", source.droppableId);
+    // console.log("Destination Index:", destination.index);
+    // console.log("Destination Droppable ID:", destination.droppableId);
 
     // if the draggable item no position change, just return
     if (source.droppableId === destination.droppableId && 
@@ -334,12 +331,16 @@ const NestedDraggableGrid = ({workingStatesWithTasks, allUserInProjectDoc}) => {
         updatedItems.splice(destination.index, 0, movedItem);
 
         const updatedStateCards = [...stateCards];
-        updatedStateCards[stateIndex] = { ...state, items: updatedItems };
+        updatedStateCards[stateIndex] = { ...state, tasks: updatedItems };
 
         setStateCards(updatedStateCards);
 
         // Here call leaveJoinState to update the State Collection taskIDs order
-        // await leaveJoinState()
+        const updateStateDB = async()=>{
+          await leaveJoinState({leaveStateID:movedItem.stateID, joinStateID:movedItem.stateID,
+                               leaveIndex:source.index, joinIndex:destination.index, taskID:draggableId});
+        }
+        updateStateDB();
     }
 
     // Case 3: Dragging an TaskItem from one Card to another Card
@@ -358,13 +359,17 @@ const NestedDraggableGrid = ({workingStatesWithTasks, allUserInProjectDoc}) => {
         destinationItems.splice(destination.index, 0, movedItem);
 
         const updatedStateCards = [...stateCards];
-        updatedStateCards[sourceStateIndex] = { ...sourceState, items: sourceItems };
-        updatedStateCards[destinationStateIndex] = { ...destinationState, items: destinationItems };
+        updatedStateCards[sourceStateIndex] = { ...sourceState, tasks: sourceItems };
+        updatedStateCards[destinationStateIndex] = { ...destinationState, tasks: destinationItems };
 
         setStateCards(updatedStateCards);
 
         // Here call leaveJoinState to update the Old State Collection taskIDs and New State Collection taskIDs, and the Task Doc
-        // await leaveJoinState()
+        const updateStateDB = async()=>{
+          await leaveJoinState({leaveStateID:sourceState.id, joinStateID:destinationState.id,
+                               leaveIndex:source.index, joinIndex:destination.index, taskID:draggableId});
+        }
+        updateStateDB();
     }
   };
 
@@ -379,7 +384,7 @@ const NestedDraggableGrid = ({workingStatesWithTasks, allUserInProjectDoc}) => {
     );
   });
 
-  const RemoveStateDialog = memo(() => {
+  const RemoveItemDialog = memo(() => {
 
     const dialogNodeRef = useRef(null);
   
@@ -396,7 +401,7 @@ const NestedDraggableGrid = ({workingStatesWithTasks, allUserInProjectDoc}) => {
                 <DialogTitle style={{ cursor: 'move', textAlign: 'center' }}
                              sx={{color:red[800]}}
                              id="draggable-dialog-title">
-                    Remove State
+                    {removeItemObj.dialogTitle}
                 </DialogTitle>
                 <DialogContent>
                     <Paper style={{
@@ -408,9 +413,9 @@ const NestedDraggableGrid = ({workingStatesWithTasks, allUserInProjectDoc}) => {
                     }}
                         elevation={0}>
   
-                    <RemoveForm removeFromDB={()=>{removeState({stateID:removeStateObj.id})}}
-                                categoryName={'State'}
-                                targetName={removeStateObj.name}
+                    <RemoveForm removeFromDB={removeItemObj.removeFromDB}
+                                categoryName={removeItemObj.categoryName}
+                                targetName={removeItemObj.targetName}
                                 setOpenDialog={setOpenRemoveDialog}/>
   
                     </Paper>
@@ -435,7 +440,7 @@ const NestedDraggableGrid = ({workingStatesWithTasks, allUserInProjectDoc}) => {
           aria-labelledby="draggable-dialog-title"
         >
           <DialogTitle style={{ cursor: 'move', textAlign: 'center' }} id="draggable-dialog-title">
-            Create Task
+            {Object.keys(editTaskForm).length <= 0 ? "Create Task" : "Edit Task"}
           </DialogTitle>
           <DialogContent>
             <Paper style={{
@@ -462,25 +467,23 @@ const NestedDraggableGrid = ({workingStatesWithTasks, allUserInProjectDoc}) => {
 
   return (
     <>
-      <RemoveStateDialog />
+      <RemoveItemDialog />
       <TaskDialog />
+      <Alert alertConfig={alertComment} />
       <DragDropContext onDragEnd={handleDragEnd}>
+        <div style={{ display: "flex", gap: "20px" }}>
           <Droppable droppableId="cards" direction="horizontal" isCombineEnabled >
               {(provided) => (
-                  <Box
+                  <div
                       ref={provided.innerRef}
                       {...provided.droppableProps}
-                      sx={{
-                          display: stateCards.length > 0 ? 'grid' : 'none', // Hide if no items
-                          gridAutoFlow: 'row', // Items flow horizontally
-                          gridTemplateColumns: 'repeat(auto-fill, minmax(0, 15rem))', // Each item has max width of 200px
-                          gridTemplateRows: '1fr', // Items take full height of the parent
+                      style={{
                           width: 'auto',
-                          height: stateCards.length > 0 ? 'auto' : 0, // Shrink height if no items
-                          gap: 2, // Optional spacing
-                          overflowX: 'auto', // Enable horizontal scrolling
-                          overflowY: 'hidden', // Prevent vertical overflow
-                          p: stateCards.length > 0 ? 3 : 0, // Remove padding when empty
+                          height: stateCards.length > 0 ? 'auto' : 0,
+                          display: 'flex',
+                          flexDirection:'row',
+                          justifyContent: 'flex-start',
+                          gap: '1rem'
                       }}
                   >
                       {stateCards.map((state, stateIndex) => (
@@ -490,13 +493,18 @@ const NestedDraggableGrid = ({workingStatesWithTasks, allUserInProjectDoc}) => {
                                   <div 
                                     ref={provided.innerRef}
                                     {...provided.draggableProps}
-                                    {...provided.dragHandleProps} width="100%" height="100%">
+                                    {...provided.dragHandleProps} 
+                                    // width="100%"
+                                    // height="100%"
+                                    >
 
                                     <StateCardComponent
                                           state={state}
                                           stateIndex={stateIndex}
                                           snapshot={snapshot}
-                                          setRemoveStateObj={setRemoveStateObj}
+                                          removeState={removeState} 
+                                          removeTask={removeTask}
+                                          setRemoveItemObj={setRemoveItemObj}
                                           setOpenRemoveDialog={setOpenRemoveDialog}
                                           setOpenTaskDialog={setOpenTaskDialog}
                                           setCurrentTaskStateID={setCurrentTaskStateID}
@@ -507,12 +515,13 @@ const NestedDraggableGrid = ({workingStatesWithTasks, allUserInProjectDoc}) => {
                           </Draggable>
                       ))}
                       {provided.placeholder}
-              </Box>
+                  </div>
               )}
           </Droppable>
+        </div>
       </DragDropContext>
     </>
   );
 };
 
-export default memo(NestedDraggableGrid);
+export default memo(NestedDraggableGrid_V2);

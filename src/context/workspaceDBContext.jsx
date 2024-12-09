@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { deleteDoc, addDoc, doc, getDoc, getDocs, limit, query, setDoc, where, updateDoc, arrayRemove, onSnapshot } from 'firebase/firestore';
+import { deleteDoc, addDoc, doc, getDoc, getDocs, limit, query, setDoc, where, updateDoc, arrayRemove, onSnapshot, writeBatch } from 'firebase/firestore';
 import { userCollectionRef, workSpaceCollectionRef,
     projectCollectionRef, projectStateCollectionRef,
     taskCollectionRef, commentCollectionRef} from '../fireStore/database.js';
@@ -8,6 +8,7 @@ import { arrayUnion } from 'firebase/firestore';
 import {getCollectionDocByRefAndID,
         getCollectionDocByRefAndMatchField,
         reclusiveRemoveDoc} from '../components/DBUtility.js'
+import { db } from '../firebaseConfig.js';
 
 const workspaceContext = createContext();
 
@@ -135,8 +136,7 @@ const WorkSpaceDBProvider = ({children})=>{
 
         try
         {
-            setAlertWorkSpace({...alertWorkSpace, message:'', color: 'success', isOpen: false});
-            setWSIsLoading(true);
+            //setWSIsLoading(true);
 
             const workSpaceRef = await addDoc(workSpaceCollectionRef, {
                 ...formData,
@@ -162,8 +162,7 @@ const WorkSpaceDBProvider = ({children})=>{
 
             if (workspaceDoc.exists()) 
             {
-                setAlertWorkSpace({...alertWorkSpace, message:'', color: 'success', isOpen: false});
-                setWSIsLoading(true);
+                //setWSIsLoading(true);
 
                 await setDoc(workspaceRef, formData, {merge: true});
 
@@ -191,17 +190,29 @@ const WorkSpaceDBProvider = ({children})=>{
             if (workSpaceDoc.exists() &&
                 userDocRefList.length > 0)
             {
-                setWSIsLoading(true);
+                //setWSIsLoading(true);
+
+                const batch = writeBatch(db);
+
+                batch.update(workSpaceRef, {
+                        userUIDs : arrayUnion(userUID)
+                    });
+
+                batch.update(userDocRefList[0], {
+                        workspaceIDs : arrayUnion(workspaceID)
+                    })
+
+                await batch.commit();
 
                 // Update Work Space Collection
-                await updateDoc(workSpaceRef, {
-                    userUIDs : arrayUnion(userUID)
-                });
+                // await updateDoc(workSpaceRef, {
+                //     userUIDs : arrayUnion(userUID)
+                // });
 
-                // Update User Collection
-                await updateDoc(userDocRefList[0], {
-                    workspaceIDs : arrayUnion(workspaceID)
-                })
+                // // Update User Collection
+                // await updateDoc(userDocRefList[0], {
+                //     workspaceIDs : arrayUnion(workspaceID)
+                // })
 
                 triggerRefreshWorkSpace();
                 setAlertWorkSpace({...alertWorkSpace, message:`Success Joined WorkSpace ${workSpaceData.name}`, color: 'success', isOpen: true, hideDuration: 1500 });
@@ -228,17 +239,29 @@ const WorkSpaceDBProvider = ({children})=>{
             if (workSpaceDoc.exists() &&
                 userDocRefList.length > 0)
             {
-                setWSIsLoading(true);
+                //setWSIsLoading(true);
 
-                // Update Work Space Collection
-                await updateDoc(workSpaceRef, {
-                    userUIDs : arrayRemove(userUID)
-                });
+                const batch = writeBatch(db);
 
-                 // Update User Collection
-                 await updateDoc(userDocRefList[0], {
-                    workspaceIDs : arrayRemove(workspaceID)
-                })
+                batch.update(workSpaceRef, {
+                        userUIDs : arrayRemove(userUID)
+                    });
+
+                batch.update(userDocRefList[0], {
+                        workspaceIDs : arrayRemove(workspaceID)
+                    })
+
+                await batch.commit();
+
+                // // Update Work Space Collection
+                // await updateDoc(workSpaceRef, {
+                //     userUIDs : arrayRemove(userUID)
+                // });
+
+                //  // Update User Collection
+                //  await updateDoc(userDocRefList[0], {
+                //     workspaceIDs : arrayRemove(workspaceID)
+                // })
 
                 triggerRefreshWorkSpace();
                 setAlertWorkSpace({...alertWorkSpace, message:`Success Left WorkSpace ${workSpaceData.name}`, color: 'success', isOpen: true, hideDuration: 1500 });
@@ -276,66 +299,28 @@ const WorkSpaceDBProvider = ({children})=>{
             if (workSpaceDoc.exists() &&
                 userDocRefList.length > 0)
             {
-                setWSIsLoading(true);
+                //setWSIsLoading(true);
 
-                const allProjectIDs = workSpaceData.projectIDs;
-
-                allProjectIDs.forEach(async(projectID)=>{
-
-                    // Get all the project doc
-                    const {docRef:projectDocRef, 
-                            docObj:projectDoc,
-                            docData:projectData} = await getCollectionDocByRefAndID(projectCollectionRef, projectID);
-
-                    if (projectDoc.exists())
-                    {
-                        const allStateIDs = projectData.stateIDs;
-
-                        allStateIDs.forEach(async(stateID)=>{
-                            
-                            // Get all the state doc
-                            const {docRef:stateDocRef, 
-                                    docObj:stateDoc,
-                                    docData:stateData} = await getCollectionDocByRefAndID(projectStateCollectionRef, stateID);
-
-                            if (stateDoc.exists())
-                            {
-                                const allTaskIDs = stateData.taskIDs;
-
-                                allTaskIDs.forEach(async(taskID)=>{
-
-                                    // Get all the state doc
-                                    const {docRef:taskDocRef, 
-                                            docObj:taskDoc,
-                                            docData:taskData} = await getCollectionDocByRefAndID(taskCollectionRef, taskID);
-
-                                    if (taskDoc.exists())
-                                    {
-                                        const allCommentIDs = taskData.commentIDs;
-
-                                        allCommentIDs.forEach(async(commentID)=>{
-                                            
-                                            await reclusiveRemoveDoc(commentCollectionRef, "replyID", commentID);
-
-                                        })
-                                        await deleteDoc(taskDocRef);
-                                    }
-
-                                })
-                                await deleteDoc(stateDocRef);
-                            }
-                        })
-                        await deleteDoc(projectDocRef);
-                    }
-                });
+                // ------------------- The 1st step, remove all the comments, tasks, states and projects sequentially -------------- //
+                await removeAllProjectsFromWSDoc(workSpaceData);
 
                 const workSpaceName = workSpaceData.name;
-                await deleteDoc(workSpaceDocRef);
 
-                // Update User Collection
-                await updateDoc(userDocRefList[0], {
-                    workspaceIDs : arrayRemove(workspaceID)
-                })
+                const batch = writeBatch(db);
+
+                batch.delete(workSpaceDocRef);
+                batch.update(userDocRefList[0], {
+                        workspaceIDs : arrayRemove(workspaceID)
+                    })
+
+                await batch.commit();
+
+                // await deleteDoc(workSpaceDocRef);
+
+                // // Update User Collection
+                // await updateDoc(userDocRefList[0], {
+                //     workspaceIDs : arrayRemove(workspaceID)
+                // })
 
                 triggerRefreshWorkSpace();
                 setAlertWorkSpace({...alertWorkSpace, message:`Success Remove WorkSpace ${workSpaceName}`, color: 'success', isOpen: true, hideDuration: 1500 });

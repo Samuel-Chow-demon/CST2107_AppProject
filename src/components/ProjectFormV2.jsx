@@ -19,8 +19,8 @@ const ProjectFormV2 = ({allUserInWorkSpaceDoc, setOpenDialog, currentProjectForm
 
   const isEditMode = Object.keys(currentProjectForm).length > 0;
 
-  const [dateRange, setDateRange] = useState(isEditMode ? [dayjs(currentProjectForm.startDateISO),
-                                                            dayjs(currentProjectForm.endDateISO)] : [null, null]);
+  const [dateRange, setDateRange] = useState([currentProjectForm?.startDateISO ? dayjs(currentProjectForm.startDateISO) : null,
+                                              currentProjectForm?.endDateISO ? dayjs(currentProjectForm.endDateISO) : null]);
 
   const [anchorEl, setAnchorEl] = useState(null); // Popover anchor
   const addedUserRef = useRef(null);

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { deleteDoc, addDoc, doc, getDoc, getDocs, limit, query, setDoc, where, updateDoc, arrayRemove, onSnapshot } from 'firebase/firestore';
+import { deleteDoc, addDoc, doc, getDoc, getDocs, limit, query, setDoc, where, updateDoc, arrayRemove, onSnapshot, writeBatch } from 'firebase/firestore';
 import { userCollectionRef, workSpaceCollectionRef,
     projectCollectionRef, projectStateCollectionRef,
     taskCollectionRef, commentCollectionRef} from '../fireStore/database.js';
@@ -7,7 +7,9 @@ import userContext from './userContext.js';
 import { arrayUnion } from 'firebase/firestore';
 import {getCollectionDocByRefAndID,
         getCollectionDocByRefAndMatchField,
+        getCollectionDocsByMultipleRefAndID,
         reclusiveRemoveDoc} from '../components/DBUtility.js'
+import { db } from '../firebaseConfig.js';
 
 const taskContext = createContext();
 
@@ -20,70 +22,214 @@ const TaskDBProvider = ({children})=>{
 
     const [alertTask, setAlertTask] = useState({});
 
-    const [projectData, setProjectData] = useState({});
+    const [currentTaskData, setCurrentTaskData] = useState({});
+
+    const [currentAllCommentsInTask, setCurrentAllCommentsInTask] = useState([]);
 
     useEffect(()=>{
         setAlertTask({...alertTask, message:'', isOpen: false });
     }, []);
 
+    const reclusiveRetriveCommentData = async(thisLayerDocObj, thisLayerDocData)=>{
+
+        if (!thisLayerDocObj.exists())
+        {
+            return {};
+        }
+
+        const replyIDs = thisLayerDocData.replyIDs || [];
+
+        if (replyIDs.length > 0)
+        {
+            const listOfRefObj = await getCollectionDocsByMultipleRefAndID(commentCollectionRef, thisLayerDocData.replyIDs);
+
+            const listOfDocDataObj = await Promise.all(
+
+                listOfRefObj.map(async({ docRef, docObj, docData })=>{
+
+                    return {
+                        id:docData.id,
+                        ...docData,
+                        replies: await reclusiveRetriveCommentData(docObj, docData)
+                    };
+                })
+            );
+
+            //console.log(listOfDocDataObj);
+
+            // const obj = {
+            //     id:thisLayerDocData.id,
+            //     ...thisLayerDocData,
+            //     replies: listOfDocDataObj
+            // }
+
+            return listOfDocDataObj; 
+        }
+        else
+        {
+            return [];
+        }
+    }
+
+    const callbackRefreshAllCommentsInTask = async(snapshot)=>{
+        if (snapshot.exists())
+        {
+            const taskDocData = snapshot.data();
+
+            // [{
+            //     id:comment_id, ...docData, replies : [ {id:comment_id, ...docData, replies : []}, {id:comment_id_2, docData, replies : []} .... ]
+            // }
+            // ....
+            // {
+            //     id:comment_id, ...docData, replies : [ {id:comment_id, ...docData, replies : []}, {id:comment_id_2, docData, replies : []} .... ]
+            // }]
+
+            if (taskDocData.commentIDs?.length > 0)
+            {
+                // list of [{ docRef, docObj, docData }]
+                const listOfDocRefObj = await getCollectionDocsByMultipleRefAndID(commentCollectionRef, taskDocData.commentIDs);
+
+                const promises = listOfDocRefObj.map(async({ docRef, docObj, docData })=>{
+
+                    return {
+                        id:docData.id,
+                        ...docData,
+                        replies: await reclusiveRetriveCommentData(docObj, docData)
+                    };
+                })
+
+                const listOfAllCommentsInTask = await Promise.all(promises);
+
+                setCurrentAllCommentsInTask(listOfAllCommentsInTask);
+            }
+            else
+            {
+                setCurrentAllCommentsInTask([]);
+            } 
+        }
+    }
+
+    useEffect(()=>{
+
+        let unsubscribeTaskDoc = null;
+
+        if (currentTaskData?.commentIDs?.length > 0)
+        {
+            if (unsubscribeTaskDoc)
+            {
+                unsubscribeTaskDoc();
+            }
+
+            unsubscribeTaskDoc = onSnapshot(
+                doc(taskCollectionRef, currentTaskData.id), // Listen to the specific project doc
+                (snapshot)=>callbackRefreshAllCommentsInTask(snapshot),
+                (error) => {
+                    console.error("Real-time Listening Task Doc DB Fail", error);
+                    setAlertTask({
+                        ...alertTask,
+                        message: 'Real-time Listening Task Doc DB Fail',
+                        color: 'error',
+                        isOpen: true,
+                        hideDuration: 2000,
+                    });
+                }
+            );
+        }
+        
+        // clear up
+        return ()=>{
+            if (unsubscribeTaskDoc)
+            {
+                unsubscribeTaskDoc();
+            }
+        }
+
+    }, [currentTaskData]) // when current Task Data switch, means open other task page, do refresh the listening trigger
+
     const createTask = async ({formData})=>{
 
-        if (workingProjectID)
+        try
         {
-            try
-            {
-                const {docRef:stateRef, docObj:stateDoc, docData:stateData} = await getCollectionDocByRefAndID(projectStateCollectionRef, formData.stateID);
-    
-                if (stateDoc.exists())
-                {
-                    //setTaskIsLoading(true);
-    
-                    const taskRef = await addDoc(taskCollectionRef, {
-                        ...formData,
-                        commentIDs : [],
-                        imgs : []
-                    });
-    
-                    // Update State Collection
-                    await updateDoc(stateRef, {
-                        stateIDs : arrayUnion(taskRef.id)
-                    });
-    
-                    //triggerRefreshTask();
-                    setAlertTask({...alertTask, message:`Success Added New Task ${formData.title}`, color: 'success', isOpen: true, hideDuration: 1500 });
-                }
-                else
-                {
-                    console.log("Firebase Project Not Exist", error);
-                    setAlertTask({...alertTask, message:`State Not Exist`, color: 'error', isOpen: true, hideDuration: 2000 });
-                }
-            }
-            catch(error)
-            {
-                console.log("Add Firebase State Task Fail", error);
-                setAlertTask({...alertTask, message:'Add New State Task Fail', color: 'error', isOpen: true, hideDuration: 2000 });
-            }
+            const {docRef:stateRef, docObj:stateDoc, docData:stateData} = await getCollectionDocByRefAndID(projectStateCollectionRef, formData.stateID);
 
+            if (stateDoc.exists())
+            {
+                //setTaskIsLoading(true);
+
+                const batch = writeBatch(db);
+
+                const newTaskRef = doc(taskCollectionRef);
+                batch.set(newTaskRef, {
+                    id:newTaskRef.id,
+                    ...formData,
+                    commentIDs : [],
+                    imgs : []
+                })
+
+                batch.update(stateRef, {
+                    taskIDs : arrayUnion(newTaskRef.id)
+                })
+
+                await batch.commit();
+
+                // const taskRef = await addDoc(taskCollectionRef, {
+                //     ...formData,
+                //     commentIDs : [],
+                //     imgs : []
+                // });
+
+                // Update State Collection
+                // await updateDoc(stateRef, {
+                //     taskIDs : arrayUnion(taskRef.id)
+                // });
+
+                //triggerRefreshTask();
+                setAlertTask({...alertTask, message:`Success Added New Task ${formData.title}`, color: 'success', isOpen: true, hideDuration: 1500 });
+            }
+            else
+            {
+                console.log("Firebase State Not Exist", error);
+                setAlertTask({...alertTask, message:`State Not Exist`, color: 'error', isOpen: true, hideDuration: 2000 });
+            }
+        }
+        catch(error)
+        {
+            console.log("Add Firebase State Task Fail", error);
+            setAlertTask({...alertTask, message:'Add New State Task Fail', color: 'error', isOpen: true, hideDuration: 2000 });
         }
     }
 
     const editTask = async ({formData, taskID}) => {
 
         try {
+            const {docRef:stateRef, docObj:stateDoc, docData:stateData} = await getCollectionDocByRefAndID(projectStateCollectionRef, formData.stateID);
             const {docRef:taskRef, docObj:taskDoc, docData:taskData} = await getCollectionDocByRefAndID(taskCollectionRef, taskID);
 
-            if (taskDoc.exists()) 
+            if (taskDoc.exists() &&
+                stateDoc.exists())
             {
                 //setTaskIsLoading(true);
 
-                await setDoc(taskRef, formData, {merge: true});
+                const batch = writeBatch(db);
+
+                batch.set(taskRef, formData, {merge: true});
+
+                // Update State Collection, perform a trigger update in the purpose of firing the StateBoard snapshot listening trigger to update the
+                // StatesWithTaskObject
+                batch.update(stateRef, {
+                    trigger : stateData.trigger? !stateData.trigger : true
+                });
+
+                await batch.commit();
 
                 //triggerRefreshTask();
                 setAlertTask({ ...alertTask, message: `Success Modify Task ${taskData.title}`, color: 'success', isOpen: true, hideDuration: 1500 });
             }
-            else {
-                console.log("Firebase Task Not Exist", error);
-                setAlertTask({ ...alertTask, message: `Task Not Exist`, color: 'error', isOpen: true, hideDuration: 2000 });
+            else 
+            {
+                const errItem = stateDoc.exists() ? "Task" : "State"
+                console.log(`Firebase ${errItem} Not Exist`, error);
+                setAlertTask({ ...alertTask, message: `${errItem} Not Exist`, color: 'error', isOpen: true, hideDuration: 2000 });
             }
         }
         catch (error) {
@@ -115,20 +261,30 @@ const TaskDBProvider = ({children})=>{
 
                 allCommentIDs.forEach(async(commentID)=>{
                     
-                    await reclusiveRemoveDoc(commentCollectionRef, "replyID", commentID);
+                    await reclusiveRemoveDoc(commentCollectionRef, "replyIDs", commentID);
 
                 })
 
                 const taskName = taskData.title;
-                const taskRelatedStateID = taskData.stateID;
-                await deleteDoc(taskRef);
 
-                // Update State Collection
-                const {docRef:stateRef} = await getCollectionDocByRefAndID(projectStateCollectionRef, taskRelatedStateID);
+                // Get Related State Collection
+                const {docRef:stateRef} = await getCollectionDocByRefAndID(projectStateCollectionRef, taskData.stateID);
 
-                await updateDoc(stateRef, {
+                const batch = writeBatch(db);
+
+                batch.delete(taskRef);
+
+                batch.update(stateRef, {
                     taskIDs : arrayRemove(taskID)
                 })
+
+                await batch.commit();
+
+                // await deleteDoc(taskRef);
+
+                // await updateDoc(stateRef, {
+                //     taskIDs : arrayRemove(taskID)
+                // })
 
                 //triggerRefreshTask();
                 setAlertTask({...alertTask, message:`Success Remove Task ${taskName}`, color: 'success', isOpen: true, hideDuration: 1500 });
@@ -150,6 +306,7 @@ const TaskDBProvider = ({children})=>{
     return (
         <taskContext.Provider value={{
             alertTask, setAlertTask,
+            currentAllCommentsInTask, setCurrentTaskData,
             createTask, removeTask, editTask
         }}>
             {children}

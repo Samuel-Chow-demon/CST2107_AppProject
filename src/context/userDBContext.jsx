@@ -3,6 +3,7 @@ import { deleteDoc, addDoc, doc, getDoc, getDocs, limit, query, setDoc, where, u
 import { userCollectionRef, workSpaceCollectionRef } from '../fireStore/database';
 import userContext from './userContext';
 import { arrayUnion } from 'firebase/firestore';
+import { getRandomRGBString } from '../components/utility';
 
 const userDBContext = createContext();
 
@@ -38,6 +39,13 @@ const UserDBProvider = ({children})=>{
                     const queryDoc = query(userCollectionRef, where("uid", "==", _currentUser.uid), limit(1));
                 
                     const userQuerySnapShot = await getDocs(queryDoc);
+
+                    const loginUserColor = getRandomRGBString().solid;
+
+                    setCurrentUser({
+                        ..._currentUser,
+                        color:loginUserColor
+                    })
                     
                     // If missed or not ever existed in the DB for the current logged in user
                     if (userQuerySnapShot.empty)
@@ -46,6 +54,7 @@ const UserDBProvider = ({children})=>{
                         const userDocRef = createUserDB({userName: _currentUser.userName,
                                                     email:_currentUser.email,
                                                     uid:_currentUser.uid,
+                                                    color:loginUserColor,
                                                     workspaceIDs: []});
                     }
                     // Update back the user belonged Workspace
@@ -63,7 +72,8 @@ const UserDBProvider = ({children})=>{
                         // Update back the WS Doc ID list
                         const userDocRef = userQuerySnapShot.docs[0].ref;
                         await updateDoc(userDocRef, {
-                            workspaceIDs : userBelongWS.length > 0 ? arrayUnion(...userBelongWS) : []
+                            workspaceIDs : userBelongWS.length > 0 ? arrayUnion(...userBelongWS) : [],
+                            color:loginUserColor
                         })
     
                         let docUser = await getDoc(userDocRef);
@@ -108,11 +118,11 @@ const UserDBProvider = ({children})=>{
                             setUserInfoDB({
                                 userName : data.userName,
                                 email : data.email,
+                                color: data.color,
                                 uid : data.uid,
                                 workspaceIDs : data.workspaceIDs
                             })
                         }
-    
                     }
                 }
                 catch(error)
@@ -135,6 +145,7 @@ const UserDBProvider = ({children})=>{
             const userDocRef = await addDoc(userCollectionRef, {
                 userName : userName,
                 email : email,
+                color : "",
                 uid : uid,
                 workspaceIDs : []
             });

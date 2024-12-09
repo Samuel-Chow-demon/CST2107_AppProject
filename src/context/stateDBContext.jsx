@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { deleteDoc, addDoc, doc, getDoc, getDocs, limit, query, setDoc, where, updateDoc, arrayRemove, onSnapshot } from 'firebase/firestore';
+import { deleteDoc, addDoc, doc, getDoc, getDocs, limit, query, setDoc, where, updateDoc, arrayRemove, onSnapshot, writeBatch, WriteBatch } from 'firebase/firestore';
 import { userCollectionRef, workSpaceCollectionRef,
     projectCollectionRef, projectStateCollectionRef,
     taskCollectionRef, commentCollectionRef} from '../fireStore/database.js';
@@ -7,9 +7,12 @@ import userContext from './userContext.js';
 import { arrayUnion } from 'firebase/firestore';
 import {getCollectionDocByRefAndID,
         getCollectionDocByRefAndMatchField,
-        reclusiveRemoveDoc} from '../components/DBUtility.js'
+        getCollectionDocsByMultipleRefAndID,
+        reclusiveRemoveDoc,
+        removeAllTasksFromStateDoc} from '../components/DBUtility.js'
 import { useProjectDB } from './projectDBContext.jsx';
 import { useUserDB } from './userDBContext.jsx';
+import { db } from '../firebaseConfig.js';
 
 const stateContext = createContext();
 
@@ -54,10 +57,99 @@ const StateDBProvider = ({children, workingProjectID})=>{
         setStateUpdate(!isStateUpdate)
     }
 
+    const callBackUpdateWorkStateWithTask = async (stateIDs) => {
+
+        if (stateIDs.length <= 0) 
+        {
+            console.error("Project StateIDs Not Found");
+            setStateIsLoading(false);
+            return;
+        }
+
+        // const projectData = projectDocSnapshot.data();
+        // const stateIDs = projectData.stateIDs || [];
+
+        try 
+        {
+            // loop each state doc
+            const statePromises = stateIDs.map(async(stateID)=>{
+
+                const {docRef:stateRef, docObj:stateDoc, docData:stateData} = await getCollectionDocByRefAndID(projectStateCollectionRef, stateID);
+
+                if (stateDoc.exists())
+                {
+                    const projectState = {
+                        id: stateRef.id,
+                        ...stateData
+                    };
+
+                    // The following cannot keep the sequence which recorded in the state doc, 'taskID' field
+                    // then query each task linked to the state have doc.id
+                    // const taskQuery = query(taskCollectionRef, where('stateID', '==', doc.id));
+                    // const taskSnapshot = await getDocs(taskQuery);
+
+                    // const taskList = taskSnapshot.docs.map(taskDoc=>({
+                    //     id: taskDoc.id,
+                    //     ...taskDoc.data()
+                    // }));
+
+                    // Need to get the doc one by one following the list sequence
+                    const taskIDs = projectState.taskIDs || [];
+
+                    // Fetch tasks in the order specified by taskIDs
+                    const taskPromises = taskIDs.map(async (taskID) => {
+
+                        const {docRef:taskRef, docObj:taskDoc, docData:taskData} = await getCollectionDocByRefAndID(taskCollectionRef, taskID);
+
+                        // Check if task exists before getting it
+                        if (taskDoc.exists()) {
+                            return {
+                                id: taskRef.id,
+                                ...taskData
+                            };
+                        } else {
+                            console.warn(`Task ${taskID} not found.`);
+                            return null; // Handle missing tasks
+                        }
+                    });
+
+                    // only get the list of task data if exists
+                    const taskList = (await Promise.all(taskPromises)).filter(task => task !== null);
+
+                    return {
+                        ...projectState,
+                        tasks : taskList
+                    };
+                }
+                else
+                {
+                    console.warn(`State ${stateID} not found.`);
+                    return null; // Handle missing states
+                }
+            });
+
+            const allStatesWithTasks = (await Promise.all(statePromises)).filter(state => state !== null);
+            setworkingStatesWithTasks(allStatesWithTasks);
+        }
+        catch (error) {
+            console.error("Error Getting task states", error);
+            setAlertProject({
+                ...alertState,
+                message: 'Error Getting task states',
+                color: 'error',
+                isOpen: true,
+                hideDuration: 2000,
+            });
+        // Whatever the quit need called loading to false
+        } finally {
+            setStateIsLoading(false);
+        }
+    };
+
     // Load to get the current project states
     useEffect(()=>{
 
-        let unsubscribeStates = null;
+        let unsubscribeProjectDoc = null;
 
         const getFireBaseProjectStates = async ()=>{
 
@@ -73,107 +165,20 @@ const StateDBProvider = ({children, workingProjectID})=>{
                     setAllUserInProjectDoc(await getUserDocData(projectData.memberUIDs))
 
                     // Unsubscribe every render to avoid memory leaks, then below do the subscribe again
-                    if (unsubscribeStates)
+                    if (unsubscribeProjectDoc)
                     {
-                        unsubscribeStates();
+                        unsubscribeProjectDoc();
                     }
 
-                    // Real-time listener for project collection, more efficiency since not to raise the DB connection for each project document ID
-                    unsubscribeStates = onSnapshot(
+                    // Real-time listener for project collection, more efficiency since not to raise the DB connection for project ID workingProjectID when updated
+                    unsubscribeProjectDoc = onSnapshot(
                         doc(projectCollectionRef, workingProjectID), // Listen to the specific project doc
-                        async (projectDocSnapshot) => {
-
-                            if (!projectDocSnapshot.exists()) 
-                            {
-                                console.error("Project Document Not Found");
-                                setStateIsLoading(false);
-                                return;
-                            }
-
-                            const projectData = projectDocSnapshot.data();
-                            const stateIDs = projectData.stateIDs || [];
-
-                            try 
-                            {
-                                // loop each state doc
-                                const statePromises = stateIDs.map(async(stateID)=>{
-
-                                    const {docRef:stateRef, docObj:stateDoc, docData:stateData} = await getCollectionDocByRefAndID(projectStateCollectionRef, stateID);
-
-                                    if (stateDoc.exists())
-                                    {
-                                        const projectState = {
-                                            id: stateRef.id,
-                                            ...stateData
-                                        };
-
-                                        // The following cannot keep the sequence which recorded in the state doc, 'taskID' field
-                                        // then query each task linked to the state have doc.id
-                                        // const taskQuery = query(taskCollectionRef, where('stateID', '==', doc.id));
-                                        // const taskSnapshot = await getDocs(taskQuery);
-
-                                        // const taskList = taskSnapshot.docs.map(taskDoc=>({
-                                        //     id: taskDoc.id,
-                                        //     ...taskDoc.data()
-                                        // }));
-
-                                        // Need to get the doc one by one following the list sequence
-                                        const taskIDs = projectState.taskIDs || [];
-
-                                        // Fetch tasks in the order specified by taskIDs
-                                        const taskPromises = taskIDs.map(async (taskID) => {
-
-                                            const {docRef:taskRef, docObj:taskDoc, docData:taskData} = await getCollectionDocByRefAndID(taskCollectionRef, taskID);
-
-                                            // Check if task exists before getting it
-                                            if (taskDoc.exists()) {
-                                                return {
-                                                    id: taskRef.id,
-                                                    ...taskData
-                                                };
-                                            } else {
-                                                console.warn(`Task ${taskID} not found.`);
-                                                return null; // Handle missing tasks
-                                            }
-                                        });
-
-                                        // only get the list of task data if exists
-                                        const taskList = (await Promise.all(taskPromises)).filter(task => task !== null);
-
-                                        return {
-                                            ...projectState,
-                                            tasks : taskList
-                                        };
-                                    }
-                                    else
-                                    {
-                                        console.warn(`State ${stateID} not found.`);
-                                        return null; // Handle missing states
-                                    }
-                                });
-
-                                const allStatesWithTasks = (await Promise.all(statePromises)).filter(state => state !== null);
-                                setworkingStatesWithTasks(allStatesWithTasks);
-                            }
-                            catch (error) {
-                                console.error("Error Getting task states", error);
-                                setAlertProject({
-                                    ...alertState,
-                                    message: 'Error Getting task states',
-                                    color: 'error',
-                                    isOpen: true,
-                                    hideDuration: 2000,
-                                });
-                            // Whatever the quit need called loading to false
-                            } finally {
-                                setStateIsLoading(false);
-                            }
-                        },
+                        (projectDocSnapshot)=>callBackUpdateWorkStateWithTask(projectDocSnapshot.exists() ? projectDocSnapshot.data().stateIDs : []),
                         (error) => {
-                            console.error("Real-time Listening Project States DB Fail", error);
+                            console.error("Real-time Listening Project Doc DB Fail", error);
                             setAlertProject({
                                 ...alertState,
-                                message: 'Real-time Listening Project States DB Fail',
+                                message: 'Real-time Listening Project Doc DB Fail',
                                 color: 'error',
                                 isOpen: true,
                                 hideDuration: 2000,
@@ -206,13 +211,58 @@ const StateDBProvider = ({children, workingProjectID})=>{
 
         // Cleanup on unmount
         return () => {
-            if (unsubscribeStates)
+            if (unsubscribeProjectDoc)
             {
-                unsubscribeStates();
+                unsubscribeProjectDoc();
             }
         };
 
     }, [isProjectUpdate, _currentUser?.loggedIn, _currentUser?.isUpdating, isStateUpdate, workingProjectID])
+
+    useEffect(()=>{
+
+        let unsubscribeStatesList = [];
+
+        if (projectData?.stateIDs)
+        {
+            if (unsubscribeStatesList.length > 0)
+            {
+                // release every time before refresh a new subscribe
+                unsubscribeStatesList.forEach((unsubscribe) => unsubscribe());
+                unsubscribeStatesList.length = 0; // reset
+            }
+
+            projectData.stateIDs.forEach((stateID) => {
+                const docRef = doc(projectStateCollectionRef, stateID);
+
+                const unsubscribe = onSnapshot(docRef,
+                    (stateDocSnapshot)=>callBackUpdateWorkStateWithTask(projectData.stateIDs),
+                    (error) => {
+                        console.error("Real-time Listening Project Doc DB Fail", error);
+                        setAlertProject({
+                            ...alertState,
+                            message: 'Real-time Listening Project Doc DB Fail',
+                            color: 'error',
+                            isOpen: true,
+                            hideDuration: 2000,
+                        });
+                        setStateIsLoading(false);
+                    });
+        
+                unsubscribeStatesList.push(unsubscribe);
+            });
+        }
+
+        // Cleanup on unmount
+        return () => {
+            if (unsubscribeStatesList.length > 0)
+            {
+                unsubscribeStatesList.forEach((unsubscribe) => unsubscribe());
+                unsubscribeStatesList.length = 0; // reset
+            }
+        };
+
+    }, [projectData])
 
     useEffect(()=>{
         setAlertState({...alertState, message:'', isOpen: false });
@@ -229,17 +279,28 @@ const StateDBProvider = ({children, workingProjectID})=>{
                 if (projectDoc.exists())
                 {
                     //setStateIsLoading(true);
-    
-                    const stateRef = await addDoc(projectStateCollectionRef, {
+
+                    const batch = writeBatch(db);
+
+                    const newStateRef = doc(projectStateCollectionRef);
+                    batch.set(newStateRef, {
                         ...formData,
-                        taskIDs : [],
-                        projectID : workingProjectID
+                        taskIDs: [],
+                        projectID: workingProjectID
                     });
+    
+                    // const stateRef = await addDoc(projectStateCollectionRef, {
+                    //     ...formData,
+                    //     taskIDs : [],
+                    //     projectID : workingProjectID
+                    // });
     
                     // Update Project Collection
-                    await updateDoc(projectRef, {
-                        stateIDs : arrayUnion(stateRef.id)
+                    batch.update(projectRef, {
+                        stateIDs : arrayUnion(newStateRef.id)
                     });
+
+                    await batch.commit();
     
                     triggerRefreshState();
                     setAlertState({...alertState, message:`Success Added New State ${formData.name}`, color: 'success', isOpen: true, hideDuration: 1500 });
@@ -269,17 +330,21 @@ const StateDBProvider = ({children, workingProjectID})=>{
             if (stateDoc.exists() &&
                 taskDoc.exists())
             {
-                setStateIsLoading(true);
+                //setStateIsLoading(true);
+
+                const batch = writeBatch(db);
 
                 // Update State Collection
-                await updateDoc(stateRef, {
+                batch.update(stateRef, {
                     taskIDs : arrayUnion(taskID)
                 });
 
                 // Update Task Collection
-                await updateDoc(taskRef, {
+                batch.update(taskRef, {
                     stateID : stateID
                 });
+
+                await batch.commit();
 
                 triggerRefreshState();
                 setAlertState({...alertState, message:`${taskData.title} Moved To State ${stateData.name}`, color: 'success', isOpen: true, hideDuration: 1500 });
@@ -307,17 +372,22 @@ const StateDBProvider = ({children, workingProjectID})=>{
             if (stateDoc.exists() &&
                 taskDoc.exists())
             {
-                setStateIsLoading(true);
+                //setStateIsLoading(true);
+
+                const batch = writeBatch(db);
 
                  // Update State Collection
-                await updateDoc(stateRef, {
+                 batch.update(stateRef, {
                     taskIDs : arrayRemove(taskID)
                 });
 
                 // Update Task Collection
-                await updateDoc(taskRef, {
+                batch.update(taskRef, {
                     stateID : ""
                 });
+
+                // Commit the batch
+                await batch.commit();
 
                 triggerRefreshState();
                 setAlertState({...alertState, message:`${taskData.title} Success Left State ${stateData.name}`, color: 'success', isOpen: true, hideDuration: 1500 });
@@ -388,7 +458,7 @@ const StateDBProvider = ({children, workingProjectID})=>{
                 if (stateDoc.exists() &&
                     taskDoc.exists())
                 {
-                    setStateIsLoading(true);
+                    //setStateIsLoading(true);
 
                     // Since only allocate the order of TaskID within the same State, no need to remove and update the task doc
     
@@ -404,7 +474,7 @@ const StateDBProvider = ({children, workingProjectID})=>{
                     });
     
                     triggerRefreshState();
-                    setAlertState({...alertState, message:`${taskData.title} Moved Within State ${joinStateData.name}`, color: 'success', isOpen: true, hideDuration: 1500 });
+                    setAlertState({...alertState, message:`${taskData.title} Moved Within State ${stateData.name}`, color: 'success', isOpen: true, hideDuration: 1500 });
                 }
                 else
                 {
@@ -423,10 +493,12 @@ const StateDBProvider = ({children, workingProjectID})=>{
                     joinStateDoc.exists() &&
                     taskDoc.exists())
                 {
-                    setStateIsLoading(true);
+                    //setStateIsLoading(true);
+
+                    const batch = writeBatch(db);
     
                     // Update Leave State Collection
-                    await updateDoc(leaveStateRef, {
+                    batch.update(leaveStateRef, {
                         taskIDs : arrayRemove(taskID)
                     });
     
@@ -438,14 +510,17 @@ const StateDBProvider = ({children, workingProjectID})=>{
                         ...currentTaskIDsList.slice(joinIndex)
                     ];
     
-                    await updateDoc(joinStateRef, {
+                    batch.update(joinStateRef, {
                         taskIDs : updatedTaskIDs
                     });
     
                     // Update Task Collection
-                    await updateDoc(taskRef, {
+                    batch.update(taskRef, {
                         stateID : joinStateID
                     });
+
+                    // Commit the batch as one firebase operation trigger
+                    await batch.commit();
     
                     triggerRefreshState();
                     setAlertState({...alertState, message:`${taskData.title} Leave ${leaveStateData.name} Moved To State ${joinStateData.name}`, color: 'success', isOpen: true, hideDuration: 1500 });
@@ -471,7 +546,7 @@ const StateDBProvider = ({children, workingProjectID})=>{
 
             if (stateDoc.exists()) 
             {
-                setStateIsLoading(true);
+                //setStateIsLoading(true);
 
                 await setDoc(stateRef, formData, {merge: true});
 
@@ -506,41 +581,32 @@ const StateDBProvider = ({children, workingProjectID})=>{
             if (stateDoc.exists()) // &&
                 //userDocRefList.length > 0)
             {
-                setStateIsLoading(true);
-                
-                const allTaskIDs = stateData.taskIDs;
+                //setStateIsLoading(true);
 
-                allTaskIDs.forEach(async(taskID)=>{
+               // ------------------- The 1st step, remove comments, tasks sequentially -------------- //
+                await removeAllTasksFromStateDoc(stateData);
 
-                    // Get all the state doc
-                    const {docRef:taskDocRef, 
-                            docObj:taskDoc,
-                            docData:taskData} = await getCollectionDocByRefAndID(taskCollectionRef, taskID);
-
-                    if (taskDoc.exists())
-                    {
-                        const allCommentIDs = taskData.commentIDs;
-
-                        allCommentIDs.forEach(async(commentID)=>{
-                            
-                            await reclusiveRemoveDoc(commentCollectionRef, "replyID", commentID);
-
-                        })
-                        await deleteDoc(taskDocRef);
-                    }
-
-                })
-
+                // ------------------- The 2nd step -------------- //
                 const stateName = stateData.name;
-                const stateRelatedProjectID = stateData.projectID;
-                await deleteDoc(stateRef);
 
                 // Update Project Collection
-                const {docRef:projectRef} = await getCollectionDocByRefAndID(projectCollectionRef, stateRelatedProjectID);
+                const {docRef:projectRef} = await getCollectionDocByRefAndID(projectCollectionRef, stateData.projectID);
 
-                await updateDoc(projectRef, {
+                const batch2ndStep = writeBatch(db);
+
+                batch2ndStep.delete(stateRef);
+
+                batch2ndStep.update(projectRef, {
                     stateIDs : arrayRemove(stateID)
                 })
+
+                await batch2ndStep.commit();
+
+                // await deleteDoc(stateRef);
+
+                // await updateDoc(projectRef, {
+                //     stateIDs : arrayRemove(stateID)
+                // })
 
                 triggerRefreshState();
                 setAlertState({...alertState, message:`Success Remove State ${stateName}`, color: 'success', isOpen: true, hideDuration: 1500 });
@@ -561,7 +627,8 @@ const StateDBProvider = ({children, workingProjectID})=>{
 
     return (
         <stateContext.Provider value={{
-            workingStatesWithTasks, projectData, allUserInProjectDoc,
+            workingStatesWithTasks, setworkingStatesWithTasks,
+            projectData, allUserInProjectDoc,
             alertState, setAlertState,
             isStateLoading, setStateIsLoading,
             createState, joinState, removeState, leaveState, editState, leaveJoinState, moveState

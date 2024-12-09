@@ -158,7 +158,7 @@ const UserProfile = () => {
                     gap: '10px'
                 }}>
                 <Avatar sx={{
-                    bgcolor: avatarColor,
+                    bgcolor: _currentUser?.color ?? grey[400],
                     width: '8rem',
                     height: '8rem',
                     fontSize: '3rem',

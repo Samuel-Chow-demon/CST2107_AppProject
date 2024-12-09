@@ -41,7 +41,7 @@ const StateForm = ({projectID, setFormOpen, currentStateForm={}})=>{
         if (validateInput({byPassPasswordCheck:true, byPassPasswordConfirm :true}))
         {
             setDisableInput(true)
-            setStateIsLoading(true)
+            //setStateIsLoading(true)
             setFormOpen(false)
   
             isEditMode?
