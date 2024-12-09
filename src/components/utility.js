@@ -151,10 +151,10 @@ async function checkIfUserLoggedInValid(firebaseUser,
         if (userTokenFromAuth.token != _currentUser.token)
         {
             await funcReturnLogInPageHandle(setCurrentUser,
-                                        `New User Login Detected.`,
+                                        `Session Ended / Expired Detected. Log In Again`,
                                         needPromptIfError,
                                         needDirectBackToLangPageIfError);
-            return funcReturn(false, user, `New User Login Detected.`);
+            return funcReturn(false, user, `Session Ended / Expired Detected. Log In Again`);
         }
         return funcReturn(true, user, ``);
     }

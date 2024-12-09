@@ -279,12 +279,15 @@ const LeaveProjectDialog = memo(() => {
   const ProjectCardComponent = ({ proj })=>{
       return (
           <Box sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-around',
+            // display: 'flex',
+            // flexDirection: 'row',
+            // justifyContent: 'space-around',
+            display: 'grid',
+            gridTemplateColumns: '5fr 1fr',
+            justifyContent:'center',
             alignItems: 'center',
             gap: 2,
-            fontSize: '1.5rem',
+            fontSize: '1rem',
             color: grey[700],
             width: '20rem',
             height: '4rem',
@@ -300,19 +303,20 @@ const LeaveProjectDialog = memo(() => {
                     color: grey[300]
                 }
             },
-            border: '2px solid',
-            borderColor: grey[500],
+            // border: '1px solid',
+            // borderColor: grey[500],
             borderRadius: '8px',
             backgroundColor: proj.projectColor ? proj.projectColor : getRandomPurpleColor()
         }}
             onClick={() => navigateToProject(proj.id)}
         >
-          <Typography sx={{fontSize: '1.5rem'}}>{proj.name}</Typography>
+          <Typography sx={{fontSize: '1.5rem', paddingX:'15px'}}>{proj.name}</Typography>
 
           <Box sx={{
             display : 'flex',
             justifyContent: 'flex-end',
             alignItems: 'center',
+            marginRight: '10px',
             gap: 1,
             width: 'auto'
           }}>

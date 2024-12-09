@@ -2,30 +2,45 @@ import { memo, useCallback, useContext, useEffect, useRef, useState } from "reac
 import userContext from "../context/userContext";
 import useInputForm from "../hooks/useInputForm";
 import DateRangePickerTool from "./DateRangePicker";
-import { Box, Button, Chip, Popover, TextField, Typography } from "@mui/material";
+import { Box, Button, Chip, Popover, TextField, Tooltip, Typography } from "@mui/material";
 import { blue, grey } from "@mui/material/colors";
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { useColorPicker } from "../hooks/useColorPicker";
 import dayjs from "dayjs";
 import { useTaskDB } from "../context/taskDBContext";
+import DisplayComments from "./DisplayComments";
+import CommentForm from "./commentForm";
 
 const TaskFormV2 = ({allUserInProjectDoc, stateID, setOpenDialog, currentTaskForm = {}}) => {
 
   const {_currentUser, setCurrentUser} = useContext(userContext);
 
+  // currentAllCommentsInTask
+  // [{
+  //     id:comment_id, ...docData, replies : [ {id:comment_id, ...docData, replies : []}, {id:comment_id_2, docData, replies : []} .... ]
+  // }
+  // ....
+  // {
+  //     id:comment_id, ...docData, replies : [ {id:comment_id, ...docData, replies : []}, {id:comment_id_2, docData, replies : []} .... ]
+  // }]
+
   const {
-    createTask, editTask
+    createTask, editTask,
+    currentAllCommentsInTask, setCurrentTaskData
   } = useTaskDB();
 
   const isEditMode = Object.keys(currentTaskForm).length > 0;
 
-  const [dateRange, setDateRange] = useState(isEditMode ? [dayjs(currentTaskForm.startDateISO),
-                                                            dayjs(currentTaskForm.endDateISO)] : [null, null]);
+  const [dateRange, setDateRange] = useState([currentTaskForm.startDateISO && isEditMode ? dayjs(currentTaskForm.startDateISO) : null,
+                                              currentTaskForm.endDateISO && isEditMode ? dayjs(currentTaskForm.endDateISO) : null]);
 
   const [anchorEl, setAnchorEl] = useState(null); // Popover anchor
   const addedUserRef = useRef(null);
   const open = Boolean(anchorEl);
   const idPopOver = open ? "user-popover" : undefined;
+
+  const [openCommentBox, setOpenCommentBox] = useState(false);
+  const [taskRelatedAllComments, setTaskRelatedAllComments] = useState([]);
 
   //const {color, ColorPicker} = useColorPicker("Project Color", isEditMode ? currentTaskForm.projectColor : "");
 
@@ -52,7 +67,19 @@ const TaskFormV2 = ({allUserInProjectDoc, stateID, setOpenDialog, currentTaskFor
           {'field' : 'title', 'condition' : (inputFormData)=>inputFormData.title.length > 0, 'errMsg' : 'Task Name Cannot Empty'}
       ])
 
+      setCurrentTaskData(currentTaskForm)
+
     }, [])
+
+    useEffect(()=>{
+
+      if (isEditMode)
+      {
+        const taskRelatedComments = currentAllCommentsInTask.filter((commentDoc)=>commentDoc.taskID === currentTaskForm.id);
+        setTaskRelatedAllComments(taskRelatedComments);
+      }
+
+    }, [currentAllCommentsInTask])
 
   useEffect(()=>{
 
@@ -230,6 +257,7 @@ const DisplayUserListComponent = memo(() => {
   return (
     <div style={{width:'100%', display:'flex', flexDirection: 'column', gap:'16px'}}>
       
+      <TaskActionComponent />
       <TextField
             fullWidth
             autoFocus
@@ -237,6 +265,7 @@ const DisplayUserListComponent = memo(() => {
             disabled={isDisableInput}
             sx={{
                 opacity: isDisableInput ? 0.5 : 1,
+                marginTop:'5px'
             }}
             error={formInputErrors['title'].isError}
             label={"Task Title"}
@@ -272,8 +301,34 @@ const DisplayUserListComponent = memo(() => {
         <DisplayUserListComponent />
       </Box>
       {/* <ColorPicker /> */}
+      {
+        isEditMode && !openCommentBox &&
+        <Button sx={{
+                width : '100%',
+                height : 'auto',
+                '&:hover':{
+                    color:grey[100],
+                    backgroundColor:grey[600]
+                }
+            }}
+            onClick={()=>setOpenCommentBox(true)}>
+            Add Comments
+        </Button>
+      }
+      {
+        isEditMode && openCommentBox &&
+        <CommentForm taskID={currentTaskForm.id} userUID={_currentUser.uid}
+                      setFormOpen={setOpenCommentBox}/>
 
-      <TaskActionComponent />
+      }
+      {
+        isEditMode &&
+        <div style={{display:'flex', flexDirection:'column', width:'100%', height:'auto', marginBottom:'10px', gap:'10px'}}>
+          <DisplayComments currentAllCommentsInTask={taskRelatedAllComments}
+                            allUserInProjectDoc={allUserInProjectDoc}
+                            taskID={currentTaskForm.id} userUID={_currentUser.uid}/>
+        </div>
+      }
     </div>
   );
 };

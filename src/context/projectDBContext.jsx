@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { deleteDoc, addDoc, doc, getDoc, getDocs, limit, query, setDoc, where, updateDoc, arrayRemove, onSnapshot } from 'firebase/firestore';
+import { deleteDoc, addDoc, doc, getDoc, getDocs, limit, query, setDoc, where, updateDoc, arrayRemove, onSnapshot, writeBatch } from 'firebase/firestore';
 import { userCollectionRef, workSpaceCollectionRef,
     projectCollectionRef, projectStateCollectionRef,
     taskCollectionRef, commentCollectionRef} from '../fireStore/database.js';
@@ -7,9 +7,11 @@ import userContext from './userContext.js';
 import { arrayUnion } from 'firebase/firestore';
 import {getCollectionDocByRefAndID,
         getCollectionDocByRefAndMatchField,
-        reclusiveRemoveDoc} from '../components/DBUtility.js'
+        reclusiveRemoveDoc,
+        removeAllStatesFromProjectDoc} from '../components/DBUtility.js'
 import { useWorkSpaceDB } from './workspaceDBContext.jsx';
 import { useUserDB } from './userDBContext.jsx';
+import { db } from '../firebaseConfig.js';
 
 const projectContext = createContext();
 
@@ -162,18 +164,33 @@ const ProjectDBProvider = ({children, workingWorkSpaceID})=>{
 
             if (workSpaceDoc.exists())
             {
-                setProjIsLoading(true);
+                //setProjIsLoading(true);
 
-                const projectRef = await addDoc(projectCollectionRef, {
+                const batch = writeBatch(db);
+
+                const newProjectRef = doc(projectCollectionRef);
+                batch.set(newProjectRef, {
                     ...formData,
                     stateIDs : [],
                     workspaceID : workingWorkSpaceID
                 });
 
-                // Update Work Space Collection
-                await updateDoc(workSpaceRef, {
-                    projectIDs : arrayUnion(projectRef.id)
-                });
+                batch.update(workSpaceRef, {
+                        projectIDs : arrayUnion(newProjectRef.id)
+                    });
+
+                await batch.commit();
+
+                // const projectRef = await addDoc(projectCollectionRef, {
+                //     ...formData,
+                //     stateIDs : [],
+                //     workspaceID : workingWorkSpaceID
+                // });
+
+                // // Update Work Space Collection
+                // await updateDoc(workSpaceRef, {
+                //     projectIDs : arrayUnion(projectRef.id)
+                // });
 
                 triggerRefreshProject();
                 setAlertProject({...alertProject, message:`Success Added New Project ${formData.name}`, color: 'success', isOpen: true, hideDuration: 1500 });
@@ -198,7 +215,7 @@ const ProjectDBProvider = ({children, workingWorkSpaceID})=>{
 
             if (projectDoc.exists()) 
             {
-                setProjIsLoading(true);
+                //setProjIsLoading(true);
 
                 await setDoc(projectRef, formData, {merge: true});
 
@@ -226,7 +243,7 @@ const ProjectDBProvider = ({children, workingWorkSpaceID})=>{
             if (projectDoc.exists() &&
                 userDocRefList.length > 0)
             {
-                setProjIsLoading(true);
+                //setProjIsLoading(true);
 
                 // Update Work Space Collection
                 await updateDoc(projectRef, {
@@ -261,7 +278,7 @@ const ProjectDBProvider = ({children, workingWorkSpaceID})=>{
             if (projectDoc.exists() &&
                 userDocRefList.length > 0)
             {
-                setProjIsLoading(true);
+                //setProjIsLoading(true);
 
                 // Update Project Collection
                 await updateDoc(projectRef, {
@@ -303,56 +320,30 @@ const ProjectDBProvider = ({children, workingWorkSpaceID})=>{
             if (projectDoc.exists()) // &&
                 //userDocRefList.length > 0)
             {
-                setProjIsLoading(true);
+                //setProjIsLoading(true);
  
-                const allStateIDs = projectData.stateIDs;
+                // ------------------- The 1st step, remove all the comments, tasks and states sequentially -------------- //
+                removeAllStatesFromProjectDoc();
 
-                allStateIDs.forEach(async(stateID)=>{
-                    
-                    // Get all the state doc
-                    const {docRef:stateDocRef, 
-                            docObj:stateDoc,
-                            docData:stateData} = await getCollectionDocByRefAndID(projectStateCollectionRef, stateID);
-
-                    if (stateDoc.exists())
-                    {
-                        const allTaskIDs = stateData.taskIDs;
-
-                        allTaskIDs.forEach(async(taskID)=>{
-
-                            // Get all the state doc
-                            const {docRef:taskDocRef, 
-                                    docObj:taskDoc,
-                                    docData:taskData} = await getCollectionDocByRefAndID(taskCollectionRef, taskID);
-
-                            if (taskDoc.exists())
-                            {
-                                const allCommentIDs = taskData.commentIDs;
-
-                                allCommentIDs.forEach(async(commentID)=>{
-                                    
-                                    await reclusiveRemoveDoc(commentCollectionRef, "replyID", commentID);
-
-                                })
-                                await deleteDoc(taskDocRef);
-                            }
-
-                        })
-                        await deleteDoc(stateDocRef);
-                    }
-                })
-
+                // ------------------- The 2nd step -------------- //
                 const projectName = projectData.name;
-                const projectRelatedWorkSpaceID = projectData.workspaceID;
+                
+                const {docRef:workSpaceDocRef} = await getCollectionDocByRefAndID(workSpaceCollectionRef, projectData.workspaceID);
 
-                await deleteDoc(projectRef);
+                const batchStep2 = writeBatch(db);
 
-                // Update Workspace Collection
-                const {docRef:workSpaceDocRef} = await getCollectionDocByRefAndID(workSpaceCollectionRef, projectRelatedWorkSpaceID);
-
-                await updateDoc(workSpaceDocRef, {
+                batchStep2.delete(projectRef);
+                batchStep2.update(workSpaceDocRef, {
                     projectIDs : arrayRemove(projectID)
                 })
+
+                await batchStep2.commit();
+
+                // await deleteDoc(projectRef);
+
+                // await updateDoc(workSpaceDocRef, {
+                //     projectIDs : arrayRemove(projectID)
+                // })
 
                 triggerRefreshProject();
                 setAlertProject({...alertProject, message:`Success Remove Project ${projectName}`, color: 'success', isOpen: true, hideDuration: 1500 });
