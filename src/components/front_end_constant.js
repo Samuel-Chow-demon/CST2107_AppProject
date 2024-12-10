@@ -8,6 +8,7 @@ const CONST_PATH = {
     home : '/home',
     boardpage: '/boardpage',
     workspace: '/workspace',
+    gameSnake:'/game/snake',
     userProfile: '/userprofile'};
 
 // The constant to be used for whole project
