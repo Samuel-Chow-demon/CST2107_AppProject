@@ -74,7 +74,7 @@ const ProjectFormV2 = ({allUserInWorkSpaceDoc, setOpenDialog, currentProjectForm
     if (validateInput({byPassPasswordCheck:true, byPassPasswordConfirm :true}))
     {
         setDisableInput(true)
-        setProjIsLoading(true)
+        //setProjIsLoading(true)
         setOpenDialog(false)
 
         isEditMode ? 

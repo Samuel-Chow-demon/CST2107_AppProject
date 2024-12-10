@@ -113,7 +113,7 @@ const TaskDBProvider = ({children})=>{
 
         let unsubscribeTaskDoc = null;
 
-        if (currentTaskData?.commentIDs?.length > 0)
+        if (Object.keys(currentTaskData).length > 0)
         {
             if (unsubscribeTaskDoc)
             {

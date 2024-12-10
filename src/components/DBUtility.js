@@ -1,4 +1,4 @@
-import { doc, getDoc, getDocs, query, where, writeBatch } from 'firebase/firestore';
+import { doc, getDoc, getDocs, limit, orderBy, query, where, writeBatch } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { userCollectionRef, workSpaceCollectionRef,
         projectCollectionRef, projectStateCollectionRef,
@@ -43,7 +43,7 @@ const getCollectionDocByRefAndMatchField = async(collectionRef, field, value)=>{
             const docObj = await getDoc(doc.ref);
 
             if (docObj.exists()) {
-                docObjList.push(docObj); 
+                docObjList.push({id:docObj.id, ...docObj.data()}); 
                 docRefList.push(doc.ref);
             }
         });
