@@ -25,6 +25,10 @@ const taskCollectionRef = collection(db, TASK_DB_NAME);
 const COMMENT_DB_NAME = "comments"
 const commentCollectionRef = collection(db, COMMENT_DB_NAME);
 
+// Game Database
+const COMMENT_DB_GAME = "game"
+const gameCollectionRef = collection(db, COMMENT_DB_GAME);
+
 export{
     userCollectionRef,
     workSpaceCollectionRef,
@@ -32,10 +36,12 @@ export{
     projectCollectionRef,
     taskCollectionRef,
     commentCollectionRef,
+    gameCollectionRef,
     USER_DB_NAME,
     WORKSPACE_DB_NAME,
     PROJECT_STATE_DB_NAME,
     PROJECT_DB_NAME,
     TASK_DB_NAME,
-    COMMENT_DB_NAME
+    COMMENT_DB_NAME,
+    COMMENT_DB_GAME
 }

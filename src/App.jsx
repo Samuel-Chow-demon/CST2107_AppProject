@@ -13,6 +13,8 @@ import UserProfile from './pages/UserProfile';
 import { WorkSpaceDBProvider } from './context/workspaceDBContext';
 import WorkSpaceBoard from './pages/WorkSpaceBoard';
 import { UserDBProvider } from './context/userDBContext';
+import SnakeGame from './game/snake/SnakeGame';
+import { GameDBProvider } from './context/gameDBContext';
 
 function App() {
 
@@ -51,6 +53,10 @@ function App() {
             element: <WorkSpaceBoard />
           },
           {
+            path: CONST_PATH.gameSnake.slice(1),
+            element: <SnakeGame />
+          },
+          {
             index: true,                                  // Default child route for '/home'
             element: <Navigate to={CONST_PATH.workspace.slice(1)} replace />  // Redirect to '/home/workspace'
           },
@@ -71,7 +77,9 @@ function App() {
         }}>
           <WorkSpaceDBProvider>
             <UserDBProvider>
-              {routes}
+              <GameDBProvider>
+                {routes}
+              </GameDBProvider>
             </UserDBProvider>
           </WorkSpaceDBProvider>
       </userContext.Provider>

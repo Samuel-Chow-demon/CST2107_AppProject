@@ -54,6 +54,32 @@ const getCollectionDocByRefAndMatchField = async(collectionRef, field, value)=>{
     return {docRefList, docObjList};
 }
 
+const getCollectionDocByRefAndTopMostFieldValue = async(collectionRef, field, topMostSize)=>{
+
+  // can have multiple docs that match
+  const queryDoc = query(collectionRef, orderBy(field, "desc"), limit(topMostSize));
+  const querySnapShot = await getDocs(queryDoc);
+
+  let docRefList = []
+  let docObjList = []
+
+  if (!querySnapShot.empty)
+  {
+      const promises = querySnapShot.docs.map(async (doc) => {
+          const docObj = await getDoc(doc.ref);
+
+          if (docObj.exists()) {
+              docObjList.push({id:docObj.id, ...docObj.data()}); 
+              docRefList.push(doc.ref);
+          }
+      });
+
+      // Wait for all the promises to resolve
+      await Promise.all(promises);
+  }
+  return {docRefList, docObjList};
+}
+
 // Need to create a Lock Unlock Function for batch delete under multiple thread
 class Lock {
     constructor() {
@@ -263,6 +289,7 @@ const removeAllProjectsFromWSDoc = async(workSpaceData)=>{
 export {getCollectionDocByRefAndID,
         getCollectionDocsByMultipleRefAndID,
         getCollectionDocByRefAndMatchField,
+        getCollectionDocByRefAndTopMostFieldValue,
         reclusiveRemoveDoc, 
         removeAllTasksFromStateDoc, removeAllStatesFromProjectDoc, removeAllProjectsFromWSDoc
 };
