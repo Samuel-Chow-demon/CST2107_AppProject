@@ -323,7 +323,7 @@ const ProjectDBProvider = ({children, workingWorkSpaceID})=>{
                 //setProjIsLoading(true);
  
                 // ------------------- The 1st step, remove all the comments, tasks and states sequentially -------------- //
-                removeAllStatesFromProjectDoc();
+                await removeAllStatesFromProjectDoc(projectData);
 
                 // ------------------- The 2nd step -------------- //
                 const projectName = projectData.name;

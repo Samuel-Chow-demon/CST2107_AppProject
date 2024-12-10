@@ -59,7 +59,8 @@ const StateDBProvider = ({children, workingProjectID})=>{
 
     const callBackUpdateWorkStateWithTask = async (stateIDs) => {
 
-        if (stateIDs.length <= 0) 
+        if (!stateIDs ||
+            stateIDs.length <= 0) 
         {
             console.error("Project StateIDs Not Found");
             setStateIsLoading(false);
