@@ -108,7 +108,7 @@ const WorkSpaceBoard = () => {
                             elevation={0}>
 
                             <WorkSpaceForm setOpenDialog={setOpenDialog}
-                                            currentWSForm={{}} />
+                                            currentWSForm={editWSForm} />
 
                         </Paper>
                     </DialogContent>
@@ -246,7 +246,7 @@ const WorkSpaceBoard = () => {
         }
     }
 
-    const handleOpenEditOrCreateWSDialog = (ws = {})=>{
+    const handleOpenEditOrCreateWSDialog = ({ws = {}})=>{
 
         setEditWSForm(ws);  // empty form object means create form
         setOpenDialog(true);
@@ -293,7 +293,7 @@ const WorkSpaceBoard = () => {
                             aria-label="edit" size="large"
                             onClick={(e) => {
                                 e.stopPropagation();
-                                handleOpenEditOrCreateWSDialog(ws);
+                                handleOpenEditOrCreateWSDialog({ws:ws});
                             }}>
                             <BorderColorIcon fontSize="inherit" />
 
@@ -304,8 +304,8 @@ const WorkSpaceBoard = () => {
                             title={
                                 <Fragment>
                                     <Typography sx={{
-                                        color:(ws.creatorUID == _currentUser.uid) ? red[400] : grey[600]
-                                    }}>{`${ws.creatorUID == _currentUser.uid ? "Remove" : "Leave"} ${ws.name}`}</Typography>
+                                        color:(ws.creatorUID == _currentUser?.uid) ? red[400] : grey[600]
+                                    }}>{`${ws.creatorUID == _currentUser?.uid ? "Remove" : "Leave"} ${ws.name}`}</Typography>
                                 </Fragment>
                             }
                         >
@@ -321,7 +321,7 @@ const WorkSpaceBoard = () => {
                             onClick={(e) => {e.stopPropagation();
                                              handleOpenRemoveOrLeaveWorkSpaceDialog(ws) }}>
                             {
-                                (ws.creatorUID == _currentUser.uid) ? <DeleteForeverIcon fontSize="inherit" /> : <ExitToAppIcon fontSize="inherit" />
+                                (ws.creatorUID == _currentUser?.uid) ? <DeleteForeverIcon fontSize="inherit" /> : <ExitToAppIcon fontSize="inherit" />
                             }
                         </IconButton>
                     </HtmlTooltip>
@@ -407,7 +407,7 @@ const WorkSpaceBoard = () => {
                                 borderColor: grey[500],
                                 borderRadius: '8px'
                             }}
-                                onClick={handleOpenEditOrCreateWSDialog}
+                                onClick={()=>handleOpenEditOrCreateWSDialog({ws:{}})}
                             >
                                 Add WorkSpace
                                 <AddCircleIcon className="icon" sx={{

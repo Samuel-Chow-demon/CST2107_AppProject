@@ -10,6 +10,7 @@ import EditNoteIcon from '@mui/icons-material/EditNote';
 import CloseIcon from '@mui/icons-material/Close';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
 import useDisplayMessage from '../hooks/useDisplayMessage';
+import { useUserDB } from '../context/userDBContext';
 
 const UserProfile = () => {
 
@@ -18,6 +19,8 @@ const UserProfile = () => {
   const {_currentUser, setCurrentUser} = useContext(userContext);
 
   const {avatarColor, setAvatarColor} = useState(getRandomRGBString().solid);
+
+  const { setUserDBUpdate, updateUserDB } = useUserDB()
 
  
   const profileUser = {
@@ -52,7 +55,7 @@ const UserProfile = () => {
 
     useEffect(()=>{
         
-        if (!isLoading && _currentUser.loggedIn)
+        if (!isLoading && _currentUser?.loggedIn)
         {
             console.log("profile", firebaseUser);
             setFormData({
@@ -101,6 +104,14 @@ const UserProfile = () => {
                 setDisableInput(true);
 
                 const userTokenFromAuth = await firebaseUser.getIdTokenResult();
+
+                await updateUserDB({uid:_currentUser.uid, groupObjValue:{
+                    userName : firebaseUser.displayName,
+                    email : firebaseUser.email
+                }})
+
+                // Toggle to trigger userDBContext to update the user DB and check the Workspace DB
+                setUserDBUpdate(prevValue=>!prevValue);
 
                 setCurrentUser((prevData)=>({
                     ...prevData,
@@ -163,7 +174,8 @@ const UserProfile = () => {
                     height: '8rem',
                     fontSize: '3rem',
                 }}>
-                    {(_currentUser.userName.at(0) + _currentUser.userName.at(-1)).toUpperCase()}
+                    {_currentUser &&
+                        (_currentUser.userName.at(0) + _currentUser.userName.at(-1)).toUpperCase()}
                 </Avatar>
             </Box>
 
@@ -194,7 +206,8 @@ const UserProfile = () => {
                                 fontSize: '2rem',
                                 color: grey[700]
                             }}>
-                            {capitalizeFirstLetter(_currentUser.userName)}'s Profile
+                            {_currentUser &&
+                            capitalizeFirstLetter(_currentUser.userName)}'s Profile
                         </Typography>
                     </Box>
 
