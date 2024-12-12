@@ -5,7 +5,7 @@ import { FullscreenExit } from '@mui/icons-material';
 import { useUserDB } from '../context/userDBContext';
 import Alert from './Alert';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import { Box, Button, Dialog, DialogContent, DialogTitle, Paper } from '@mui/material';
+import { Avatar, Box, Button, Dialog, DialogContent, DialogTitle, Paper, styled, Tooltip, tooltipClasses, Typography } from '@mui/material';
 import { blue, green, grey } from '@mui/material/colors';
 import AddUserToWorkSpaceForm from './AddUserToWorkSpaceForm';
 import Draggable from 'react-draggable';
@@ -13,6 +13,8 @@ import { useWorkSpaceDB } from '../context/workspaceDBContext';
 import userContext from '../context/userContext';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import { useNavigate } from 'react-router-dom';
+import { userCollectionRef } from '../fireStore/database.js';
+import { onSnapshot } from 'firebase/firestore';
 
 // if projectDataWithID = {} means navbar is at the workspace board
 const BoardNavbar = ({ toggleLayout, isGridLayout, workSpaceDataWithID,
@@ -37,13 +39,17 @@ const BoardNavbar = ({ toggleLayout, isGridLayout, workSpaceDataWithID,
     setMenuOpen(!isMenuOpen);
   };
 
+  const extractAllWorkSpaceUserDoc = async()=>{
+    setAllUserInWorkSpaceDoc(await getUserDocData(workSpaceDataWithID.userUIDs));
+  }
+
   useEffect(() => {
 
     const getAllUserDBDoc = async () => {
       if (workSpaceDataWithID)
       {
         setAllUserDoc(await getAllUserDoc());
-        setAllUserInWorkSpaceDoc(await getUserDocData(workSpaceDataWithID.userUIDs));
+        extractAllWorkSpaceUserDoc();
         setLoadedAllUser(true);
       }
     }
@@ -52,7 +58,34 @@ const BoardNavbar = ({ toggleLayout, isGridLayout, workSpaceDataWithID,
     setAlertWorkSpace({ ...alertWorkSpace, message: '', isOpen: false });
     getAllUserDBDoc();
 
-  }, [workSpaceDataWithID])
+  }, [workSpaceDataWithID]);
+
+  useEffect(()=>{
+
+    let unsubscribeUserCol = null;
+
+    if (unsubscribeUserCol)
+    {
+      unsubscribeUserCol();
+    }
+
+    unsubscribeUserCol = onSnapshot(
+      userCollectionRef,
+      (snapshot)=>extractAllWorkSpaceUserDoc(),
+      (error) => {
+          console.error("Real-time Listening User Doc DB Fail", error);
+          setAlertUserDB({
+              ...alertUserDB,
+              message: 'Real-time Listening User Doc DB Fail',
+              color: 'error',
+              isOpen: true,
+              hideDuration: 2000,
+          });
+      }
+    );
+
+    return () => unsubscribeUserCol();
+  }, [])
 
   const PaperComponent = memo(({ nodeRef, ...props }) => {
     return (
@@ -94,7 +127,7 @@ const BoardNavbar = ({ toggleLayout, isGridLayout, workSpaceDataWithID,
               elevation={0}>
 
               <AddUserToWorkSpaceForm allUserDocs={allUserDoc} creatorUID={workSpaceDataWithID.creatorUID}
-                                      workspaceID={workSpaceDataWithID.id} setOpenDialog={setOpenAddUserDialog} uid={_currentUser.uid}
+                                      workspaceID={workSpaceDataWithID.id} setOpenDialog={setOpenAddUserDialog} uid={_currentUser?.uid ?? ""}
                                       allUserInWorkSpaceDoc={allUserInWorkSpaceDoc} />
 
             </Paper>
@@ -103,6 +136,87 @@ const BoardNavbar = ({ toggleLayout, isGridLayout, workSpaceDataWithID,
       </Fragment >
     );
   });
+
+  const HtmlTooltip = styled(({ className, ...props }) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: grey[100], //'#f5f5f9',
+      color: 'rgba(0, 0, 0, 0.9)',
+      maxWidth: 150,
+      fontSize: theme.typography.pxToRem(12),
+      border: '0px solid',
+    },
+  }));
+
+  const UserOnlineStatus = ()=>{
+
+    const getShortName = (userName)=>{
+      return (userName.at(0) + userName.at(-1)).toUpperCase();
+    }
+
+    const onLineUser = allUserInWorkSpaceDoc.filter((userDoc)=>userDoc.loggedIn === true);
+    const offLineUser = allUserInWorkSpaceDoc.filter((userDoc)=>userDoc.loggedIn !== true);
+
+    return(
+      <>
+        {
+          allUserInWorkSpaceDoc &&
+          (
+            <Box sx={{display:'flex', justifyContent:'center', alignItems:'center', marginLeft:'1rem'}}>
+              
+              {
+                onLineUser.length > 0 &&
+                  <Box sx={{display:'flex', justifyContent:'center', alignItems:'center'}}>
+                    <Typography sx={{marginRight:'5px'}}>online:</Typography>
+                    {
+                      onLineUser.map((userDoc, index)=>{
+                        return (
+                          <HtmlTooltip
+                              title={
+                                  <Fragment>
+                                      <Typography sx={{
+                                          color: grey[600]
+                                      }}>{userDoc?.userName ?? 'N/A'}</Typography>
+                                  </Fragment>
+                              }
+                          >
+                            <Avatar key={index} sx={{ bgcolor: userDoc.color ? userDoc.color : 'white' }}>{getShortName(userDoc.userName)}</Avatar>
+                          </HtmlTooltip>
+                        );
+                      })
+                    }
+                  </Box>
+              }
+              {
+                offLineUser.length > 0 &&
+                  <Box sx={{display:'flex', justifyContent:'center', alignItems:'center', marginLeft:'1rem'}}>
+                    <Typography sx={{marginRight:'5px'}}>offline:</Typography>
+                    {
+                      offLineUser.map((userDoc, index)=>{
+                        return (
+                          <HtmlTooltip
+                              title={
+                                  <Fragment>
+                                      <Typography sx={{
+                                          color: grey[600]
+                                      }}>{userDoc?.userName ?? 'N/A'}</Typography>
+                                  </Fragment>
+                              }
+                          >
+                            <Avatar key={index} sx={{ bgcolor: 'grey' }}>{getShortName(userDoc.userName)}</Avatar>
+                          </HtmlTooltip>
+                        );
+                      })
+                    }
+                  </Box>
+              }
+            </Box>
+          )
+        }
+      </>
+    );
+  }
 
   return (
     <>
@@ -146,6 +260,7 @@ const BoardNavbar = ({ toggleLayout, isGridLayout, workSpaceDataWithID,
           </Button>
         }
 
+        <UserOnlineStatus />
         {/* <Box sx={{
           display: 'flex',
           justifyContent: 'flex-end',
