@@ -20,7 +20,8 @@ const SnakeGame = () => {
   const [openFinishDialog, setOpenFinishDialog] = useState(false);
   const [finishMsg, setFinishMsg] = useState("");
 
-  const frameDelay = 60;
+  const INIT_SPEED = 80; // the larger the slower
+  const frameDelayRef = useRef(INIT_SPEED);
 
   const [currentBoardSize, setCurrentBoardSize]=useState({
     width: 512,
@@ -31,8 +32,12 @@ const SnakeGame = () => {
   const INITIAL_LENGTH = 4;
   const INITIAL_SHIFTED_OFFSET = 3;
 
+  const EVERY_SCORE_ACCUMMULATE_TO_INCREASE_SPEED = 5;
+
   const scoreRef = useRef(0);
   const [score, setScore] = useState(scoreRef.current); // Sync state with ref
+
+  const speedRef = useRef(1);
 
   const getRandomXYInTheBoard = (shift = 0)=>{
 
@@ -168,6 +173,7 @@ const FinishDialog = memo(() => {
       };
       snakeRef.current = newSnake;
       scoreRef.current = 0;
+      frameDelayRef.current = INIT_SPEED;
       setScore(scoreRef.current);
   };
 
@@ -190,7 +196,7 @@ const FinishDialog = memo(() => {
         const delta = timeStamp - snakeRef.current.lastUpdate;
 
         // Only update the game state if enough time has passed
-        if (delta >= frameDelay) 
+        if (delta >= frameDelayRef.current) 
         {
             snakeRef.current.lastUpdate = timeStamp;
 
@@ -201,8 +207,8 @@ const FinishDialog = memo(() => {
             const apple = appleRef.current;
 
             // Move snake
-            snake.x += snake.dx;
-            snake.y += snake.dy;
+            snake.x += (snake.dx);
+            snake.y += (snake.dy);
 
             //Ensure snake off-screen to die
               if (
@@ -219,6 +225,8 @@ const FinishDialog = memo(() => {
                 finishGame(scoreRef.current);
                 return;
               }
+
+              console.log(snake.y, canvas.height);
 
             // if (snake.x < 0) {
             //     // Update snake.x to be on the right, when further to the left, appear to show at the right
@@ -279,6 +287,10 @@ const FinishDialog = memo(() => {
                 apple.y = getRandomXYInTheBoard()[1];
 
                 scoreRef.current += 1;
+
+                speedRef.current = ((scoreRef.current / EVERY_SCORE_ACCUMMULATE_TO_INCREASE_SPEED) | 0) + 1;
+                frameDelayRef.current = INIT_SPEED - (speedRef.current * 20);
+
                 setScore(scoreRef.current);
             }
         }
@@ -379,7 +391,10 @@ const FinishDialog = memo(() => {
 
             <Box sx={{display: 'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', gap:'10px', height: '100%', width:'100%'}}>
               <Typography style={{ fontSize:'36px', marginTop:'0px'}}>Snake Game</Typography>
-              <Typography style={{ fontSize:'24px'}}>Score: {score}</Typography>
+              <Box sx={{display: 'flex', justifyContent:'space-around', alignItems:'center', gap:'3rem'}}>
+                <Typography style={{ fontSize:'24px'}}>Your Highest Score: {currentUserGameScoreDoc.scores.snake}</Typography>
+                <Typography style={{ fontSize:'24px'}}>Score: {score}</Typography>
+              </Box>
               {
                 startGame ?
                 <canvas ref={canvasRef} style={{
