@@ -89,11 +89,11 @@ function Sidebar() {
             itemText={"Workspace"}
             buttonClick={()=>navigate(CONST_PATH.home + CONST_PATH.workspace)}
         />
-        {/* <ListItemComponent 
-            IconComponent={<ControlPointIcon fontSize="large" sx={{ color: '#6c727f' }} />}
-            itemText={"Add WorkSpace"}
-            // buttonClick={}
-        /> */}
+        <ListItemComponent 
+            IconComponent={<WeekendIcon fontSize="large" sx={{ color: '#6c727f' }} />}
+            itemText={"Lounge"}
+            buttonClick={()=>navigate(CONST_PATH.home + CONST_PATH.lounge)}
+        />
         <ListItemComponent 
             IconComponent={<AccountCircle fontSize="large" sx={{ color: '#6e727d' }} />}
             itemText={"Profile"}

@@ -15,6 +15,9 @@ import WorkSpaceBoard from './pages/WorkSpaceBoard';
 import { UserDBProvider } from './context/userDBContext';
 import SnakeGame from './game/snake/SnakeGame';
 import { GameDBProvider } from './context/gameDBContext';
+import LoungeBoard from './pages/LoungeBoard';
+import NewsPage from './pages/NewsPage';
+import { NewsDataProvider } from './context/newsContext';
 
 function App() {
 
@@ -53,6 +56,14 @@ function App() {
             element: <WorkSpaceBoard />
           },
           {
+            path: CONST_PATH.lounge.slice(1),      // '/home/lounge', slice(1) remove the '/' from the constant
+            element: <LoungeBoard />
+          },
+          {
+            path: CONST_PATH.loungeNews.slice(1), // '/home/lounge/news', slice(1) remove the '/' from the constant
+            element: <NewsPage />
+          },
+          {
             path: CONST_PATH.gameSnake.slice(1),
             element: <SnakeGame />
           },
@@ -77,9 +88,11 @@ function App() {
         }}>
           <WorkSpaceDBProvider>
             <UserDBProvider>
-              <GameDBProvider>
-                {routes}
-              </GameDBProvider>
+              <NewsDataProvider>
+                <GameDBProvider>
+                  {routes}
+                </GameDBProvider>
+              </NewsDataProvider>
             </UserDBProvider>
           </WorkSpaceDBProvider>
       </userContext.Provider>
