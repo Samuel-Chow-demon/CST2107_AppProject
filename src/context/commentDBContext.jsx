@@ -37,42 +37,55 @@ const CommentDBProvider = ({children})=>{
             {
                 //setCommentIsLoading(true);
 
-                const batch = writeBatch(db);
+                const {docRef:stateRef, docObj:stateDoc, docData:stateData} = await getCollectionDocByRefAndID(projectStateCollectionRef, taskData.stateID);
 
-                const newCommentRef = doc(commentCollectionRef);
-                batch.set(newCommentRef, {
-                    id:newCommentRef.id,
-                    ...formData             // should included the taskID:id
-                });
-                
-                if (parentCommentID != "")
+                if (stateDoc.exists())
                 {
-                    const {docRef:parentCommentRef, docObj:parentCommentDoc, docData:parentCommentData} = await getCollectionDocByRefAndID(commentCollectionRef, parentCommentID);
-                    if (parentCommentDoc.exists())
+                    const batch = writeBatch(db);
+
+                    const newCommentRef = doc(commentCollectionRef);
+                    batch.set(newCommentRef, {
+                        id:newCommentRef.id,
+                        ...formData             // should included the taskID:id
+                    });
+                    
+                    if (parentCommentID != "")
                     {
-                        batch.update(parentCommentRef, {
-                            replyIDs : arrayUnion(newCommentRef.id)
-                        })
-        
+                        const {docRef:parentCommentRef, docObj:parentCommentDoc, docData:parentCommentData} = await getCollectionDocByRefAndID(commentCollectionRef, parentCommentID);
+                        if (parentCommentDoc.exists())
+                        {
+                            batch.update(parentCommentRef, {
+                                replyIDs : arrayUnion(newCommentRef.id)
+                            })
+            
+                        }
                     }
+                    // Only the 1st layer to the task need to add to Task Doc
+                    else
+                    {
+                        batch.update(taskRef, {
+                            commentIDs : arrayUnion(newCommentRef.id)
+                        })
+                    }
+
+                    // Trigger to hit the snap listening, trigger the task and the state
+                    batch.update(taskRef, {
+                        trigger : taskData.trigger? !taskData.trigger : true
+                    });
+                    batch.update(stateRef, {
+                        trigger : stateData.trigger? !stateData.trigger : true
+                    });
+
+                    await batch.commit();
+
+                    //triggerRefreshComment();
+                    setAlertComment({...alertComment, message:`Success Added New Comment`, color: 'success', isOpen: true, hideDuration: 1500 });
                 }
-                // Only the 1st layer to the task need to add to Task Doc
                 else
                 {
-                    batch.update(taskRef, {
-                        commentIDs : arrayUnion(newCommentRef.id)
-                    })
+                    console.log("Firebase State Not Exist", error);
+                    setAlertComment({...alertComment, message:`State Not Exist`, color: 'error', isOpen: true, hideDuration: 2000 });
                 }
-
-                // Trigger to hit the snap listening
-                batch.update(taskRef, {
-                    trigger : taskData.trigger? !taskData.trigger : true
-                });
-
-                await batch.commit();
-
-                //triggerRefreshComment();
-                setAlertComment({...alertComment, message:`Success Added New Comment`, color: 'success', isOpen: true, hideDuration: 1500 });
             }
             else
             {

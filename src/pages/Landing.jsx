@@ -21,6 +21,7 @@ import { signOutUser } from '../components/utility';
 import userContext from '../context/userContext.js'
 
 import WarehouseIcon from '@mui/icons-material/Warehouse';
+import { useUserDB } from '../context/userDBContext.jsx';
 
 // GridItem component
 const GridItem = ({ item, index, moveItem, id }) => {
@@ -71,6 +72,8 @@ const LandingPage = () => {
 
   const [clickIdx, setClickIdx] = useState(0);
   const [displayText, setDisplayText] = useState(displayTextList[0]);
+
+  const { updateUserDB } = useUserDB();
 
   const buttonClick = ()=>{
     setClickIdx(prevIdx=>(prevIdx + 1) % displayTextList.length);
@@ -162,7 +165,7 @@ const LandingPage = () => {
 
       if (isLoggedIn) // call logout
       {
-        await signOutUser(setCurrentUser);
+        await signOutUser(setCurrentUser, updateUserDB, _currentUser.uid);
         if (window.location.pathname != CONST_PATH.landing)
         {
           navigate(CONST_PATH.signInUp);

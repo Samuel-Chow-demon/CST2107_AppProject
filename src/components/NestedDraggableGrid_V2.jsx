@@ -41,9 +41,18 @@ const TaskCardComponent = ({ task, provided, index, snapshot,
 );
 
 const StateCardComponent = ({ state, stateIndex, snapshot, removeState, removeTask, setRemoveItemObj, setOpenRemoveDialog,
-                              setOpenTaskDialog, setCurrentTaskStateID, setEditTaskForm}) => {
+                              setOpenTaskDialog, setCurrentTaskStateID, setCurrentOpenTaskID, currentOpenTaskID, setEditTaskForm}) => {
 
   const [openStateForm, setOpenStateForm] = useState(false);
+
+  // useEffect(()=>{
+
+  //   if (currentOpenTaskID != "")
+  //   {
+  //     const currentTask = state.tasks.filter((task)=>task.id === currentOpenTaskID);
+  //     setEditTaskForm(currentTask);
+  //   }
+  // },[])
 
   const onClickRemove = ()=>{
     setOpenTaskDialog(false);
@@ -72,6 +81,7 @@ const StateCardComponent = ({ state, stateIndex, snapshot, removeState, removeTa
   const onClickOpenAddOrEditTask = (editTaskForm={})=>{
     setOpenRemoveDialog(false)
     setCurrentTaskStateID(state.id);
+    setCurrentOpenTaskID(editTaskForm?.id ?? "");
     setEditTaskForm(editTaskForm); // if empty object means at the Add New Task Button
 
     setOpenTaskDialog(true);
@@ -253,6 +263,7 @@ const NestedDraggableGrid_V2 = ({stateCards, setStateCards, allUserInProjectDoc}
 
   const [openTaskDialog, setOpenTaskDialog] = useState(false);
   const [currentTaskStateID, setCurrentTaskStateID] = useState("");
+  const [currentOpenTaskID, setCurrentOpenTaskID] = useState("");
   const [editTaskForm, setEditTaskForm] = useState({});
 
   const [removeItemObj, setRemoveItemObj] = useState({
@@ -281,6 +292,21 @@ const NestedDraggableGrid_V2 = ({stateCards, setStateCards, allUserInProjectDoc}
   // useEffect(()=>{
   //   setStateCards(workingStatesWithTasks)
   // }, [workingStatesWithTasks]);
+
+  useEffect(()=>{
+    if (currentTaskStateID != "" && 
+        currentOpenTaskID != "")
+      {
+        const [currentState] = stateCards.filter((state)=>state.id === currentTaskStateID);
+        const [currentTask] = currentState.tasks.filter((task)=>task.id === currentOpenTaskID);
+        setEditTaskForm(currentTask);
+      }
+  })
+
+  const closeTaskDialogHandle = ()=>{
+    setCurrentOpenTaskID("");
+    setOpenTaskDialog(false);
+  }
 
   const handleDragEnd = (result) => {
     const { draggableId, source, destination } = result;
@@ -433,7 +459,7 @@ const NestedDraggableGrid_V2 = ({stateCards, setStateCards, allUserInProjectDoc}
       <Fragment>
         <Dialog
           open={openTaskDialog}
-          onClose={() => setOpenTaskDialog(false)}
+          onClose={() => closeTaskDialogHandle()}
           PaperComponent={(props) => (
             <PaperComponent {...props} nodeRef={dialogNodeRef} />
           )}
@@ -454,7 +480,7 @@ const NestedDraggableGrid_V2 = ({stateCards, setStateCards, allUserInProjectDoc}
               elevation={0}>
 
               <TaskFormV2 allUserInProjectDoc={allUserInProjectDoc}
-                              setOpenDialog={setOpenTaskDialog}
+                              setCloseDialogHandle={closeTaskDialogHandle}
                               stateID={currentTaskStateID}
                               currentTaskForm={editTaskForm}/>
 
@@ -508,6 +534,8 @@ const NestedDraggableGrid_V2 = ({stateCards, setStateCards, allUserInProjectDoc}
                                           setOpenRemoveDialog={setOpenRemoveDialog}
                                           setOpenTaskDialog={setOpenTaskDialog}
                                           setCurrentTaskStateID={setCurrentTaskStateID}
+                                          setCurrentOpenTaskID={setCurrentOpenTaskID}
+                                          currentOpenTaskID={currentOpenTaskID}
                                           setEditTaskForm={setEditTaskForm}
                                         />
                                   </div>

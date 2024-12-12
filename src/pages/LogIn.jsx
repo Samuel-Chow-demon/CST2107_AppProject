@@ -52,7 +52,7 @@ const LogInform = ({clickHandleToSignUp}) => {
 
     const {_currentUser, setCurrentUser} = useContext(userContext);
 
-    const { setUserDBUpdate } = useUserDB()
+    const { setUserDBUpdate, updateUserDB } = useUserDB()
 
     // ********************************************** Create Function
    
@@ -102,7 +102,12 @@ const LogInform = ({clickHandleToSignUp}) => {
                 setDisplayOKMsg("User Logged In Successfully");
 
                 // Wait for the next browser repaint using requestAnimationFrame
-                await new Promise(resolve => requestAnimationFrame(resolve));
+                //await new Promise(resolve => requestAnimationFrame(resolve));
+
+                // Upate the UserDB to Logged In status
+                await updateUserDB({uid:user.uid, groupObjValue:{
+                    loggedIn : true
+                }});
     
                 // Store user info include id and token to local Storage
                 setCurrentUser({

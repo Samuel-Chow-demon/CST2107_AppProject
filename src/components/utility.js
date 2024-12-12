@@ -74,14 +74,21 @@ const updateUserProfile = async ({currentFirebaseUser, currentPassword,
     }
 };
 
-async function signOutUser(setCurrentUser) 
+async function signOutUser(setCurrentUser, updateUserDB, uid) 
 {
     try {
         console.log("User signed out _ 1");
+
+        // Upate the UserDB to Logged In status
+        await updateUserDB({uid:uid, groupObjValue:{
+            loggedIn : false
+        }});
+
         setCurrentUser((prevState)=>({
             ...prevState,
             loggedIn: false
         }));
+
         await signOut(auth);
         console.log("User signed out _ 2");
         return true;
@@ -91,13 +98,13 @@ async function signOutUser(setCurrentUser)
     return false;
 }
 
-async function funcReturnLogInPageHandle(setCurrentUser,
+async function funcReturnLogInPageHandle(setCurrentUser, updateUserDB, uid,
                                    promptMessage = "",
                                    needPromptMsg = true,
                                    needDirectBackToLandingPage = true)
 {
     // remove the token and email whatever if any fail
-    await signOutUser(setCurrentUser);
+    await signOutUser(setCurrentUser, updateUserDB, uid);
 
     if (promptMessage && needPromptMsg)
     {
@@ -110,7 +117,7 @@ async function funcReturnLogInPageHandle(setCurrentUser,
     }
 }
 
-async function checkIfUserLoggedInValid(firebaseUser,
+async function checkIfUserLoggedInValid(firebaseUser, updateUserDB,
                                         _currentUser, setCurrentUser,
                                         needPromptIfError = true,
                                         needDirectBackToLangPageIfError = true)
@@ -133,7 +140,7 @@ async function checkIfUserLoggedInValid(firebaseUser,
         !_currentUser ||
         !_currentUser.token || !_currentUser.uid)
     {
-        await funcReturnLogInPageHandle(setCurrentUser, 
+        await funcReturnLogInPageHandle(setCurrentUser, updateUserDB, _currentUser?.uid ?? "",
                                     `No Authenticated User Found`,
                                     needPromptIfError,
                                     needDirectBackToLangPageIfError);
@@ -150,7 +157,7 @@ async function checkIfUserLoggedInValid(firebaseUser,
        
         if (userTokenFromAuth.token != _currentUser.token)
         {
-            await funcReturnLogInPageHandle(setCurrentUser,
+            await funcReturnLogInPageHandle(setCurrentUser, updateUserDB, _currentUser.uid,
                                         `Session Ended / Expired Detected. Log In Again`,
                                         needPromptIfError,
                                         needDirectBackToLangPageIfError);
@@ -161,7 +168,7 @@ async function checkIfUserLoggedInValid(firebaseUser,
     catch(error)
     {
         const errMessage = getErrorCode(error.code);
-        await funcReturnLogInPageHandle(setCurrentUser,
+        await funcReturnLogInPageHandle(setCurrentUser, updateUserDB, _currentUser.uid,
                                     `User Token Comparison Error : ${errMessage}`,
                                     needPromptIfError,
                                     needDirectBackToLangPageIfError);

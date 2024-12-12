@@ -159,6 +159,43 @@ const UserDBProvider = ({children})=>{
         }
     }
 
+    const updateUserDB = async ({uid, groupObjValue})=>{
+
+        try
+        {
+            const queryDoc = query(userCollectionRef, where("uid", "==", uid), limit(1));
+            const userQuerySnapShot = await getDocs(queryDoc);
+
+            if (!userQuerySnapShot.empty)
+            {
+                const userRef = userQuerySnapShot.docs[0].ref;
+                const userDoc = await getDoc(userRef);
+                const userData = userDoc.data();
+
+                if (userDoc.exists())
+                {
+                    await updateDoc(userRef, {
+                        ...userData,
+                        ...groupObjValue
+                    }); 
+                }
+                else
+                {
+                    setAlertUserDB({...alertUserDB, message:'User DB Doc Not Exist', color: 'error', isOpen: true, hideDuration: 2000 });
+                }
+            }
+            else
+            {
+                setAlertUserDB({...alertUserDB, message:'User Not Exist', color: 'error', isOpen: true, hideDuration: 2000 });
+            }
+        }
+        catch(error)
+        {
+            console.log(`Add User {userName} Fail`, error);
+            setAlertUserDB({...alertUserDB, message:'Add New User Fail', color: 'error', isOpen: true, hideDuration: 2000 });
+        }
+    }
+
     const getAllUserDoc = async()=>{
 
         try
@@ -205,7 +242,7 @@ const UserDBProvider = ({children})=>{
             alertUserDB, setAlertUserDB,
             isUserDBLoading,
             setUserDBUpdate,
-            createUserDB,
+            createUserDB, updateUserDB,
             getAllUserDoc, getUserDocData
         }}>
             {children}

@@ -11,7 +11,7 @@ import { useTaskDB } from "../context/taskDBContext";
 import DisplayComments from "./DisplayComments";
 import CommentForm from "./commentForm";
 
-const TaskFormV2 = ({allUserInProjectDoc, stateID, setOpenDialog, currentTaskForm = {}}) => {
+const TaskFormV2 = ({allUserInProjectDoc, stateID, setCloseDialogHandle, currentTaskForm = {}}) => {
 
   const {_currentUser, setCurrentUser} = useContext(userContext);
 
@@ -102,7 +102,8 @@ const TaskFormV2 = ({allUserInProjectDoc, stateID, setOpenDialog, currentTaskFor
     {
         setDisableInput(true)
         //setTaskIsLoading(true)
-        setOpenDialog(false)
+        //setOpenDialog(false)
+        setCloseDialogHandle();
 
         isEditMode ? 
         await editTask({formData:formData, taskID:currentTaskForm.id}) : await createTask({formData:formData});
@@ -248,7 +249,7 @@ const DisplayUserListComponent = memo(() => {
                     backgroundColor:grey[600]
                 }
             }}
-            onClick={()=>setOpenDialog(false)}>
+            onClick={()=>setCloseDialogHandle()}>
             Cancel
         </Button>
     </Box>

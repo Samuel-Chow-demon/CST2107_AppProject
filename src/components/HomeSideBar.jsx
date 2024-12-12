@@ -8,12 +8,15 @@ import { CONST_PATH } from './front_end_constant';
 import userContext from '../context/userContext';
 import { signOutUser } from './utility';
 import { indigo } from '@mui/material/colors';
+import WeekendIcon from '@mui/icons-material/Weekend';
+import { useUserDB } from '../context/userDBContext';
 
 function Sidebar() {
 
     const navigate = useNavigate();
 
     const {_currentUser, setCurrentUser} = useContext(userContext);
+    const { updateUserDB } = useUserDB();
 
     const ListItemComponent = ({IconComponent, itemText, buttonClick = ()=>{}})=>{
 
@@ -41,7 +44,7 @@ function Sidebar() {
 
     const logOutHandle = async ()=>{
 
-        await signOutUser(setCurrentUser);
+        await signOutUser(setCurrentUser, updateUserDB, _currentUser.uid);
         navigate(CONST_PATH.signInUp);
     }
 

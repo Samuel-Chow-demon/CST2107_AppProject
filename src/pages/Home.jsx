@@ -7,6 +7,7 @@ import { Box } from '@mui/material';
 import {useAuth} from '../context/authContext'
 import { Outlet } from 'react-router-dom';
 import { CONST_PATH } from '../components/front_end_constant.js';
+import { useUserDB } from '../context/userDBContext.jsx';
 
 const {useState, useEffect} = React;
 
@@ -14,6 +15,7 @@ const Home = () => {
 
   const {_currentUser, setCurrentUser} = useContext(userContext);
   const {firebaseUser, isLoading} = useAuth();
+  const { updateUserDB } = useUserDB();
 
   useEffect(() => {
     if (_currentUser)
@@ -24,7 +26,7 @@ const Home = () => {
         if (!isLoading && !_currentUser.isUpdating)
         {
           console.log("after load", _currentUser);
-          checkIfUserLoggedInValid(firebaseUser, _currentUser, setCurrentUser);
+          checkIfUserLoggedInValid(firebaseUser, updateUserDB, _currentUser, setCurrentUser);
         }
       }
       else
@@ -34,7 +36,7 @@ const Home = () => {
     }
     else
     {
-      checkIfUserLoggedInValid(firebaseUser, _currentUser, setCurrentUser);
+      checkIfUserLoggedInValid(firebaseUser, updateUserDB, _currentUser, setCurrentUser);
     }
   }, [isLoading, firebaseUser, _currentUser]); // The empty dependency array ensures this runs only on mount and unmount
 
