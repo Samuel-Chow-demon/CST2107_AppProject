@@ -142,6 +142,7 @@ const TaskFormV2 = ({allUserInProjectDoc, stateID, setCloseDialogHandle, current
        <Box sx={{display: 'grid', gridTemplateColumns: '5fr 1fr', alignItems:'center', gap: 2, width:'100%'}}>
         
           <Box sx={{ display: 'flex',
+                    flexWrap: 'wrap',
                     justifyContent: 'space-around',
                     padding: 2,
                     alignItems: 'left', border: allUserInProjectDoc.length > 0 ? '1px solid' : 'none',

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Box, Typography, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { Dashboard, AccountCircle, Logout } from '@mui/icons-material';
 import ControlPointIcon from '@mui/icons-material/ControlPoint';
@@ -17,6 +17,52 @@ function Sidebar() {
 
     const {_currentUser, setCurrentUser} = useContext(userContext);
     const { updateUserDB } = useUserDB();
+
+    const [isKeyHeld, setIsKeyHeld] = useState(false);
+
+    useEffect(() => {
+      // Add event listeners
+      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('keyup', handleKeyUp);
+  
+      // Cleanup event listeners on component unmount
+      return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+      };
+    }, []);
+
+    // Keydown listener to set the flag
+    const handleKeyDown = (event) => 
+    {
+      if (event.key === 'S') 
+      {
+        setIsKeyHeld(true);
+      }
+    };
+
+    // Keyup listener to reset the flag
+    const handleKeyUp = (event) => 
+    {
+      if (event.key === 'S') 
+      {
+        setIsKeyHeld(false);
+      }
+    };
+
+    // Click handler for the logo
+    const handleLogoClick = () => 
+    {
+      if (isKeyHeld) 
+      {
+        navigate(CONST_PATH.home + CONST_PATH.gameSnake);
+        //console.log('Logo clicked with "S" key');
+      } 
+      else 
+      {
+        console.log('Logo clicked no "S" key');
+      }
+    };
 
     const ListItemComponent = ({IconComponent, itemText, buttonClick = ()=>{}})=>{
 
@@ -74,7 +120,7 @@ function Sidebar() {
           overflow: 'hidden'
         }}
       >
-        <img src={iconSimpleWork} alt="" style={{ marginRight: 8, height: '310%'}} />
+        <img src={iconSimpleWork} alt="" style={{ marginRight: 8, height: '310%'}} onClick={handleLogoClick}/>
         {/* <Typography variant="h4" color="orange" sx={{ textTransform: 'uppercase', marginRight: 1 }}>
           Simple Work
         </Typography>
