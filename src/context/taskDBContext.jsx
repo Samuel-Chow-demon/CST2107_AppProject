@@ -71,6 +71,35 @@ const TaskDBProvider = ({children})=>{
         }
     }
 
+    const getAllCommentByCommentIDs = async(commentIDs)=>{
+
+        if (commentIDs?.length > 0)
+        {
+            // list of [{ docRef, docObj, docData }]
+            const listOfDocRefObj = await getCollectionDocsByMultipleRefAndID(commentCollectionRef, commentIDs);
+
+            const promises = listOfDocRefObj.map(async({ docRef, docObj, docData })=>{
+
+                if (docObj.exists())
+                {
+                    return {
+                        id:docData.id,
+                        ...docData,
+                        replies: await reclusiveRetriveCommentData(docObj, docData)
+                    };
+                }
+            })
+
+            const listOfAllCommentsInTask = await Promise.all(promises);
+
+            setCurrentAllCommentsInTask(listOfAllCommentsInTask);
+        }
+        else
+        {
+            setCurrentAllCommentsInTask([]);
+        }
+    }
+
     const callbackRefreshAllCommentsInTask = async(snapshot)=>{
         if (snapshot.exists())
         {
@@ -84,28 +113,30 @@ const TaskDBProvider = ({children})=>{
             //     id:comment_id, ...docData, replies : [ {id:comment_id, ...docData, replies : []}, {id:comment_id_2, docData, replies : []} .... ]
             // }]
 
-            if (taskDocData.commentIDs?.length > 0)
-            {
-                // list of [{ docRef, docObj, docData }]
-                const listOfDocRefObj = await getCollectionDocsByMultipleRefAndID(commentCollectionRef, taskDocData.commentIDs);
+            await getAllCommentByCommentIDs(taskDocData.commentIDs);
 
-                const promises = listOfDocRefObj.map(async({ docRef, docObj, docData })=>{
+            // if (taskDocData.commentIDs?.length > 0)
+            // {
+            //     // list of [{ docRef, docObj, docData }]
+            //     const listOfDocRefObj = await getCollectionDocsByMultipleRefAndID(commentCollectionRef, taskDocData.commentIDs);
 
-                    return {
-                        id:docData.id,
-                        ...docData,
-                        replies: await reclusiveRetriveCommentData(docObj, docData)
-                    };
-                })
+            //     const promises = listOfDocRefObj.map(async({ docRef, docObj, docData })=>{
 
-                const listOfAllCommentsInTask = await Promise.all(promises);
+            //         return {
+            //             id:docData.id,
+            //             ...docData,
+            //             replies: await reclusiveRetriveCommentData(docObj, docData)
+            //         };
+            //     })
 
-                setCurrentAllCommentsInTask(listOfAllCommentsInTask);
-            }
-            else
-            {
-                setCurrentAllCommentsInTask([]);
-            } 
+            //     const listOfAllCommentsInTask = await Promise.all(promises);
+
+            //     setCurrentAllCommentsInTask(listOfAllCommentsInTask);
+            // }
+            // else
+            // {
+            //     setCurrentAllCommentsInTask([]);
+            // } 
         }
     }
 
@@ -306,7 +337,7 @@ const TaskDBProvider = ({children})=>{
     return (
         <taskContext.Provider value={{
             alertTask, setAlertTask,
-            currentAllCommentsInTask, setCurrentTaskData,
+            currentAllCommentsInTask, setCurrentTaskData, getAllCommentByCommentIDs,
             createTask, removeTask, editTask
         }}>
             {children}

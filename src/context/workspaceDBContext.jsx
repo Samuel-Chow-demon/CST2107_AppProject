@@ -7,7 +7,8 @@ import userContext from './userContext.js';
 import { arrayUnion } from 'firebase/firestore';
 import {getCollectionDocByRefAndID,
         getCollectionDocByRefAndMatchField,
-        reclusiveRemoveDoc} from '../components/DBUtility.js'
+        reclusiveRemoveDoc,
+        removeAllProjectsFromWSDoc} from '../components/DBUtility.js'
 import { db } from '../firebaseConfig.js';
 
 const workspaceContext = createContext();

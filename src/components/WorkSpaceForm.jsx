@@ -139,6 +139,7 @@ const WorkSpaceForm = ({setOpenDialog, currentWSForm = {}})=>{
         return (
 
               <Box sx={{ display: 'flex',
+                        flexWrap: 'wrap',
                         justifyContent: 'space-around',
                         padding: 2,
                         alignItems: 'left', border: allUserInWorkSpaceDoc.length > 0 ? '1px solid' : 'none',

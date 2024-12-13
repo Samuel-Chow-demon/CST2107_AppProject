@@ -26,7 +26,7 @@ const TaskFormV2 = ({allUserInProjectDoc, stateID, setCloseDialogHandle, current
 
   const {
     createTask, editTask,
-    currentAllCommentsInTask, setCurrentTaskData
+    currentAllCommentsInTask, setCurrentTaskData, getAllCommentByCommentIDs
   } = useTaskDB();
 
   const isEditMode = Object.keys(currentTaskForm).length > 0;
@@ -67,15 +67,39 @@ const TaskFormV2 = ({allUserInProjectDoc, stateID, setCloseDialogHandle, current
           {'field' : 'title', 'condition' : (inputFormData)=>inputFormData.title.length > 0, 'errMsg' : 'Task Name Cannot Empty'}
       ])
 
-      setCurrentTaskData(currentTaskForm)
+      if (isEditMode)
+      {
+        setCurrentTaskData(currentTaskForm);
+      }
 
     }, [])
+
+    // useEffect(()=>{
+
+    //   if (isEditMode)
+    //   {
+    //     setCurrentTaskData(currentTaskForm);
+    //   }
+
+    // }, [currentTaskForm]);
+
+    // useEffect(()=>{
+
+    //   if (isEditMode)
+    //   {
+    //     const getAllComments = async()=>{
+    //       await getAllCommentByCommentIDs(currentTaskForm.commentIDs);
+    //     }
+    //     getAllComments();
+    //   }
+    // }, [currentTaskForm])
 
     useEffect(()=>{
 
       if (isEditMode)
       {
-        const taskRelatedComments = currentAllCommentsInTask.filter((commentDoc)=>commentDoc.taskID === currentTaskForm.id);
+
+        const taskRelatedComments = currentAllCommentsInTask.filter((commentDoc)=>commentDoc?.taskID === currentTaskForm.id);
         setTaskRelatedAllComments(taskRelatedComments);
       }
 
