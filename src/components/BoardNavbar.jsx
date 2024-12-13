@@ -173,6 +173,7 @@ const BoardNavbar = ({ toggleLayout, isGridLayout, workSpaceDataWithID,
                       onLineUser.map((userDoc, index)=>{
                         return (
                           <HtmlTooltip
+                              key={index}
                               title={
                                   <Fragment>
                                       <Typography sx={{
@@ -196,6 +197,7 @@ const BoardNavbar = ({ toggleLayout, isGridLayout, workSpaceDataWithID,
                       offLineUser.map((userDoc, index)=>{
                         return (
                           <HtmlTooltip
+                              key={index}
                               title={
                                   <Fragment>
                                       <Typography sx={{

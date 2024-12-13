@@ -102,6 +102,7 @@ const AddUserToWorkSpaceForm = ({ allUserDocs, allUserInWorkSpaceDoc,
     const DisplayAddedUserComponent = ()=>{
         return (
             <Box sx={{ display: 'flex',
+                        flexWrap: 'wrap',
                        justifyContent: 'space-around', alignItems: 'left', border: 'none', gap: 2 }}>
 
             {

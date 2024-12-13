@@ -116,6 +116,7 @@ const ProjectFormV2 = ({allUserInWorkSpaceDoc, setOpenDialog, currentProjectForm
        <Box sx={{display: 'grid', gridTemplateColumns: '5fr 1fr', alignItems:'center', gap: 2, width:'100%'}}>
         
           <Box sx={{ display: 'flex',
+                     flexWrap: 'wrap',
                     justifyContent: 'space-around',
                     padding: 2,
                     alignItems: 'left', border: allUserInWorkSpaceDoc.length > 0 ? '1px solid' : 'none',
