@@ -10,7 +10,7 @@ import {InputEmailBox, InputPasswordBox, passwordBoxIcon} from '../components/In
 
 import {CONST_PATH, CONST_LOG_IN_DELAY_MS} from '../components/front_end_constant.js';
 
-import './Login.css';
+import './LogIn.css';
 
 import { auth } from '../firebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
