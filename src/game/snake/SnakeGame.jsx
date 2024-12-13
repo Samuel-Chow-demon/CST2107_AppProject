@@ -392,7 +392,7 @@ const FinishDialog = memo(() => {
             <Box sx={{display: 'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', gap:'10px', height: '100%', width:'100%'}}>
               <Typography style={{ fontSize:'36px', marginTop:'0px'}}>Snake Game</Typography>
               <Box sx={{display: 'flex', justifyContent:'space-around', alignItems:'center', gap:'3rem'}}>
-                <Typography style={{ fontSize:'24px'}}>Your Highest Score: {currentUserGameScoreDoc.scores.snake}</Typography>
+                <Typography style={{ fontSize:'24px'}}>Your Highest Score: {currentUserGameScoreDoc?.scores?.snake ?? 0}</Typography>
                 <Typography style={{ fontSize:'24px'}}>Score: {score}</Typography>
               </Box>
               {
