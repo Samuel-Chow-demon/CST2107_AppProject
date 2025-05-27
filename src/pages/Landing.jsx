@@ -95,7 +95,11 @@ const LandingPage = () => {
       <>
         {_currentUser?.loggedIn && (
             <div className="text-center p-5 flex justify-center items-center">
-            <h2 style={{ whiteSpace: 'pre-line' }}>{textUserDisplay}</h2>
+            <p style={{ whiteSpace: 'pre-line',
+                        fontSize: '2.5rem',
+                        fontWeight: '600',
+                        color: 'purple',
+                        marginRight: '1rem'}}>{textUserDisplay}</p>
             <Avatar 
                 sx= {{
                 borderRadius: '50%',
@@ -113,7 +117,7 @@ const LandingPage = () => {
               }}>
             <WarehouseIcon 
               sx= {{
-                fontSize: '3em'
+                fontSize: '2.5em'
               }}
               onClick={()=>{navigate(CONST_PATH.home);}} // '/home'
               />
@@ -132,8 +136,8 @@ const LandingPage = () => {
             fullWidth
             variant="contained"
             sx= {{
-              padding: '24px 24px',
-              fontSize: '28px',
+              padding: '20px 20px',
+              fontSize: '20px',
               height: '8em',
               width: '8em',
               borderRadius: '50%',
@@ -153,7 +157,7 @@ const LandingPage = () => {
   const ButtonLogInOutComponent = () => {
 
     const isLoggedIn = _currentUser != null && _currentUser.loggedIn;
-    const borderRadius = isLoggedIn ? '50%' : '4px';
+    const borderRadius = isLoggedIn ? '50%' : '10px';
     const bkgrdColor = isLoggedIn ? orange[600] :indigo[600];
     const hoverBkgrdColor = isLoggedIn ? orange[400] :indigo[400];
     const buttonText = isLoggedIn ? "Log Out" : "Log In";
@@ -181,17 +185,17 @@ const LandingPage = () => {
             variant="contained"
             sx= {{
               //fontFamily: 'Lato',
-              padding: '0px',
-              fontSize: '28px',
-              height: '120px',
-              width: '120px',
+              padding: '15px 15px',
+              fontSize: '20px',
+              height: '7em',
+              width: '7em',
               borderRadius: borderRadius,
               background: bkgrdColor,
               transition: 'transform 0.3s, box-shadow 0.3s',
               '&:hover': {
                 backgroundColor: hoverBkgrdColor, // Hover background color
                 boxshadow: 6,
-                transform: 'scale(1.3)'
+                transform: 'scale(1.1)'
               },
               boxShadow: '0px 20px 20px rgba(10, 20, 100, 0.5)'
             }}
