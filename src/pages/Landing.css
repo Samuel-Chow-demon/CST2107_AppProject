@@ -60,15 +60,14 @@
   }
 
   #id-grid-item-1 {
-    background-image: url('../assets/bkgrd6.PNG');
+    background-image: url('../assets/bkgrd6.webp');
+  }
 
+  #id-grid-item-7 {
+    background-image: url('../assets/bkgrd5.webp');
   }
 
   #id-grid-item-9 {
     /* font-family: 'Pacifico', cursive !important; */
-    background-image: url('../assets/bkgrd4.PNG');
-
-    color: purple;
-    font-size: 2.5em;
-    font-weight: 600;
+    background-image: url('../assets/bkgrd4.webp');
   }
