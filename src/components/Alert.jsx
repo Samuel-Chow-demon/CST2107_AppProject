@@ -1,5 +1,5 @@
 import { Snackbar } from '@mui/material'
-import React, { memo, useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 
 const Alert = (props) => {
 

@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext } from 'react';
 import {useNavigate} from 'react-router-dom';
 
 import {//createTheme, ThemeProvider,
@@ -36,7 +36,6 @@ const LogInform = ({clickHandleToSignUp}) => {
     const {
         formData, resetFormData,
         enterInput,
-        confirmPasswordIcon,
         showPassword, handleClickShowPassword,
         isDisableInput, setDisableInput,
         formInputErrors,
@@ -45,12 +44,12 @@ const LogInform = ({clickHandleToSignUp}) => {
 
     const {
         setDisplaySpinner,
-        hideDisplay, setDisplayOKMsg,
+        setDisplayOKMsg,
         setDisplayErrorMsg,
         DisplayMessageComponent
       } = useDisplayMessage();
 
-    const {_currentUser, setCurrentUser} = useContext(userContext);
+    const {setCurrentUser} = useContext(userContext);
 
     const { setUserDBUpdate, updateUserDB } = useUserDB()
 
@@ -61,11 +60,8 @@ const LogInform = ({clickHandleToSignUp}) => {
         setDisplaySpinner(true);
         setDisableInput(true);
 
-        console.log('click');
-
         if (validateInput({byPassPasswordConfirm : true}))
         {
-            console.log('ok');
             try {
 
                 // 1 - Check FireBase Authentication
@@ -152,9 +148,17 @@ const LogInform = ({clickHandleToSignUp}) => {
     const FORM_ITEM_TAILWIND_STYLE = `mt-5 w-full`;
 
     return (
-        <div className="flex justify-center">
+        <div className="flex justify-center" style={{width: '500px'}}>
             {/* <ThemeProvider theme={theme}> */}
-                <Paper elevation={10} id="id-card-login" className="flex justify-center aligns-center py-20">
+                <Paper elevation={10} id="id-card-login"
+                    sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        paddingTop: '1rem',
+                        paddingBottom: '2rem'
+                    }}
+                >
                     <div className="flex flex-col items-center w-96">
                         <Avatar className="my-10" id="id-icon-bkgrd-login"><VpnKeyIcon id="id-icon-login" /></Avatar>
 

@@ -1,19 +1,17 @@
-import {Fragment, useRef, useState} from 'react'
-import { useCommentDB } from '../context/commentDBContext';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import EditNoteIcon from '@mui/icons-material/EditNote';
+import ReplyIcon from '@mui/icons-material/Reply';
 import { Avatar, IconButton, Paper, Tooltip, tooltipClasses, Typography } from '@mui/material';
-import { styled } from '@mui/material/styles';
-import ReactDraggable from 'react-draggable';
+import { blue, grey, red } from '@mui/material/colors';
 import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import { styled } from '@mui/material/styles';
+import { Fragment, memo, useRef, useState } from 'react';
+import ReactDraggable from 'react-draggable';
+import { useCommentDB } from '../context/commentDBContext';
 import CommentForm from './commentForm';
-import EditNoteIcon from '@mui/icons-material/EditNote';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import { memo } from 'react';
-import { blue, grey, red } from '@mui/material/colors';
 import RemoveCommentForm from './RemoveCommentForm';
-import ReplyIcon from '@mui/icons-material/Reply';
 
 const ReclusiveCommentsComponent = ({ commentDoc, userUID, setEditCommentForm, setIsRemoveComment,
                                       getUserObjByUID,

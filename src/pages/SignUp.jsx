@@ -1,18 +1,12 @@
-import {useState, useEffect} from 'react';
 
 import {Paper, Typography, Avatar, Button, 
         TextField} from '@mui/material';
 
 import FaceIcon from '@mui/icons-material/Face';
-import CancelIcon from '@mui/icons-material/Cancel';
-import DoneOutlineIcon from '@mui/icons-material/DoneOutline';
 
 import {InputEmailBox, InputPasswordBox, passwordBoxIcon} from '../components/Input.jsx';
 
-import {CONST_LOG_IN_DELAY_MS,
-        SERVER_URL} from '../components/front_end_constant.js';
-
-import {DisplayMessage} from '../components/display';
+import {CONST_LOG_IN_DELAY_MS} from '../components/front_end_constant.js';
 
 import { auth } from '../firebaseConfig';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
@@ -120,8 +114,16 @@ const SignUpform = ({clickHandleToLogin}) => {
     const FORM_ITEM_TAILWIND_STYLE = `mt-5 w-full`;
 
     return (
-        <div className="flex justify-center">
-            <Paper elevation={10} id="id-card-signup" className="flex justify-center aligns-center py-20">
+        <div className="flex justify-center" style={{width: '500px'}}>
+            <Paper elevation={10} id="id-card-signup"
+                sx={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        paddingTop: '1rem',
+                        paddingBottom: '2rem'
+                    }}
+            >
                 <div className="flex flex-col items-center w-96">
                     <Avatar className="my-10" id="id-icon-bkgrd-signup"><FaceIcon id="id-icon-signup" /></Avatar>
 

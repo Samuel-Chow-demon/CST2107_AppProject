@@ -1,15 +1,14 @@
-import { useContext, useEffect, useState } from 'react';
-import { Box, Typography, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
-import { Dashboard, AccountCircle, Logout } from '@mui/icons-material';
-import ControlPointIcon from '@mui/icons-material/ControlPoint';
-import iconSimpleWork from '../assets/SimpleWorkSmall.svg'
-import { useNavigate } from 'react-router-dom';
-import { CONST_PATH } from './front_end_constant';
-import userContext from '../context/userContext';
-import { signOutUser } from './utility';
-import { indigo } from '@mui/material/colors';
+import { AccountCircle, Dashboard, Logout } from '@mui/icons-material';
 import WeekendIcon from '@mui/icons-material/Weekend';
+import { Box, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
+import { indigo } from '@mui/material/colors';
+import { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import iconSimpleWork from '../assets/SimpleWorkSmall.svg';
+import userContext from '../context/userContext';
 import { useUserDB } from '../context/userDBContext';
+import { CONST_PATH } from './front_end_constant';
+import { signOutUser } from './utility';
 
 function Sidebar() {
 

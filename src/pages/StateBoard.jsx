@@ -1,28 +1,15 @@
-import { Box, Button, CircularProgress, IconButton, Paper, Tooltip, tooltipClasses, Typography } from '@mui/material';
-import { styled } from '@mui/material/styles';
-import { useState, useEffect, Fragment, memo, useRef, useContext } from 'react';
-import Draggable from 'react-draggable';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import { blue, grey, purple, red } from '@mui/material/colors';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
-import {getRandomPurpleColor} from '../components/utility.js'
-import { useUserDB } from '../context/userDBContext.jsx';
-import Alert from '../components/Alert.jsx';
-import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
-import ExitToAppIcon from '@mui/icons-material/ExitToApp';
-import userContext from '../context/userContext.js';
-import RemoveForm from '../components/RemoveForm.jsx';
-import BorderColorIcon from '@mui/icons-material/BorderColor';
 import AddIcon from '@mui/icons-material/Add';
-import { useStateDB } from '../context/stateDBContext.jsx';
+import { Box, Button, CircularProgress } from '@mui/material';
+import { memo, useContext, useEffect, useState } from 'react';
+import Alert from '../components/Alert.jsx';
 import StateForm from '../components/StateForm.jsx';
+import { useStateDB } from '../context/stateDBContext.jsx';
+import userContext from '../context/userContext.js';
+import { useUserDB } from '../context/userDBContext.jsx';
 //import NestedDraggableGrid from '../components/NestedDraggableGrid.jsx';
-import { useTaskDB } from '../context/taskDBContext.jsx';
 import NestedDraggableGrid_V2 from '../components/NestedDraggableGrid_V2.jsx';
 import { CommentDBProvider } from '../context/commentDBContext.jsx';
+import { useTaskDB } from '../context/taskDBContext.jsx';
 
 const StateBoard = ({ isGridLayout, workSpaceDataWithID }) => {
 
@@ -39,37 +26,16 @@ const StateBoard = ({ isGridLayout, workSpaceDataWithID }) => {
         workingStatesWithTasks, setworkingStatesWithTasks,
         projectData, allUserInProjectDoc,
         alertState, setAlertState,
-        isStateLoading, setStateIsLoading,
-        createState, joinState, removeState, leaveState, editState, leaveJoinState
+        isStateLoading
     } = useStateDB();
 
     const {
         alertTask, setAlertTask
     } = useTaskDB();
 
-    //const { alertUserDB, setAlertUserDB, getUserDocData } = useUserDB();
     const { alertUserDB, setAlertUserDB } = useUserDB();
 
-    //const [allUserInProjectDoc, setAllUserInProjectDoc] = useState([]);
-    //const [isLoadedAllUser, setLoadedAllUser] = useState(false);
-
     const [taskFormOpen, setTaskFormOpen] = useState(false);
-
-    const {_currentUser, setCurrentUser} = useContext(userContext);
-
-    // useEffect(() => {
-
-    //     const getProjectUserDoc = async () => {
-    //         setAllUserInProjectDoc(await getUserDocData(projectData.memberUIDs));
-    //         setLoadedAllUser(true);
-    //     }
-    
-    //     if (projectData?.memberUIDs)
-    //     {
-    //         setAllUserInProjectDoc(userInProjectList);
-    //     }
-    
-    // }, [projectData?.memberUIDs])
 
     useEffect(() => {
 

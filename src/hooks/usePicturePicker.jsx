@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Popover from '@mui/material/Popover';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
+import { useEffect, useState } from 'react';
 
 // Example image imports
 import bkgrd1 from '../assets/bg-1.jpg';
@@ -146,3 +145,4 @@ const usePicturePicker = (initPicture="") => {
 };
 
 export { usePicturePicker };
+

@@ -1,4 +1,3 @@
-import BoardPage from "../pages/BoardPage";
 
 const CONST_LOG_IN_DELAY_MS = 550;
 
@@ -24,6 +23,7 @@ const DEPLOYED_URL = '';
 //const HOME_URL = DEPLOYED_URL ? `${DEPLOYED_URL}/${CONST_PATH.home}` : CONST_PATH.home; // '/home'
 const LANDING_URL = DEPLOYED_URL ? `${DEPLOYED_URL}${CONST_PATH.landing}` : CONST_PATH.landing; // '/landing'
 
-export {CONST_PATH, CONST_LOG_IN_DELAY_MS,
-        LANDING_URL,
-        SERVER_URL, API_USER_URL};
+export {
+    API_USER_URL, CONST_LOG_IN_DELAY_MS, CONST_PATH, LANDING_URL,
+    SERVER_URL
+};

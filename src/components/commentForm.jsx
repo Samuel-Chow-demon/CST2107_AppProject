@@ -1,8 +1,8 @@
-import { Box, Button, Paper, TextField, Typography } from '@mui/material';
-import {useEffect, memo, useCallback} from 'react'
-import useInputForm from '../hooks/useInputForm';
-import { blue, grey, red } from '@mui/material/colors';
+import { Box, Button, TextField } from '@mui/material';
+import { blue, grey } from '@mui/material/colors';
+import { memo, useCallback, useEffect } from 'react';
 import { useCommentDB } from '../context/commentDBContext';
+import useInputForm from '../hooks/useInputForm';
 
 const CommentForm = ({taskID, userUID, setFormOpen, currentCommentForm={}, parentCommentForm={}})=>{
 

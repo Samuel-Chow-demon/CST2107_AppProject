@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import "./ProjectForm.css";
 
 const ProjectForm = ({ onSubmit }) => {

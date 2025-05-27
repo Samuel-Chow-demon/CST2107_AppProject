@@ -1,8 +1,8 @@
-import React from 'react'
 
-import {Paper, Typography, Avatar, Button, 
-        TextField,
-        CircularProgress} from '@mui/material';
+import {
+    CircularProgress,
+    Typography
+} from '@mui/material';
 
 const DisplayMessage = ({showSpinner = false, errorMsg = {message:'', color:'red', icon:null},
                          okMsg = {message:'', color:'green', icon:null}}) => {
@@ -60,4 +60,4 @@ const DisplayMessage = ({showSpinner = false, errorMsg = {message:'', color:'red
     )
 };
 
-export {DisplayMessage};
+export { DisplayMessage };

@@ -2,16 +2,13 @@
 import {useState, useEffect, useContext} from 'react'
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import {Avatar, Button, TextField} from '@mui/material';
+import {Avatar, Button} from '@mui/material';
 import { teal, indigo, orange } from '@mui/material/colors'; // Import color palette
 
-import bkgrd1 from '../assets/bkgrd1.PNG'
-import bkgrd2 from '../assets/bkgrd2.PNG'
-import bkgrd3 from '../assets/bkgrd3.PNG'
-import bkgrd4 from '../assets/bkgrd4.PNG'
-import bkgrd5 from '../assets/bkgrd5.PNG'
-import bkgrd6 from '../assets/bkgrd6.PNG'
-import bkgrd7 from '../assets/bkgrd7.PNG'
+import bkgrd1 from '../assets/bkgrd1.webp'
+import bkgrd2 from '../assets/bkgrd2.webp'
+import bkgrd3 from '../assets/bkgrd3.webp'
+import bkgrd7 from '../assets/bkgrd7.webp'
 import iconSimpleWork from '../assets/SimpleWorkSmallWhitebkg.svg'
 
 import './Landing.css';

@@ -1,5 +1,4 @@
 import { Navigate, useRoutes } from 'react-router-dom';
-import {useState} from 'react';
 import Home from './pages/Home';
 import Landing from './pages/Landing';
 import {CONST_PATH} from './components/front_end_constant';
@@ -13,6 +12,7 @@ import UserProfile from './pages/UserProfile';
 import { WorkSpaceDBProvider } from './context/workspaceDBContext';
 import WorkSpaceBoard from './pages/WorkSpaceBoard';
 import { UserDBProvider } from './context/userDBContext';
+import BoardDemo from './pages/BoardDemoPage';
 import SnakeGame from './game/snake/SnakeGame';
 import { GameDBProvider } from './context/gameDBContext';
 import LoungeBoard from './pages/LoungeBoard';
@@ -36,6 +36,10 @@ function App() {
       {
         path: CONST_PATH.signInUp,   // '/signinup'
         element: <LogInSignUp />
+      },
+      {
+        path: "/board",   // '/signinup'
+        element: <BoardDemo />
       },
       {
         path: CONST_PATH.home,      // '/home'
