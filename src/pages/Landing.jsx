@@ -1,9 +1,9 @@
 
-import {useState, useEffect, useContext} from 'react'
-import { DndProvider, useDrag, useDrop } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import {useState, useEffect, useContext, useRef, memo} from 'react'
 import {Avatar, Button} from '@mui/material';
 import { teal, indigo, orange } from '@mui/material/colors'; // Import color palette
+
+import { createSwapy } from 'swapy';
 
 import bkgrd1 from '../assets/bkgrd1.webp'
 import bkgrd2 from '../assets/bkgrd2.webp'
@@ -21,40 +21,18 @@ import WarehouseIcon from '@mui/icons-material/Warehouse';
 import { useUserDB } from '../context/userDBContext.jsx';
 
 // GridItem component
-const GridItem = ({ item, index, moveItem, id }) => {
-  const [, ref] = useDrag({
-    type: 'item',
-    item: { index },
-    //canDrag: (id !== 5)
-  });
-
-  const [, drop] = useDrop({
-    accept: 'item',
-    hover: (draggedItem) => {
-
-      // not allow to place on the app logo
-      // if (id === 5)
-      // {
-      //   return;
-      // }
-
-      if (draggedItem.index !== index) {
-        moveItem(draggedItem.index, index);
-        draggedItem.index = index;
-      }
-    },
-  });
-
+const GridItemV2 = memo(({ id, item }) => {
+  
   return (
-    <div ref={(node) => ref(drop(node))} className="grid-item">
+    <>
       {item.type === 'image' ? (
         <img src={item.src} alt="Grid item" className="grid-image" id={`id-grid-item-${id}`}/>
       ) : (
         <div className="grid-component flex justify-center items-center" id={`id-grid-item-${id}`}>{item.component}</div>
       )}
-    </div>
+    </>
   );
-};
+});
 
 const LandingPage = () => {
 
@@ -71,6 +49,9 @@ const LandingPage = () => {
   const [displayText, setDisplayText] = useState(displayTextList[0]);
 
   const { updateUserDB } = useUserDB();
+
+  const swapy = useRef(null);
+  const swapyContainer = useRef(null);
 
   const buttonClick = ()=>{
     setClickIdx(prevIdx=>(prevIdx + 1) % displayTextList.length);
@@ -263,30 +244,41 @@ const LandingPage = () => {
     );
   }, [displayText, _currentUser]);
 
-  // Define Function, the drag Item replace the target hover item in the list
-  const moveItem = (dragIndex, hoverIndex) => {
-    const updatedItems = [...items];
-    // const [draggedItem] = updatedItems.splice(dragIndex, 1);
-    // updatedItems.splice(hoverIndex, 0, draggedItem);
-    [updatedItems[dragIndex], updatedItems[hoverIndex]] = [updatedItems[hoverIndex], updatedItems[dragIndex]]
-    setItems(updatedItems);
-  };
+  useEffect(()=>{
+
+    if (swapyContainer.current)
+    {
+      swapy.current = createSwapy(swapyContainer.current);
+    }
+
+    return()=>{
+      swapy.current?.destroy();
+    }
+
+  }, []);
 
   return (
     <div className="flex justify-center items-center h-screen p-20">
-      <DndProvider backend={HTML5Backend}>
+      
+      <div ref={swapyContainer}>
+        
         <div className="grid-container">
-          {items.map((item, index) => (
-            <GridItem
-              key={item.id}
-              id={item.id}
-              index={index}
-              item={item}
-              moveItem={moveItem}
-            />
-          ))}
+
+          {
+            items.map((item, index)=>(
+
+              <div key={index} data-swapy-slot={item.id}>
+                <div data-swapy-item={item.id}>
+                  <GridItemV2 id={item.id} item={item}/>
+                </div>
+              </div>
+
+            ))
+          }
+
         </div>
-      </DndProvider>
+      </div>
+
     </div>
   )
 }

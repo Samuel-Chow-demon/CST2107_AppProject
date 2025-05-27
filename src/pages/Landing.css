@@ -6,19 +6,16 @@
     padding: 20px;
   }
   
-  .grid-item {
-    position: relative;
-    cursor: grab; /* Indicate draggable elements */
-    width: max(400px, 25vw);
-    height: 30vh;
-  }
-  
   .grid-image {
     width: 100%;
-    height: 100%;
+    height: calc(100vh / 3);
     object-fit: cover;
     border-radius: 8px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .grid-image:hover{
+    cursor: grab;
   }
   
   .grid-component {
@@ -27,8 +24,12 @@
     border: none;
     border-radius: 8px;
     background-color: white;
-    height : 100%;
-    width : 100%;
+    width: 100%;
+    height: calc(100vh / 3);
+  }
+
+  .grid-component:hover{
+    cursor: grab;
   }
 
   #id-grid-item-3 {
@@ -37,26 +38,6 @@
     color: purple;
     font-size: 3em;
     font-weight: 600;
-  }
-
-  /* App Logo */
-  #id-grid-item-5 {
-    overflow: visible;
-    position: absolute;
-    z-index: 1;
-    top: -50%;
-    left: 8px;
-    padding: 0px;
-    margin: 0px;
-    width: 100%;
-    height: 200%;
-    background-color: transparent;
-    border: none;
-    box-shadow: none;
-  }
-  
-  .grid-item:active {
-    cursor: grabbing; /* Cursor change when dragging */
   }
 
   #id-grid-item-1 {
