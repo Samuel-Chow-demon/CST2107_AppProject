@@ -1,18 +1,16 @@
-import { Fragment, memo, useEffect, useRef, useState } from 'react';
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { Box, Button, Card, CardContent, IconButton, Paper, Typography } from '@mui/material';
-import { blue, blueGrey, grey, red } from '@mui/material/colors';
+import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
 import AddIcon from '@mui/icons-material/Add';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import StateForm from './StateForm';
-import RemoveForm from './RemoveForm';
-import { useStateDB } from '../context/stateDBContext';
-import ReactDraggable from 'react-draggable';
+import { Box, Button, Card, CardContent, IconButton, Paper } from '@mui/material';
+import { blueGrey, grey, red } from '@mui/material/colors';
 import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import { Fragment, memo, useEffect, useRef, useState } from 'react';
+import ReactDraggable from 'react-draggable';
+import { useStateDB } from '../context/stateDBContext';
+import RemoveForm from './RemoveForm';
+import StateForm from './StateForm';
 import TaskFormV2 from './TaskFormV2';
 
 const TaskCardComponent = ({ task, index, provided, snapshot }) => (

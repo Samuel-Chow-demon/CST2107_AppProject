@@ -1,26 +1,23 @@
-import React, { Fragment, memo, useContext, useEffect, useRef, useState } from 'react';
-import './BoardNavbar.css';
-import BoardMenu from './BoardMenu';  // Import the sidebar menu
-import { FullscreenExit } from '@mui/icons-material';
-import { useUserDB } from '../context/userDBContext';
-import Alert from './Alert';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import { Avatar, Box, Button, Dialog, DialogContent, DialogTitle, Paper, styled, Tooltip, tooltipClasses, Typography } from '@mui/material';
 import { blue, green, grey } from '@mui/material/colors';
-import AddUserToWorkSpaceForm from './AddUserToWorkSpaceForm';
-import Draggable from 'react-draggable';
-import { useWorkSpaceDB } from '../context/workspaceDBContext';
-import userContext from '../context/userContext';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import { useNavigate } from 'react-router-dom';
-import { userCollectionRef } from '../fireStore/database.js';
 import { onSnapshot } from 'firebase/firestore';
+import { Fragment, memo, useContext, useEffect, useRef, useState } from 'react';
+import Draggable from 'react-draggable';
+import { useNavigate } from 'react-router-dom';
+import userContext from '../context/userContext';
+import { useUserDB } from '../context/userDBContext';
+import { useWorkSpaceDB } from '../context/workspaceDBContext';
+import { userCollectionRef } from '../fireStore/database.js';
+import AddUserToWorkSpaceForm from './AddUserToWorkSpaceForm';
+import Alert from './Alert';
+import './BoardNavbar.css';
 
 // if projectDataWithID = {} means navbar is at the workspace board
 const BoardNavbar = ({ toggleLayout, isGridLayout, workSpaceDataWithID,
                         projectDataWithID = {} }) => {
 
-  const [isMenuOpen, setMenuOpen] = useState(false);
   const [allUserDoc, setAllUserDoc] = useState([]);
   const [isLoadedAllUser, setLoadedAllUser] = useState(false);
   const [openAddUserDialog, setOpenAddUserDialog] = useState(false);
@@ -34,10 +31,6 @@ const BoardNavbar = ({ toggleLayout, isGridLayout, workSpaceDataWithID,
   const isAtWorkSpaceBoard = Object.keys(projectDataWithID).length == 0;
 
   const navigate = useNavigate();
-
-  const toggleMenu = () => {
-    setMenuOpen(!isMenuOpen);
-  };
 
   const extractAllWorkSpaceUserDoc = async()=>{
     setAllUserInWorkSpaceDoc(await getUserDocData(workSpaceDataWithID.userUIDs));
@@ -263,29 +256,11 @@ const BoardNavbar = ({ toggleLayout, isGridLayout, workSpaceDataWithID,
         }
 
         <UserOnlineStatus />
-        {/* <Box sx={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          flexGrow: 1
-        }}>
-          <div className="navbar-controls">
 
-            <button className="toggle-layout-btn" onClick={toggleLayout}>
-              {isGridLayout ? 'Switch to Row Layout' : 'Switch to Grid Layout'}
-            </button>
-
-            <button className="menu-btn"
-              onClick={toggleMenu}>
-              &#x22EE;
-            </button>
-          </div>
-        </Box> */}
 
       </nav>
       <Alert alertConfig={alertUserDB} />
       <Alert alertConfig={alertWorkSpace} />
-      {/* Sidebar */}
-      {/* <BoardMenu isOpen={isMenuOpen} closeMenu={toggleMenu} /> */}
     </>
   );
 };

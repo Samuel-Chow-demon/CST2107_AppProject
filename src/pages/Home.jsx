@@ -6,7 +6,6 @@ import userContext from '../context/userContext.js'
 import { Box } from '@mui/material';
 import {useAuth} from '../context/authContext'
 import { Outlet } from 'react-router-dom';
-import { CONST_PATH } from '../components/front_end_constant.js';
 import { useUserDB } from '../context/userDBContext.jsx';
 
 const {useState, useEffect} = React;

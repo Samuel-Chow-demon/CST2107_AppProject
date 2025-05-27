@@ -1,6 +1,6 @@
-import { Box, Button, TextField, Typography } from '@mui/material';
-import {useEffect, memo, useCallback} from 'react'
-import { blue, grey, red } from '@mui/material/colors';
+import { Box, Button, Typography } from '@mui/material';
+import { blue, grey } from '@mui/material/colors';
+import { memo } from 'react';
 
 const GameScoreDialog = ({message, setOpenDialog})=>{
 

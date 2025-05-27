@@ -1,7 +1,6 @@
-import { Box, Button, TextField, Typography } from '@mui/material';
-import {useEffect, memo, useCallback} from 'react'
-import useInputForm from '../hooks/useInputForm';
+import { Box, Button, Typography } from '@mui/material';
 import { grey, red } from '@mui/material/colors';
+import { memo } from 'react';
 
 const RemoveCommentForm = ({removeFromDB, commentStr, setOpenDialog})=>{
 

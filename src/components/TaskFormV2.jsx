@@ -1,13 +1,12 @@
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { Box, Button, Chip, Popover, TextField, Typography } from "@mui/material";
+import { blue, grey } from "@mui/material/colors";
+import dayjs from "dayjs";
 import { memo, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useTaskDB } from "../context/taskDBContext";
 import userContext from "../context/userContext";
 import useInputForm from "../hooks/useInputForm";
 import DateRangePickerTool from "./DateRangePicker";
-import { Box, Button, Chip, Popover, TextField, Tooltip, Typography } from "@mui/material";
-import { blue, grey } from "@mui/material/colors";
-import AddCircleIcon from '@mui/icons-material/AddCircle';
-import { useColorPicker } from "../hooks/useColorPicker";
-import dayjs from "dayjs";
-import { useTaskDB } from "../context/taskDBContext";
 import DisplayComments from "./DisplayComments";
 import CommentForm from "./commentForm";
 

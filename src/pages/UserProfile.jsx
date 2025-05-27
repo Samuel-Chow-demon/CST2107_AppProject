@@ -3,7 +3,7 @@ import {memo, useCallback, useContext, useEffect, useState} from 'react'
 import userContext from '../context/userContext';
 import useInputForm from '../hooks/useInputForm';
 import { useAuth } from '../context/authContext';
-import { capitalizeFirstLetter, getRandomRGBString, updateUserProfile } from '../components/utility';
+import { capitalizeFirstLetter, updateUserProfile } from '../components/utility';
 import { blue, blueGrey, green, grey } from '@mui/material/colors';
 import { InputEmailBox, InputPasswordBox, passwordBoxIcon } from '../components/Input';
 import EditNoteIcon from '@mui/icons-material/EditNote';
@@ -17,8 +17,6 @@ const UserProfile = () => {
   const {firebaseUser, isLoading} = useAuth();
 
   const {_currentUser, setCurrentUser} = useContext(userContext);
-
-  const {avatarColor, setAvatarColor} = useState(getRandomRGBString().solid);
 
   const { setUserDBUpdate, updateUserDB } = useUserDB()
 

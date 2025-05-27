@@ -1,8 +1,8 @@
-import { Box, Button, Paper, TextField, Typography } from '@mui/material';
-import {useEffect, memo, useCallback} from 'react'
-import useInputForm from '../hooks/useInputForm';
-import { blue, grey, red } from '@mui/material/colors';
+import { Box, Button, Paper, TextField } from '@mui/material';
+import { blue, grey } from '@mui/material/colors';
+import { memo, useCallback, useEffect } from 'react';
 import { useStateDB } from '../context/stateDBContext';
+import useInputForm from '../hooks/useInputForm';
 
 const StateForm = ({projectID, setFormOpen, currentStateForm={}})=>{
 

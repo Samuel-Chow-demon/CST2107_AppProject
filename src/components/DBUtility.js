@@ -1,8 +1,10 @@
 import { doc, getDoc, getDocs, limit, orderBy, query, where, writeBatch } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
-import { userCollectionRef, workSpaceCollectionRef,
-        projectCollectionRef, projectStateCollectionRef,
-        taskCollectionRef, commentCollectionRef} from '../fireStore/database.js';
+import {
+  commentCollectionRef,
+  projectCollectionRef, projectStateCollectionRef,
+  taskCollectionRef
+} from '../fireStore/database.js';
 
 const getCollectionDocByRefAndID = async(collectionRef, ID)=>{
     const docRef = doc(collectionRef, ID);
@@ -286,10 +288,7 @@ const removeAllProjectsFromWSDoc = async(workSpaceData)=>{
     await batch.commit();
 }
 
-export {getCollectionDocByRefAndID,
-        getCollectionDocsByMultipleRefAndID,
-        getCollectionDocByRefAndMatchField,
-        getCollectionDocByRefAndTopMostFieldValue,
-        reclusiveRemoveDoc, 
-        removeAllTasksFromStateDoc, removeAllStatesFromProjectDoc, removeAllProjectsFromWSDoc
+export {
+  getCollectionDocByRefAndID, getCollectionDocByRefAndMatchField,
+  getCollectionDocByRefAndTopMostFieldValue, getCollectionDocsByMultipleRefAndID, reclusiveRemoveDoc, removeAllProjectsFromWSDoc, removeAllStatesFromProjectDoc, removeAllTasksFromStateDoc
 };

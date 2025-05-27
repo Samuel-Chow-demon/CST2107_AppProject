@@ -11,7 +11,7 @@ import dayjs from "dayjs";
 
 const ProjectFormV2 = ({allUserInWorkSpaceDoc, setOpenDialog, currentProjectForm = {}}) => {
 
-  const {_currentUser, setCurrentUser} = useContext(userContext);
+  const {_currentUser} = useContext(userContext);
 
   const {
     createProject, editProject, setProjIsLoading

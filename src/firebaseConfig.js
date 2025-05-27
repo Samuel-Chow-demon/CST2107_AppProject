@@ -7,7 +7,7 @@ import { getFirestore } from "@firebase/firestore";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
+// Web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -27,7 +27,6 @@ const db = getFirestore();
 
 setPersistence(auth, browserLocalPersistence)
   .then(() => {
-    // Now you can sign in the user or do anything related to auth
     //console.log("Persistence set successfully");
   })
   .catch((error) => {

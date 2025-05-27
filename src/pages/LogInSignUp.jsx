@@ -1,7 +1,7 @@
 import { useTheme } from '@emotion/react';
 import {useContext, useEffect, useState} from 'react'
 import { AppBar, Box, Tab, Tabs, Typography } from '@mui/material';
-import { green, blue, purple } from '@mui/material/colors'; // Import color palette
+import { purple } from '@mui/material/colors'; // Import color palette
 import LogIn from './LogIn';
 import SignUp from './SignUp';
 import userContext from '../context/userContext';
@@ -54,7 +54,7 @@ const LogInSignUp = () => {
     <div className="flex justify-center">
         <Box className="flex flex-col items-center mt-10" 
             sx={{ backgroundColor: 'transparent',
-                  width: 600 }}>
+                  width: 500 }}>
             <AppBar position="static"
                     sx={{
                         backgroundColor: 'transparent',

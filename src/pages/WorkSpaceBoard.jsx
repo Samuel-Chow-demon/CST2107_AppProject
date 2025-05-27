@@ -1,23 +1,22 @@
-import { forwardRef, Fragment, memo, useContext, useEffect, useRef, useState } from 'react'
-import { useWorkSpaceDB, WorkSpaceDBProvider } from '../context/workspaceDBContext'
-import { styled } from '@mui/material/styles';
-import { Box, Button, Card, CardContent, CardMedia, CircularProgress, IconButton, Paper, TextField, Tooltip, tooltipClasses, Typography } from '@mui/material';
-import { grey, purple, blue, red } from '@mui/material/colors';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import Alert from '../components/Alert';
-import Draggable from 'react-draggable';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import WorkSpaceForm from '../components/WorkSpaceForm';
-import userContext from '../context/userContext';
+import BorderColorIcon from '@mui/icons-material/BorderColor';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
+import { Box, Button, Card, CardContent, CircularProgress, IconButton, Paper, Tooltip, tooltipClasses, Typography } from '@mui/material';
+import { blue, grey, purple, red } from '@mui/material/colors';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import { styled } from '@mui/material/styles';
+import { Fragment, memo, useContext, useEffect, useRef, useState } from 'react';
+import Draggable from 'react-draggable';
 import { useNavigate } from 'react-router-dom';
+import Alert from '../components/Alert';
 import { CONST_PATH } from '../components/front_end_constant';
 import RemoveForm from '../components/RemoveForm';
-import BorderColorIcon from '@mui/icons-material/BorderColor';
+import WorkSpaceForm from '../components/WorkSpaceForm';
+import userContext from '../context/userContext';
+import { useWorkSpaceDB } from '../context/workspaceDBContext';
 
 const WorkSpaceBoard = () => {
 
@@ -35,13 +34,13 @@ const WorkSpaceBoard = () => {
         workspaceID : ""});
    
 
-    const {_currentUser, setCurrentUser} = useContext(userContext);
+    const {_currentUser} = useContext(userContext);
     const [editWSForm, setEditWSForm] = useState({});
 
     const {
         workingWorkSpace, alertWorkSpace, setAlertWorkSpace,
         isWSLoading,
-        createWorkSpace, joinWorkSpace, removeWorkSpace, leaveWorkSpace } = useWorkSpaceDB();
+        removeWorkSpace, leaveWorkSpace } = useWorkSpaceDB();
 
 
     // const WorkSpaceFormComponents = useCreateWorkSpaceForm({createWorkSpace, setOpenDialog});
