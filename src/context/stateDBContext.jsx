@@ -1,18 +1,20 @@
+import { arrayRemove, arrayUnion, doc, onSnapshot, setDoc, updateDoc, writeBatch } from 'firebase/firestore';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { deleteDoc, addDoc, doc, getDoc, getDocs, limit, query, setDoc, where, updateDoc, arrayRemove, onSnapshot, writeBatch, WriteBatch } from 'firebase/firestore';
-import { userCollectionRef, workSpaceCollectionRef,
-    projectCollectionRef, projectStateCollectionRef,
-    taskCollectionRef, commentCollectionRef} from '../fireStore/database.js';
-import userContext from './userContext.js';
-import { arrayUnion } from 'firebase/firestore';
-import {getCollectionDocByRefAndID,
-        getCollectionDocByRefAndMatchField,
-        getCollectionDocsByMultipleRefAndID,
-        reclusiveRemoveDoc,
-        removeAllTasksFromStateDoc} from '../components/DBUtility.js'
-import { useProjectDB } from './projectDBContext.jsx';
-import { useUserDB } from './userDBContext.jsx';
+import {
+    getCollectionDocByRefAndID,
+    getCollectionDocsByMultipleRefAndID,
+    getExpireDate,
+    guestExpireConfig,
+    removeAllTasksFromStateDoc
+} from '../components/DBUtility.js';
 import { db } from '../firebaseConfig.js';
+import {
+    projectCollectionRef, projectStateCollectionRef,
+    taskCollectionRef
+} from '../fireStore/database.js';
+import { useProjectDB } from './projectDBContext.jsx';
+import userContext from './userContext.js';
+import { useUserDB } from './userDBContext.jsx';
 
 const stateContext = createContext();
 
@@ -281,14 +283,26 @@ const StateDBProvider = ({children, workingProjectID})=>{
                 {
                     //setStateIsLoading(true);
 
-                    const batch = writeBatch(db);
-
-                    const newStateRef = doc(projectStateCollectionRef);
-                    batch.set(newStateRef, {
+                    let newStateObj = {
                         ...formData,
                         taskIDs: [],
                         projectID: workingProjectID
-                    });
+                    };
+
+                    if (_currentUser?.isGuest)
+                    {
+                        const getDate = getExpireDate(guestExpireConfig);
+    
+                        newStateObj = {
+                            ...newStateObj,
+                            expiredAt : getDate.expire
+                        }
+                    }
+
+                    const batch = writeBatch(db);
+
+                    const newStateRef = doc(projectStateCollectionRef);
+                    batch.set(newStateRef, newStateObj);
     
                     // const stateRef = await addDoc(projectStateCollectionRef, {
                     //     ...formData,
@@ -626,17 +640,57 @@ const StateDBProvider = ({children, workingProjectID})=>{
         }
     }
 
+    const removeStateByRefAndDocData = async ({stateRef, stateDocData}) =>{
+
+        let message = "";
+        try
+        {
+            const stateDocID = stateRef.id;
+
+            // ------------------- The 1st step, remove comments, tasks sequentially -------------- //
+            await removeAllTasksFromStateDoc(stateDocData);
+
+            // ------------------- The 2nd step -------------- //
+    
+            // Update Project Collection
+            const {docRef:projectRef} = await getCollectionDocByRefAndID(projectCollectionRef, stateDocData.projectID);
+
+            const batch2ndStep = writeBatch(db);
+
+            batch2ndStep.delete(stateRef);
+
+            batch2ndStep.update(projectRef, {
+                stateIDs : arrayRemove(stateDocID)
+            })
+
+            await batch2ndStep.commit();
+
+            message = "OK";
+           
+        }
+        catch(error)
+        {
+            message = `Remove State Fail : ${error}`
+        }
+
+        return {
+            message : message,
+            data : stateDocData
+        }
+    }
+
     return (
         <stateContext.Provider value={{
             workingStatesWithTasks, setworkingStatesWithTasks,
             projectData, allUserInProjectDoc,
             alertState, setAlertState,
             isStateLoading, setStateIsLoading,
-            createState, joinState, removeState, leaveState, editState, leaveJoinState, moveState
+            createState, joinState, removeState, leaveState, editState, leaveJoinState, moveState,
+            removeStateByRefAndDocData
         }}>
             {children}
         </stateContext.Provider>
     )
 }
 
-export {useStateDB, StateDBProvider}
+export { StateDBProvider, useStateDB };

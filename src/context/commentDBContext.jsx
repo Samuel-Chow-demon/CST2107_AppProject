@@ -1,14 +1,18 @@
+import { arrayRemove, arrayUnion, doc, writeBatch } from 'firebase/firestore';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { deleteDoc, addDoc, doc, getDoc, getDocs, limit, query, setDoc, where, updateDoc, arrayRemove, onSnapshot, writeBatch } from 'firebase/firestore';
-import { userCollectionRef, workSpaceCollectionRef,
-    projectCollectionRef, projectStateCollectionRef,
-    taskCollectionRef, commentCollectionRef} from '../fireStore/database.js';
-import userContext from './userContext.js';
-import { arrayUnion } from 'firebase/firestore';
-import {getCollectionDocByRefAndID,
-        getCollectionDocByRefAndMatchField,
-        reclusiveRemoveDoc} from '../components/DBUtility.js'
+import {
+    getCollectionDocByRefAndID,
+    getExpireDate,
+    guestExpireConfig,
+    reclusiveRemoveDoc
+} from '../components/DBUtility.js';
 import { db } from '../firebaseConfig.js';
+import {
+    commentCollectionRef,
+    projectStateCollectionRef,
+    taskCollectionRef
+} from '../fireStore/database.js';
+import userContext from './userContext.js';
 
 const commentContext = createContext();
 
@@ -41,13 +45,26 @@ const CommentDBProvider = ({children})=>{
 
                 if (stateDoc.exists())
                 {
-                    const batch = writeBatch(db);
-
                     const newCommentRef = doc(commentCollectionRef);
-                    batch.set(newCommentRef, {
+
+                    let newCommentObj = {
                         id:newCommentRef.id,
                         ...formData             // should included the taskID:id
-                    });
+                    }
+
+                    if (_currentUser?.isGuest)
+                    {
+                        const getDate = getExpireDate(guestExpireConfig);
+
+                        newCommentObj = {
+                            ...newCommentObj,
+                            expiredAt : getDate.expire
+                        }
+                    }
+
+                    const batch = writeBatch(db);
+
+                    batch.set(newCommentRef, newCommentObj);
                     
                     if (parentCommentID != "")
                     {
@@ -191,14 +208,55 @@ const CommentDBProvider = ({children})=>{
         }
     }
 
+    const removeCommentByDocData = async ({commentDocData})=>{
+
+        let message = "";
+        try
+        {
+            // Would by pass if the commend id doc not exist
+            await reclusiveRemoveDoc(commentCollectionRef, "replyIDs", commentDocData.id);
+
+            // Get Related Task Collection
+            const {docRef:taskRef, docObj:taskDoc, docData:taskData} = await getCollectionDocByRefAndID(taskCollectionRef, commentDocData.taskID);
+
+            if (taskDoc.exists())
+            {
+                const batch = writeBatch(db);
+
+                batch.update(taskRef, {
+                    commentIDs : arrayRemove(commentDocData.id)
+                })
+
+                // Trigger to hit the snap listening
+                batch.update(taskRef, {
+                    trigger : taskData.trigger? !taskData.trigger : true
+                });
+
+                await batch.commit();
+            }
+
+            message = "OK";
+        }
+        catch(error)
+        {
+            message = `Remove Comment Fail : ${error}`
+        }
+
+        return {
+            message : message,
+            data : commentData
+        }
+    }
+
     return (
         <commentContext.Provider value={{
             alertComment, setAlertComment,
-            createComment, removeComment, editComment
+            createComment, removeComment, editComment,
+            removeCommentByDocData
         }}>
             {children}
         </commentContext.Provider>
     )
 }
 
-export {useCommentDB, CommentDBProvider}
+export { CommentDBProvider, useCommentDB };

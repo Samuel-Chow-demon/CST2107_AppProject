@@ -24,7 +24,7 @@ const Home = () => {
       {
         if (!isLoading && !_currentUser.isUpdating)
         {
-          console.log("after load", _currentUser);
+          //console.log("after load", _currentUser);
           checkIfUserLoggedInValid(firebaseUser, updateUserDB, _currentUser, setCurrentUser);
         }
       }

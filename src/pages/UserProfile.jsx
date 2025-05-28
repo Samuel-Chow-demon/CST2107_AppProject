@@ -55,19 +55,35 @@ const UserProfile = () => {
         
         if (!isLoading && _currentUser?.loggedIn)
         {
-            console.log("profile", firebaseUser);
-            setFormData({
+            //console.log("profile", firebaseUser);
+
+            let userFormData = {
                 ...formData,
-                email : firebaseUser.email,
-                username : firebaseUser.displayName
-            })
+                email : firebaseUser?.email,
+                username : firebaseUser?.displayName
+            };
+
+            if (_currentUser?.isGuest)
+            {
+                userFormData = {
+                    ...userFormData,
+                    email : _currentUser.email,
+                    username : _currentUser.displayName
+                };
+            }
+
+            setFormData(userFormData);
 
         }
     }, [isLoading, firebaseUser]);
 
     const editProfile = useCallback((bFlag)=>{
         hideDisplay();
-        setDisableInput(bFlag);
+
+        if (!_currentUser.isGuest)
+        {
+            setDisableInput(bFlag);
+        }
     }, [setDisableInput]);
 
     const enterField = useCallback((field)=>(event)=>{
@@ -214,15 +230,17 @@ const UserProfile = () => {
 
                         // Disable to show edit icon
                         (<Avatar sx={{ 
-                            backgroundColor: blue[700],
-                            color: blueGrey,
-                            height: '3rem',
-                            width: '3rem',
-                            boxShadow: "0px 5px 20px rgba(0, 0, 0, 0.4)", // Shadow
-                            '&:hover' : {
-                                backgroundColor: blue[200],
-                                color: blueGrey[800]
-                            }
+                                backgroundColor: _currentUser.isGuest ? grey[500] : blue[700],
+                                color: _currentUser.isGuest ? grey[800] : blueGrey,
+                                height: '3rem',
+                                width: '3rem',
+                                boxShadow: "0px 5px 20px rgba(0, 0, 0, 0.4)", // Shadow
+                                '&:hover' : {
+                                    backgroundColor: _currentUser.isGuest ? grey[500] : blue[200],
+                                    color: _currentUser.isGuest ? grey[800] : blueGrey[800]
+                                },
+                                opacity: _currentUser.isGuest ? 0.5 : 1,
+                                disabled: true 
                             }}
                             onClick={()=>editProfile(false)}>
                                 <EditNoteIcon sx={{ fontSize: '2rem'}} />

@@ -76,7 +76,7 @@ const LogInform = ({clickHandleToSignUp}) => {
                     user.displayName = auth.currentUser.displayName;
                 }
 
-                console.log(user);
+                //console.log(user);
 
                 // No need to use backend to get the token, firebase already had token access
                 // 2 - After pass the credential, get the Token generated from the backend by API
@@ -104,7 +104,7 @@ const LogInform = ({clickHandleToSignUp}) => {
                 await updateUserDB({uid:user.uid, groupObjValue:{
                     loggedIn : true
                 }});
-    
+
                 // Store user info include id and token to local Storage
                 setCurrentUser({
                     userName : user.displayName,
@@ -144,6 +144,50 @@ const LogInform = ({clickHandleToSignUp}) => {
         setDisableInput(false);
         setDisplaySpinner(false);
     };
+
+    const clickGuestLogIn = (event)=>{
+
+        setDisplaySpinner(true);
+        setDisableInput(true);
+
+        try
+        {
+            const UUID = crypto.randomUUID();
+            const date = new Date();
+            const timestamp = date.getTime();
+
+            // Store user info include id and token to local Storage
+            setCurrentUser({
+                userName : `Guest`,
+                email : `${UUID}@guest.com`,
+                uid : `guest-${UUID}`,
+                token : timestamp.toString(),
+                isGuest: true,
+                loggedIn : true,
+                isUpdating : false
+            });
+
+            // Toggle to trigger userDBContext to update the user DB and check the Workspace DB
+            setUserDBUpdate(prevValue=>!prevValue);
+
+            // Set a Timeout then jump to the Home Page
+            setTimeout(()=>{
+                // Direct to Home Page
+                navigate(CONST_PATH.home); // '/home'
+
+            }, CONST_LOG_IN_DELAY_MS);    
+        }
+        catch(error)
+        {
+            setCurrentUser(null);
+        }
+
+        // Whatever, reset the form data
+        resetFormData();
+
+        setDisableInput(false);
+        setDisplaySpinner(false);
+    }
 
     const FORM_ITEM_TAILWIND_STYLE = `mt-5 w-full`;
 
@@ -209,6 +253,22 @@ const LogInform = ({clickHandleToSignUp}) => {
 
                         <div className= "mt-10 w-full flex justify-center">
                             <Typography component={'span'} variant='h8'>Not Yet Have An Account ? <a className="underline font-bold" href='#' onClick={clickHandleToSignUp}>Sign Up</a></Typography>
+                        </div>
+
+                        <div className={FORM_ITEM_TAILWIND_STYLE}>
+                            <Button 
+                                fullWidth
+                                disabled={isDisableInput}
+                                id="id-button-guest-login"
+                                variant="contained" 
+                                onClick={clickGuestLogIn}
+                                sx={{
+                                    fontSize: '14px',
+                                    // fontWeight: 'bold'
+                                }}
+                            >
+                                    Guest Trials LogIn Here
+                            </Button>
                         </div>
                     </div>
 

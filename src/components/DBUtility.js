@@ -1,10 +1,29 @@
-import { doc, getDoc, getDocs, limit, orderBy, query, where, writeBatch } from 'firebase/firestore';
+import { doc, getDoc, getDocs, limit,
+         orderBy, query, where, writeBatch,
+         Timestamp } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import {
   commentCollectionRef,
   projectCollectionRef, projectStateCollectionRef,
   taskCollectionRef
 } from '../fireStore/database.js';
+
+// Temp expire after 5 second
+const guestExpireConfig = {
+  day : 1
+};
+
+const getExpireDate = ({day = 0, hr = 0, min = 0, sec = 0} = {})=>{
+
+  const now = new Date();
+  const expireDate = new Date(now.getTime() + (day * 24 * 60 * 60 * 1000)
+                                            + (hr * 60 * 60 * 1000)
+                                            + (min * 60 * 1000)
+                                            + (sec * 1000));
+
+  return {now: Timestamp.fromDate(now),
+          expire: Timestamp.fromDate(expireDate)};
+}
 
 const getCollectionDocByRefAndID = async(collectionRef, ID)=>{
     const docRef = doc(collectionRef, ID);
@@ -30,10 +49,37 @@ const getCollectionDocsByMultipleRefAndID = async (collectionRef, IDArray) => {
     return idsDocs;
 };
 
+const getCollectionDocsByMultipleRefAndDataInSpecificField = async (collectionRef, field, DataArray) => {
+    if (!Array.isArray(DataArray))
+    {
+        throw new Error("IDs must be an array");
+    }
+    
+    const docPromises = DataArray.map(async (data) => {
+
+        const {docRefList, docObjList} = await getCollectionDocByRefAndMatchField(collectionRef, field, data);
+
+        const listOfObj = docObjList.map((doc, index)=>{
+
+          return {docRef : docRefList[index], docObj : doc};
+        });
+        
+        return [...listOfObj];
+    });
+
+    const idsDocs = await Promise.all(docPromises);
+    return idsDocs.flat();
+};
+
 const getCollectionDocByRefAndMatchField = async(collectionRef, field, value)=>{
 
+    return getCollectionDocByRefAndMatchFieldWithComparatorStr(collectionRef, "==", field, value);
+}
+
+const getCollectionDocByRefAndMatchFieldWithComparatorStr = async(collectionRef, comparatorString, field, value)=>{
+
     // can have multiple docs that match
-    const queryDoc = query(collectionRef, where(field, "==", value));
+    const queryDoc = query(collectionRef, where(field, comparatorString, value));
     const querySnapShot = await getDocs(queryDoc);
 
     let docRefList = []
@@ -290,5 +336,10 @@ const removeAllProjectsFromWSDoc = async(workSpaceData)=>{
 
 export {
   getCollectionDocByRefAndID, getCollectionDocByRefAndMatchField,
-  getCollectionDocByRefAndTopMostFieldValue, getCollectionDocsByMultipleRefAndID, reclusiveRemoveDoc, removeAllProjectsFromWSDoc, removeAllStatesFromProjectDoc, removeAllTasksFromStateDoc
+  getCollectionDocByRefAndMatchFieldWithComparatorStr,
+  getCollectionDocByRefAndTopMostFieldValue, getCollectionDocsByMultipleRefAndID,
+  reclusiveRemoveDoc, removeAllProjectsFromWSDoc,
+  removeAllStatesFromProjectDoc, removeAllTasksFromStateDoc,
+  getExpireDate, guestExpireConfig,
+  getCollectionDocsByMultipleRefAndDataInSpecificField
 };
