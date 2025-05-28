@@ -14,8 +14,8 @@ import {
 } from '../components/DBUtility.js'
 
 import userContext from '../context/userContext.js';
-import { Button, CircularProgress, Typography } from '@mui/material';
-import { grey } from '@mui/material/colors';
+import { Button, Checkbox, CircularProgress, FormControlLabel, Typography } from '@mui/material';
+import { grey, lime } from '@mui/material/colors';
 import { DataGrid } from '@mui/x-data-grid';
 
 import { useCommentDB } from '../context/commentDBContext';
@@ -26,12 +26,12 @@ import { useWorkSpaceDB } from '../context/workspaceDBContext.jsx';
 import { useUserDB } from '../context/userDBContext.jsx';
 
 const collectionCAT = {
-    0 : "User",
-    1 : "WorkSpace",
-    2 : "Project",
-    3 : "State",
-    4 : "Task",
-    5 : "Comment"
+    0 : "Comment",
+    1 : "Task",
+    2 : "State",
+    3 : "Project",
+    4 : "WorkSpace",
+    5 : "User"
 };
 
 const Admin = () => {
@@ -49,6 +49,8 @@ const Admin = () => {
     const [isAdmin, setIsAdmin] = useState(false);
 
     const [selection, setSelection] = useState(-1);
+
+    const [checkedFollowExpireDate, setCheckedFollowExpireDate] = useState(true);
 
     const [collectionResult, setCollectionResult] = useState({
         ref: [],
@@ -68,6 +70,10 @@ const Admin = () => {
         }
 
     }, [_currentUser]);
+
+    const handleCheckBoxChange = (e)=>{
+        setCheckedFollowExpireDate(e.target.checked);
+    }
 
     const DynamicTable = memo(({data})=>{
 
@@ -106,22 +112,22 @@ const Admin = () => {
 
         switch (Number(selectItem))
         {
-            case 0:
+            case 5:
                 collectionRef = userCollectionRef;
                 break;
-            case 1:
+            case 4:
                 collectionRef = workSpaceCollectionRef;
                 break;
-            case 2:
+            case 3:
                 collectionRef = projectCollectionRef;
                 break;
-            case 3:
+            case 2:
                 collectionRef = projectStateCollectionRef;
                 break;
-            case 4:
+            case 1:
                 collectionRef = taskCollectionRef;
                 break;
-            case 5:
+            case 0:
                 collectionRef = commentCollectionRef;
                 break;
             default:
@@ -141,37 +147,36 @@ const Admin = () => {
         }
     }
 
-
-    const handleRemove = async (e)=>{
-
-        e.preventDefault();
+    const removeAction = async({selectionIdx, refList, docList})=>{
 
         let promises = null;
 
         const now = new Date();
 
-       switch (Number(selection))
+       switch (selectionIdx)
         {
             // all expired User Doc and remove
-            case 0:
-                 promises = collectionResult.doc.map(async (doc, index)=> {
+            case 5:
+                 promises = docList.map(async (doc, index)=> {
 
-                    if (now > doc.expiredAt.toDate())
+                    if (!checkedFollowExpireDate ||
+                        now > doc.expiredAt.toDate())
                     {
-                        const ref = collectionResult.ref[index];
-
+                        const ref = refList[index];
+                        
                         await removeUserByRefAndDocData({userRef : ref, userDocData : doc});
                     }
                 })
                 break;
 
             // all expired WorkSpace Doc and remove
-            case 1:
-                promises = collectionResult.doc.map(async (doc, index)=> {
+            case 4:
+                promises = docList.map(async (doc, index)=> {
 
-                    if (now > doc.expiredAt.toDate())
+                    if (!checkedFollowExpireDate ||
+                        now > doc.expiredAt.toDate())
                     {
-                        const ref = collectionResult.ref[index];
+                        const ref = refList[index];
 
                         await removeWorkSpaceByRefAndDocData({workSpaceRef : ref, workSpaceDocData : doc});
                     }
@@ -179,12 +184,13 @@ const Admin = () => {
                 break;
 
             // all expired Project Doc and remove
-            case 2:
-                promises = collectionResult.doc.map(async (doc, index)=> {
+            case 3:
+                promises = docList.map(async (doc, index)=> {
 
-                    if (now > doc.expiredAt.toDate())
+                    if (!checkedFollowExpireDate ||
+                        now > doc.expiredAt.toDate())
                     {
-                        const ref = collectionResult.ref[index];
+                        const ref = refList[index];
 
                         await removeProjectByRefAndDocData({projectRef : ref, projectDocData : doc});
                     }
@@ -192,12 +198,13 @@ const Admin = () => {
                 break;
 
             // all expired State Doc and remove
-            case 3:
-                promises = collectionResult.doc.map(async (doc, index)=> {
+            case 2:
+                promises = docList.map(async (doc, index)=> {
 
-                    if (now > doc.expiredAt.toDate())
+                    if (!checkedFollowExpireDate ||
+                        now > doc.expiredAt.toDate())
                     {
-                        const ref = collectionResult.ref[index];
+                        const ref = refList[index];
 
                         await removeStateByRefAndDocData({stateRef : ref, stateDocData : doc});
                     }
@@ -205,12 +212,13 @@ const Admin = () => {
                 break;
 
             // all expired Task Doc and remove
-            case 4:
-                promises = collectionResult.doc.map(async (doc, index)=> {
+            case 1:
+                promises = docList.map(async (doc, index)=> {
 
-                    if (now > doc.expiredAt.toDate())
+                    if (!checkedFollowExpireDate ||
+                        now > doc.expiredAt.toDate())
                     {
-                        const ref = collectionResult.ref[index];
+                        const ref = refList[index];
 
                         await removeTaskByRefAndDocData({taskRef : ref, taskDocData : doc});
                     }
@@ -218,10 +226,11 @@ const Admin = () => {
                 break;
 
             // All expired User Doc and remove
-            case 5:
-                promises = collectionResult.doc.map(async (doc)=> {
+            case 0:
+                promises = docList.map(async (doc)=> {
 
-                    if (now > doc.expiredAt.toDate())
+                    if (!checkedFollowExpireDate ||
+                        now > doc.expiredAt.toDate())
                     {
                         await removeCommentByDocData({commentDocData : doc});
                     }
@@ -234,10 +243,69 @@ const Admin = () => {
         if (promises)
         {
             await Promise.all(promises);
-
-            // update the table
-            handleSearch(selection);
         }
+    }
+
+    const handleRemove = async (e)=>{
+
+        e.preventDefault();
+
+        await removeAction({selectionIdx : Number(selection),
+                            refList : collectionResult.ref,
+                            docList : collectionResult.doc
+        });
+        
+        // update the table
+        handleSearch(selection);  
+    }
+
+    const handleRemoveAll = async (e)=>{
+
+        e.preventDefault();
+
+        for (let keyIdx in Object.keys(collectionCAT))
+        {
+            let collectionRef = null;
+
+            const index = Number(keyIdx);
+
+            switch (index)
+            {
+                case 5:
+                    collectionRef = userCollectionRef;
+                    break;
+                case 4:
+                    collectionRef = workSpaceCollectionRef;
+                    break;
+                case 3:
+                    collectionRef = projectCollectionRef;
+                    break;
+                case 2:
+                    collectionRef = projectStateCollectionRef;
+                    break;
+                case 1:
+                    collectionRef = taskCollectionRef;
+                    break;
+                case 0:
+                    collectionRef = commentCollectionRef;
+                    break;
+                default:
+                    break;
+            }
+
+            if (collectionRef)
+            {
+                const {docRefList, docObjList} = await getCollectionDocByRefAndMatchFieldWithComparatorStr(collectionRef, "!=", "expiredAt", null);
+
+                await removeAction({selectionIdx : index,
+                                    refList : docRefList,
+                                    docList : docObjList
+                                    });
+            }
+        }
+
+        // update the table
+        handleSearch(selection); 
     }
 
     const ButtonsList = memo(()=>{
@@ -303,13 +371,42 @@ const Admin = () => {
                             gap: '2rem'
                         }}>
                             <ButtonsList />
-                            <Button 
-                                variant='contained'
-                                color="secondary"
-                                onClick={handleRemove}
-                            >
-                                Remove
-                            </Button>
+                            <div style={{
+                                display: 'flex',
+                                justifyContent: 'flex-start',
+                                alignItems: 'center',
+                                gap: '2rem'
+                            }}>
+                                <Button 
+                                    variant='contained'
+                                    color="secondary"
+                                    onClick={handleRemove}
+                                >
+                                    Remove
+                                </Button>
+
+                                <Button 
+                                    variant='contained'
+                                    onClick={handleRemoveAll}
+
+                                    sx={{
+                                        backgroundColor: lime[800]
+                                    }}
+                                >
+                                    Remove All
+                                </Button>
+
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={checkedFollowExpireDate}
+                                            onChange={handleCheckBoxChange}
+                                        />
+                                    }
+                                    label="Follow Expire Date To Remove"
+                                />
+
+                            </div>
                             <Typography>{selection >= 0 ? `Guest Collection Table - ${collectionCAT[selection]}` : ""}</Typography>
                             <DynamicTable data={collectionResult.doc} />
 
