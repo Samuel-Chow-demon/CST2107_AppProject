@@ -1,15 +1,19 @@
+import { arrayRemove, arrayUnion, doc, onSnapshot, writeBatch } from 'firebase/firestore';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { deleteDoc, addDoc, doc, getDoc, getDocs, limit, query, setDoc, where, updateDoc, arrayRemove, onSnapshot, writeBatch } from 'firebase/firestore';
-import { userCollectionRef, workSpaceCollectionRef,
-    projectCollectionRef, projectStateCollectionRef,
-    taskCollectionRef, commentCollectionRef} from '../fireStore/database.js';
-import userContext from './userContext.js';
-import { arrayUnion } from 'firebase/firestore';
-import {getCollectionDocByRefAndID,
-        getCollectionDocByRefAndMatchField,
-        getCollectionDocsByMultipleRefAndID,
-        reclusiveRemoveDoc} from '../components/DBUtility.js'
+import {
+    getCollectionDocByRefAndID,
+    getCollectionDocsByMultipleRefAndID,
+    getExpireDate,
+    guestExpireConfig,
+    reclusiveRemoveDoc
+} from '../components/DBUtility.js';
 import { db } from '../firebaseConfig.js';
+import {
+    commentCollectionRef,
+    projectStateCollectionRef,
+    taskCollectionRef
+} from '../fireStore/database.js';
+import userContext from './userContext.js';
 
 const taskContext = createContext();
 
@@ -187,15 +191,28 @@ const TaskDBProvider = ({children})=>{
             {
                 //setTaskIsLoading(true);
 
-                const batch = writeBatch(db);
-
                 const newTaskRef = doc(taskCollectionRef);
-                batch.set(newTaskRef, {
+
+                let newTaskObj = {
                     id:newTaskRef.id,
                     ...formData,
                     commentIDs : [],
                     imgs : []
-                })
+                }
+
+                if (_currentUser?.isGuest)
+                {
+                    const getDate = getExpireDate(guestExpireConfig);
+
+                    newTaskObj = {
+                        ...newTaskObj,
+                        expiredAt : getDate.expire
+                    }
+                }
+
+                const batch = writeBatch(db);
+
+                batch.set(newTaskRef, newTaskObj);
 
                 batch.update(stateRef, {
                     taskIDs : arrayUnion(newTaskRef.id)
@@ -334,15 +351,57 @@ const TaskDBProvider = ({children})=>{
         }
     }
 
+    const removeTaskByRefAndDocData = async({taskRef, taskDocData})=>{
+
+        let message = "";
+        try
+        {
+            const allCommentIDs = taskDocData.commentIDs;
+
+            const promises = allCommentIDs.map(async(commentID)=>{
+                
+                await reclusiveRemoveDoc(commentCollectionRef, "replyIDs", commentID);
+            })
+
+            await Promise.all(promises);
+
+            // Get Related State Collection
+            const {docRef:stateRef} = await getCollectionDocByRefAndID(projectStateCollectionRef, taskDocData.stateID);
+
+            const batch = writeBatch(db);
+
+            batch.delete(taskRef);
+
+            batch.update(stateRef, {
+                taskIDs : arrayRemove(taskDocData.id)
+            })
+
+            await batch.commit();
+
+            message = "OK";
+           
+        }
+        catch(error)
+        {
+            message = `Remove Task Fail : ${error}`
+        }
+
+        return {
+            message : message,
+            data : taskDocData
+        }
+    }
+
     return (
         <taskContext.Provider value={{
             alertTask, setAlertTask,
             currentAllCommentsInTask, setCurrentTaskData, getAllCommentByCommentIDs,
-            createTask, removeTask, editTask
+            createTask, removeTask, editTask,
+            removeTaskByRefAndDocData
         }}>
             {children}
         </taskContext.Provider>
     )
 }
 
-export {useTaskDB, TaskDBProvider}
+export { TaskDBProvider, useTaskDB };

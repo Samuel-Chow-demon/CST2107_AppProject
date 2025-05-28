@@ -1,17 +1,19 @@
+import { arrayRemove, arrayUnion, doc, onSnapshot, query, setDoc, updateDoc, where, writeBatch } from 'firebase/firestore';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { deleteDoc, addDoc, doc, getDoc, getDocs, limit, query, setDoc, where, updateDoc, arrayRemove, onSnapshot, writeBatch } from 'firebase/firestore';
-import { userCollectionRef, workSpaceCollectionRef,
-    projectCollectionRef, projectStateCollectionRef,
-    taskCollectionRef, commentCollectionRef} from '../fireStore/database.js';
-import userContext from './userContext.js';
-import { arrayUnion } from 'firebase/firestore';
-import {getCollectionDocByRefAndID,
-        getCollectionDocByRefAndMatchField,
-        reclusiveRemoveDoc,
-        removeAllStatesFromProjectDoc} from '../components/DBUtility.js'
-import { useWorkSpaceDB } from './workspaceDBContext.jsx';
-import { useUserDB } from './userDBContext.jsx';
+import {
+    getCollectionDocByRefAndID,
+    getCollectionDocByRefAndMatchField,
+    removeAllStatesFromProjectDoc,
+    getExpireDate, guestExpireConfig
+} from '../components/DBUtility.js';
 import { db } from '../firebaseConfig.js';
+import {
+    projectCollectionRef,
+    userCollectionRef, workSpaceCollectionRef
+} from '../fireStore/database.js';
+import userContext from './userContext.js';
+import { useUserDB } from './userDBContext.jsx';
+import { useWorkSpaceDB } from './workspaceDBContext.jsx';
 
 const projectContext = createContext();
 
@@ -166,14 +168,26 @@ const ProjectDBProvider = ({children, workingWorkSpaceID})=>{
             {
                 //setProjIsLoading(true);
 
-                const batch = writeBatch(db);
-
-                const newProjectRef = doc(projectCollectionRef);
-                batch.set(newProjectRef, {
+                let newProjectObj = {
                     ...formData,
                     stateIDs : [],
                     workspaceID : workingWorkSpaceID
-                });
+                };
+
+                if (_currentUser?.isGuest)
+                {
+                    const getDate = getExpireDate(guestExpireConfig);
+
+                    newProjectObj = {
+                        ...newProjectObj,
+                        expiredAt: getDate.expire
+                    }
+                }
+
+                const batch = writeBatch(db);
+
+                const newProjectRef = doc(projectCollectionRef);
+                batch.set(newProjectRef, newProjectObj);
 
                 batch.update(workSpaceRef, {
                         projectIDs : arrayUnion(newProjectRef.id)
@@ -362,16 +376,54 @@ const ProjectDBProvider = ({children, workingWorkSpaceID})=>{
         }
     }
 
+    const removeProjectByRefAndDocData = async({projectRef, projectDocData})=>{
+
+        let message = "";
+        try
+        {
+            const projectDocID = projectRef.id;
+
+            // ------------------- The 1st step, remove all the comments, tasks and states sequentially -------------- //
+                await removeAllStatesFromProjectDoc(projectDocData);
+
+            // ------------------- The 2nd step -------------- //
+            const {docRef:workSpaceDocRef} = await getCollectionDocByRefAndID(workSpaceCollectionRef, projectDocData.workspaceID);
+
+            const batchStep2 = writeBatch(db);
+
+            batchStep2.delete(projectRef);
+
+            batchStep2.update(workSpaceDocRef, {
+                projectIDs : arrayRemove(projectDocID)
+            })
+
+            await batchStep2.commit();
+
+            message = "OK";
+           
+        }
+        catch(error)
+        {
+            message = `Remove Project Fail : ${error}`
+        }
+
+        return {
+            message : message,
+            data : projectDocData
+        }
+    }
+
     return (
         <projectContext.Provider value={{
             workingProjects, workSpaceData, allUserInWorkSpaceDoc,
             alertProject, setAlertProject,
             isProjLoading, setProjIsLoading, isProjectUpdate,
-            createProject, joinProject, removeProject, leaveProject, editProject
+            createProject, joinProject, removeProject, leaveProject, editProject,
+            removeProjectByRefAndDocData
         }}>
             {children}
         </projectContext.Provider>
     )
 }
 
-export {useProjectDB, ProjectDBProvider}
+export { ProjectDBProvider, useProjectDB };

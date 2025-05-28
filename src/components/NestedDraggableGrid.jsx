@@ -289,11 +289,11 @@ const NestedDraggableGrid = ({workingStatesWithTasks, allUserInProjectDoc}) => {
     if (!destination) return; // Drop outside the droppable area
 
     // Log the details
-    console.log("Dragged Item ID:", draggableId);
-    console.log("Source Index:", source.index);
-    console.log("Source Droppable ID:", source.droppableId);
-    console.log("Destination Index:", destination.index);
-    console.log("Destination Droppable ID:", destination.droppableId);
+    // console.log("Dragged Item ID:", draggableId);
+    // console.log("Source Index:", source.index);
+    // console.log("Source Droppable ID:", source.droppableId);
+    // console.log("Destination Index:", destination.index);
+    // console.log("Destination Droppable ID:", destination.droppableId);
 
     // if the draggable item no position change, just return
     if (source.droppableId === destination.droppableId && 

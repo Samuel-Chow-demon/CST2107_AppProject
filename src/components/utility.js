@@ -133,6 +133,12 @@ async function checkIfUserLoggedInValid(firebaseUser, updateUserDB,
 
     //console.log(_currentUser);
 
+    // Guest entry no need to check cause it is not registered inside the Firebase Auth
+    if (_currentUser.isGuest)
+    {
+        return;
+    }
+
     console.log("Check", firebaseUser);
     const user = firebaseUser;
 

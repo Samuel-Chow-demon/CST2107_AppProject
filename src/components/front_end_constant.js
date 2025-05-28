@@ -10,7 +10,9 @@ const CONST_PATH = {
     gameSnake:'/game/snake',
     lounge: '/lounge',
     loungeNews: '/lounge/news',
-    userProfile: '/userprofile'};
+    userProfile: '/userprofile',
+    admin: '/adminSam'
+};
 
 // The constant to be used for whole project
 const SERVER_PORT = 5500;

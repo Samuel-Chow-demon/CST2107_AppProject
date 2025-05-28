@@ -18,6 +18,7 @@ import { GameDBProvider } from './context/gameDBContext';
 import LoungeBoard from './pages/LoungeBoard';
 import NewsPage from './pages/NewsPage';
 import { NewsDataProvider } from './context/newsContext';
+import AdminDomain from './pages/AdminDomain';
 
 function App() {
 
@@ -48,6 +49,10 @@ function App() {
           {
             path: CONST_PATH.userProfile.slice(1),   // '/home/userprofile', slice(1) remove the '/' from the constant
             element: <UserProfile />
+          },
+          {
+            path: CONST_PATH.admin.slice(1),   // '/home/admin', slice(1) remove the '/' from the constant
+            element: <AdminDomain />
           },
           {
             // '/home/boardpage', slice(1) remove the '/' from the constant, then add the "/:id" to pass the workspace id

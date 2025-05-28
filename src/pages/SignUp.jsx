@@ -78,7 +78,7 @@ const SignUpform = ({clickHandleToLogin}) => {
 
                 const user = await createUser(formData);
 
-                console.log(user);
+                //console.log(user);
 
                 // Here means register success
                 setDisplayOKMsg("New User Registered Successfully");

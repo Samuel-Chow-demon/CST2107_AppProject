@@ -1,9 +1,13 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { deleteDoc, addDoc, doc, getDoc, getDocs, limit, query, setDoc, where, updateDoc, arrayRemove } from 'firebase/firestore';
+import { deleteDoc, addDoc, doc, getDoc, getDocs, limit, query, setDoc, where, updateDoc, arrayRemove, writeBatch } from 'firebase/firestore';
 import { userCollectionRef, workSpaceCollectionRef } from '../fireStore/database';
 import userContext from './userContext';
 import { arrayUnion } from 'firebase/firestore';
 import { getRandomRGBString } from '../components/utility';
+
+import { db } from '../firebaseConfig.js';
+
+import {getExpireDate, guestExpireConfig} from '../components/DBUtility'
 
 const userDBContext = createContext();
 
@@ -42,20 +46,16 @@ const UserDBProvider = ({children})=>{
 
                     const loginUserColor = getRandomRGBString().solid;
 
-                    setCurrentUser({
+                    let updatedCurrentUser = {
                         ..._currentUser,
                         color:loginUserColor
-                    })
+                    }
                     
                     // If missed or not ever existed in the DB for the current logged in user
                     if (userQuerySnapShot.empty)
                     {
                         // Do add back to the DB doc
-                        const userDocRef = createUserDB({userName: _currentUser.userName,
-                                                    email:_currentUser.email,
-                                                    uid:_currentUser.uid,
-                                                    color:loginUserColor,
-                                                    workspaceIDs: []});
+                        const userDocRef = createUserDB(updatedCurrentUser);
                     }
                     // Update back the user belonged Workspace
                     else
@@ -114,6 +114,14 @@ const UserDBProvider = ({children})=>{
                             // Wait for all the promises to resolve
                             await Promise.all(promises);
 
+                            if (data.isAdmin)
+                            {
+                                updatedCurrentUser = {
+                                    ...updatedCurrentUser,
+                                    isAdmin: data.isAdmin
+                                }
+                            }
+
                             // Set to State Var
                             setUserInfoDB({
                                 userName : data.userName,
@@ -124,6 +132,8 @@ const UserDBProvider = ({children})=>{
                             })
                         }
                     }
+
+                    setCurrentUser(updatedCurrentUser);
                 }
                 catch(error)
                 {
@@ -138,22 +148,38 @@ const UserDBProvider = ({children})=>{
 
     }, [isUserDBUpdate])
 
-    const createUserDB = async ({userName, email, uid})=>{
+    const createUserDB = async (newUser)=>{
 
         try
         {
-            const userDocRef = await addDoc(userCollectionRef, {
-                userName : userName,
-                email : email,
-                color : "",
-                uid : uid,
+            let useUserDBObj = {
+
+                userName: newUser.userName,
+                email: newUser.email,
+                uid: newUser.uid,
+                color: newUser.color,
+                loggedIn: newUser.loggedIn ?? false,
                 workspaceIDs : []
-            });
+            };
+
+            if (newUser?.isGuest)
+            {
+                const getDate = getExpireDate(guestExpireConfig);
+
+                useUserDBObj = {
+                    ...useUserDBObj,
+                    isGuest: newUser.isGuest,
+                    expiredAt: getDate.expire,
+                    loggedIn : true
+                }
+            }
+
+            const userDocRef = await addDoc(userCollectionRef, useUserDBObj);
             return userDocRef;
         }
         catch(error)
         {
-            console.log(`Add User {userName} Fail`, error);
+            console.log(`Add User ${newUser.userName} Fail`, error);
             setAlertUserDB({...alertUserDB, message:'Add New User Fail', color: 'error', isOpen: true, hideDuration: 2000 });
             return null;
         }
@@ -236,6 +262,30 @@ const UserDBProvider = ({children})=>{
         }
     }
 
+    const removeUserByRefAndDocData = async({userRef, userDocData})=>{
+
+        let message = "";
+        try
+        {
+            const batch = writeBatch(db);
+
+            batch.delete(userRef);
+
+            await batch.commit();
+
+            message = "OK";
+        }
+        catch(error)
+        {
+            message = `Remove User Fail : ${error}`
+        }
+
+        return {
+            message : message,
+            data : userDocData
+        }
+    }
+
     return (
         <userDBContext.Provider value={{
             userInfoDB,
@@ -243,7 +293,8 @@ const UserDBProvider = ({children})=>{
             isUserDBLoading,
             setUserDBUpdate,
             createUserDB, updateUserDB,
-            getAllUserDoc, getUserDocData
+            getAllUserDoc, getUserDocData,
+            removeUserByRefAndDocData
         }}>
             {children}
         </userDBContext.Provider>
