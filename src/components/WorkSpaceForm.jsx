@@ -176,6 +176,7 @@ const WorkSpaceForm = ({setOpenDialog, currentWSForm = {}})=>{
 
       const WorkSpaceFormComponents = memo(()=>(
             <>
+                <ColorPicker />
                 <MemoizedTextField
                     fullWidth
                     required
@@ -185,7 +186,6 @@ const WorkSpaceForm = ({setOpenDialog, currentWSForm = {}})=>{
                     value={formData['name']}
                     onChange={handleInputChange('name')}
                 />
-                <ColorPicker />
                 <Box sx={{display: 'flex', justifyContent:'center', alignItems:'center'}}>
                     <Box
                         sx={{display: 'grid', gridTemplateColumns: '5rem 10rem', gap:2}}> 

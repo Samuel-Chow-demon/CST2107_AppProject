@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-//import { SketchPicker } from 'react-color';
+import { useState } from 'react';
+// import { SketchPicker } from 'react-color';
 import { HexColorPicker } from 'react-colorful';
 import Button from '@mui/material/Button';
 import Popover from '@mui/material/Popover';
-import Box from '@mui/material/Box';
+// import Box from '@mui/material/Box';
 import { grey } from '@mui/material/colors';
 
 const useColorPicker = (buttonPlaceHolder="", initColor="") => {
@@ -20,8 +20,10 @@ const useColorPicker = (buttonPlaceHolder="", initColor="") => {
       setAnchorEl(event.currentTarget);
     };
 
-    const handleClose = () => {
-      setAnchorEl(null);
+    const handleClose = (event, reason) => {
+      if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+        setAnchorEl(null);
+      }
     };
 
     const open = Boolean(anchorEl);
@@ -71,15 +73,29 @@ const useColorPicker = (buttonPlaceHolder="", initColor="") => {
           disableEnforceFocus // Prevents automatic focus-stealing behavior
           disableAutoFocus   // Ensures the picker board interaction remains seamless
         >
-          <Box sx={{ p: 1 }}
+          <HexColorPicker
+              color={color}
+              //onChange={handleDragChange} // HexColorPicker uses `onChange` instead of `onChangeComplete`
+              onChange={(newColor)=>setColor(newColor)} // HexColorPicker uses `onChange` instead of `onChangeComplete`
+              onMouseUp={(e) => {
+                e.stopPropagation();
+                
+              }}
+              onMouseDown={(e) =>{
+                e.stopPropagation();
+              }} // Start dragging
+            />
+
+          {/* <Box sx={{ p: 1 }}
             onMouseDown={(e) => e.stopPropagation()} // Prevent propagation of click events
             onMouseUp={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()} // Prevent propagation of click events
             >
-            {/* <CustomSketchPicker
+            <SketchPicker
                 color={color}
                 onChangeComplete={(newColor) => setColor(newColor.hex)}
-              /> */}
+              />
+
             <HexColorPicker
               color={color}
               //onChange={handleDragChange} // HexColorPicker uses `onChange` instead of `onChangeComplete`
@@ -95,7 +111,8 @@ const useColorPicker = (buttonPlaceHolder="", initColor="") => {
                 //setIsDragging(true);
               }} // Start dragging
             />
-          </Box>
+
+          </Box> */}
         </Popover>
       </div>
     );

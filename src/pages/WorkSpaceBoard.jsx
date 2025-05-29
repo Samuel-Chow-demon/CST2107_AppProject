@@ -42,7 +42,6 @@ const WorkSpaceBoard = () => {
         isWSLoading,
         removeWorkSpace, leaveWorkSpace } = useWorkSpaceDB();
 
-
     // const WorkSpaceFormComponents = useCreateWorkSpaceForm({createWorkSpace, setOpenDialog});
 
     const navigate = useNavigate();
@@ -380,7 +379,6 @@ const WorkSpaceBoard = () => {
                             height: 'auto',
                             gap: 3
                         }}>
-
                             <Box sx={{
                                 display: 'flex',
                                 flexDirection: 'column',
