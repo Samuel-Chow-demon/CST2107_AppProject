@@ -19,7 +19,7 @@ const UserDBProvider = ({children})=>{
     const {_currentUser, setCurrentUser} = useContext(userContext);
 
     const [alertUserDB, setAlertUserDB] = useState({});
-    const [isUserDBUpdate, setUserDBUpdate] = useState(false)
+    const [isUserDBUpdate, setUserDBUpdate] = useState(false);
 
     const [userInfoDB, setUserInfoDB] = useState({
         userName : _currentUser?.userName,
@@ -36,7 +36,8 @@ const UserDBProvider = ({children})=>{
         const getFireBaseUserDB = async ()=>{
 
             // If the currentUser logged in
-            if (_currentUser != null)
+            if (_currentUser != null &&
+                _currentUser.loggedIn)
             {
                 try
                 {
@@ -286,6 +287,15 @@ const UserDBProvider = ({children})=>{
         }
     }
 
+    const checkIfUserDocExist = async({uid})=>{
+
+        const queryDoc = query(userCollectionRef, where("uid", "==", uid), limit(1));
+                
+        const userQuerySnapShot = await getDocs(queryDoc);
+
+        return !userQuerySnapShot.empty;
+    }
+
     return (
         <userDBContext.Provider value={{
             userInfoDB,
@@ -294,7 +304,8 @@ const UserDBProvider = ({children})=>{
             setUserDBUpdate,
             createUserDB, updateUserDB,
             getAllUserDoc, getUserDocData,
-            removeUserByRefAndDocData
+            removeUserByRefAndDocData,
+            checkIfUserDocExist
         }}>
             {children}
         </userDBContext.Provider>
