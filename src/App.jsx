@@ -64,11 +64,10 @@ function App() {
             path: CONST_PATH.workspace.slice(1),      // '/home/workspace', slice(1) remove the '/' from the constant
             element: <WorkSpaceBoard />
           },
-          // Temp disable
-          // {
-          //   path: CONST_PATH.lounge.slice(1),      // '/home/lounge', slice(1) remove the '/' from the constant
-          //   element: <LoungeBoard />
-          // },
+          {
+            path: CONST_PATH.lounge.slice(1),      // '/home/lounge', slice(1) remove the '/' from the constant
+            element: <LoungeBoard />
+          },
           {
             path: CONST_PATH.loungeNews.slice(1), // '/home/lounge/news', slice(1) remove the '/' from the constant
             element: <NewsPage />

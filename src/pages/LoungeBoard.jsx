@@ -34,7 +34,7 @@ const LoungeBoard = () => {
 
                     <Box
                         sx={{
-                            height: '70%',
+                            height: '60%',
                             backgroundColor: purple[300],
                             backgroundImage: bkgrd ? `url(${bkgrd})` : 'none',
                             backgroundSize: 'cover',
@@ -45,7 +45,7 @@ const LoungeBoard = () => {
                         {/* <Typography gutterBottom variant="h5" component="div">
                             Project
                         </Typography> */}
-                        <Typography gutterBottom variant="h5" sx={{ color: 'text.secondary', textAlign:'center' }}>
+                        <Typography gutterBottom variant="h5" sx={{ color: 'text.secondary', textAlign:'center'}}>
                             {name}
                         </Typography>
                     </CardContent>

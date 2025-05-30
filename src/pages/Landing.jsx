@@ -42,7 +42,8 @@ const LandingPage = () => {
 
   const displayTextList = ['Simple Work .\nWork Simple',
                             `Today is ${(new Date()).toLocaleDateString()}`,
-                            "Manage Work .\nDrag and Drop"
+                            "Manage Work .\nDrag and Drop",
+                            "{ Drag Me }"
   ];
 
   const [clickIdx, setClickIdx] = useState(0);
@@ -260,7 +261,8 @@ const LandingPage = () => {
   return (
     <div className="flex justify-center items-center h-screen p-20">
       
-      <div ref={swapyContainer}>
+      <div ref={swapyContainer}
+      >
         
         <div className="grid-container">
 
