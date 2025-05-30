@@ -17,6 +17,8 @@ import useInputForm from '../hooks/useInputForm.js'
 // Use CSS for styling
 import './SignUp.css'
 import useDisplayMessage from '../hooks/useDisplayMessage.jsx';
+import { grey } from '@mui/material/colors';
+import { useEffect } from 'react';
 
 const SignUpform = ({clickHandleToLogin}) => {
 
@@ -45,6 +47,14 @@ const SignUpform = ({clickHandleToLogin}) => {
         setDisplayErrorMsg,
         DisplayMessageComponent
       } = useDisplayMessage();
+
+
+    useEffect(()=>{
+
+        setDisableInput(true);
+
+    }, [])
+
 
     // ********************************************** Create Function
 
@@ -78,7 +88,7 @@ const SignUpform = ({clickHandleToLogin}) => {
 
                 const user = await createUser(formData);
 
-                console.log(user);
+                //console.log(user);
 
                 // Here means register success
                 setDisplayOKMsg("New User Registered Successfully");
@@ -128,7 +138,13 @@ const SignUpform = ({clickHandleToLogin}) => {
                     <Avatar className="my-10" id="id-icon-bkgrd-signup"><FaceIcon id="id-icon-signup" /></Avatar>
 
                     <div className="mt-1 mb-10">
-                        <Typography component={'span'} variant='h4'>Sign Up</Typography>
+                        <Typography component={'span'} variant='h5'
+                            sx={{
+                                color: grey[700]
+                            }}
+                        >
+                            Sign Up (temporarily disabled)
+                        </Typography>
                     </div>
 
                     {/* return a Display Message Component */}

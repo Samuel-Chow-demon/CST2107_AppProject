@@ -18,6 +18,7 @@ import { GameDBProvider } from './context/gameDBContext';
 import LoungeBoard from './pages/LoungeBoard';
 import NewsPage from './pages/NewsPage';
 import { NewsDataProvider } from './context/newsContext';
+import AdminDomain from './pages/AdminDomain';
 
 function App() {
 
@@ -50,6 +51,10 @@ function App() {
             element: <UserProfile />
           },
           {
+            path: CONST_PATH.admin.slice(1),   // '/home/admin', slice(1) remove the '/' from the constant
+            element: <AdminDomain />
+          },
+          {
             // '/home/boardpage', slice(1) remove the '/' from the constant, then add the "/:id" to pass the workspace id
             // And the projectID is optional when it is route to particular workspace project,
             path: CONST_PATH.boardpage.slice(1) + '/:id/:projectID?',
@@ -59,10 +64,11 @@ function App() {
             path: CONST_PATH.workspace.slice(1),      // '/home/workspace', slice(1) remove the '/' from the constant
             element: <WorkSpaceBoard />
           },
-          {
-            path: CONST_PATH.lounge.slice(1),      // '/home/lounge', slice(1) remove the '/' from the constant
-            element: <LoungeBoard />
-          },
+          // Temp disable
+          // {
+          //   path: CONST_PATH.lounge.slice(1),      // '/home/lounge', slice(1) remove the '/' from the constant
+          //   element: <LoungeBoard />
+          // },
           {
             path: CONST_PATH.loungeNews.slice(1), // '/home/lounge/news', slice(1) remove the '/' from the constant
             element: <NewsPage />

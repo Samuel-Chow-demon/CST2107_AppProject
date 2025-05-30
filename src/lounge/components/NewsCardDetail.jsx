@@ -5,8 +5,6 @@ import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrow
 
 const NewsCardDetail = ({newsData, clickBack}) => {
 
-    console.log(newsData);
-
     const {author, content, description, publishedAt, source, title, url, urlToImage} = newsData;
     const publishedDate = new Date(publishedAt);
 

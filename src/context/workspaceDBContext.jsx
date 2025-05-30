@@ -1,15 +1,17 @@
+import { addDoc, arrayRemove, arrayUnion, onSnapshot, query, setDoc, where, writeBatch } from 'firebase/firestore';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { deleteDoc, addDoc, doc, getDoc, getDocs, limit, query, setDoc, where, updateDoc, arrayRemove, onSnapshot, writeBatch } from 'firebase/firestore';
-import { userCollectionRef, workSpaceCollectionRef,
-    projectCollectionRef, projectStateCollectionRef,
-    taskCollectionRef, commentCollectionRef} from '../fireStore/database.js';
-import userContext from './userContext.js';
-import { arrayUnion } from 'firebase/firestore';
-import {getCollectionDocByRefAndID,
-        getCollectionDocByRefAndMatchField,
-        reclusiveRemoveDoc,
-        removeAllProjectsFromWSDoc} from '../components/DBUtility.js'
+import {
+    getCollectionDocByRefAndID,
+    getCollectionDocByRefAndMatchField,
+    removeAllProjectsFromWSDoc,
+    getExpireDate, guestExpireConfig,
+    getCollectionDocsByMultipleRefAndDataInSpecificField
+} from '../components/DBUtility.js';
 import { db } from '../firebaseConfig.js';
+import {
+    userCollectionRef, workSpaceCollectionRef
+} from '../fireStore/database.js';
+import userContext from './userContext.js';
 
 const workspaceContext = createContext();
 
@@ -50,26 +52,6 @@ const WorkSpaceDBProvider = ({children})=>{
 
             try
             {
-                // const queryDoc = query(workSpaceCollectionRef, where("userUIDs", "array-contains", _currentUser.uid))
-            
-                // const wsQuerySnapShot = await getDocs(queryDoc);
-
-                // if (!wsQuerySnapShot.empty)
-                // {
-                //     const allWorkSpace = []
-                //     wsQuerySnapShot.forEach((doc)=>{
-                //         allWorkSpace.push({
-                //             id : doc.id,
-                //             ...doc.data()           // expand the content to the object of allWorkSpace
-                //         })
-                //     })
-                //     setworkingWorkSpace(allWorkSpace);
-                // }
-                // else
-                // {
-                //     setworkingWorkSpace([]); // empty
-                // }
-
                 // Unsubscribe every render to avoid memory leaks, then below do the subscribe again
                 if (unsubscribeWS)
                 {
@@ -139,10 +121,25 @@ const WorkSpaceDBProvider = ({children})=>{
         {
             //setWSIsLoading(true);
 
-            const workSpaceRef = await addDoc(workSpaceCollectionRef, {
+            let newWSDocObj = {
                 ...formData,
                 projectIDs : []
-            });
+            }
+
+            if (_currentUser?.isGuest)
+            {
+                const getDate = getExpireDate(guestExpireConfig);
+
+                // console.log(`now: ${getDate.now.toDate()}`);
+                // console.log(`expire: ${getDate.expire.toDate()}`);
+
+                newWSDocObj = {
+                    ...newWSDocObj,
+                    expiredAt : getDate.expire
+                }
+            }
+
+            const workSpaceRef = await addDoc(workSpaceCollectionRef, newWSDocObj);
 
             await joinWorkSpace({workspaceID:workSpaceRef.id, userUID:formData.creatorUID});
 
@@ -339,16 +336,60 @@ const WorkSpaceDBProvider = ({children})=>{
         }
     }
 
+    const removeWorkSpaceByRefAndDocData = async({workSpaceRef, workSpaceDocData})=>{
+
+        let message = "";
+        try
+        {
+            const workSpaceDocID = workSpaceRef.id;
+
+            // ------------------- The 1st step, remove all the comments, tasks, states and projects sequentially -------------- //
+            await removeAllProjectsFromWSDoc(workSpaceDocData);
+
+            // ------------------- The 2nd Step, get all user ref to remove the workspace id from the user doc
+            // list of {docRef,  docObj}
+            const allUsersObjInWS = await getCollectionDocsByMultipleRefAndDataInSpecificField(userCollectionRef, "uid", workSpaceDocData.userUIDs);
+
+            console.log(allUsersObjInWS);
+
+            // -------------------- The 3rd Step, remove the WS Ref and the corresponding userRef to remove the WS ID from the workspaceIDs field
+            const batch = writeBatch(db);
+
+            batch.delete(workSpaceRef);
+
+            allUsersObjInWS.forEach((docObj)=>{
+
+                batch.update(docObj.docRef, {
+                    workspaceIDs : arrayRemove(workSpaceDocID)
+                })
+            })
+
+            await batch.commit();
+
+            message = "OK";
+        }
+        catch(error)
+        {
+            message = `Remove WorkSpace Fail : ${error}`
+        }
+
+        return {
+            message : message,
+            data : workSpaceDocData
+        }
+    }
+
     return (
         <workspaceContext.Provider value={{
             workingWorkSpace, 
             alertWorkSpace, setAlertWorkSpace,
             isWSLoading, setWSIsLoading, isWorkSpaceUpdate,
-            createWorkSpace, joinWorkSpace, removeWorkSpace, leaveWorkSpace, editWorkSpace
+            createWorkSpace, joinWorkSpace, removeWorkSpace, leaveWorkSpace, editWorkSpace,
+            removeWorkSpaceByRefAndDocData
         }}>
             {children}
         </workspaceContext.Provider>
     )
 }
 
-export {useWorkSpaceDB, WorkSpaceDBProvider}
+export { useWorkSpaceDB, WorkSpaceDBProvider };

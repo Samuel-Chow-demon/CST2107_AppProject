@@ -29,7 +29,7 @@ const LoungeBoard = () => {
                         transform: 'scale(1.1)'
                     }
                     }}
-                    onClick={() => navigateAction(path)}
+                    // onClick={() => navigateAction(path)} temp disabled
                     >
 
                     <Box
@@ -58,7 +58,7 @@ const LoungeBoard = () => {
         <div style={{display:'flex', width:'100%', height:'100%', gap:'5rem', padding:'2rem', backgroundColor:indigo[200]}}>
             
             {/* "/home/lounge/news" */}
-            <LoungeCardComponent name={"News Headlines"} path={CONST_PATH.home + CONST_PATH.loungeNews}
+            <LoungeCardComponent name={"News Headlines (Coming Soon)"} path={CONST_PATH.home + CONST_PATH.loungeNews}
                                 bkgrd={newsbkgrd}/>
         </div>
     // </NewsDataProvider>

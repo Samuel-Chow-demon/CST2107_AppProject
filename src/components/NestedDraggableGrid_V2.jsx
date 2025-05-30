@@ -35,30 +35,34 @@ const TaskCardComponent = ({ task, provided, index, snapshot,
   </div>
 );
 
-const StateCardComponent = ({ state, stateIndex, snapshot, removeState, removeTask, setRemoveItemObj, setOpenRemoveDialog,
-                              setOpenTaskDialog, 
-                              
-                              // setCurrentTaskStateID, 
-                              // setCurrentOpenTaskID, 
-                              // currentOpenTaskID, 
-                              // setEditTaskForm,
-                              
-                              currentOpenTaskIDRef,
-                              currentOpenStateIDRef,
-                              currentEditTaskFormRef
+const StateCardComponent = memo(({ state, stateIndex, snapshot,
+
+                              allUserInProjectDoc
                             
                             }) => {
 
   const [openStateForm, setOpenStateForm] = useState(false);
 
-  // useEffect(()=>{
+  const [currentEditTaskForm, setCurrentEditTaskForm] = useState({});
 
-  //   if (currentOpenTaskID != "")
-  //   {
-  //     const currentTask = state.tasks.filter((task)=>task.id === currentOpenTaskID);
-  //     setEditTaskForm(currentTask);
-  //   }
-  // },[])
+  const {
+    removeState
+  } = useStateDB();
+
+  const {
+    removeTask
+  } = useTaskDB();
+
+  const [openTaskDialog, setOpenTaskDialog] = useState(false);
+
+  const [openRemoveDialog, setOpenRemoveDialog] = useState(false);
+
+  const [removeItemObj, setRemoveItemObj] = useState({
+    removeFromDB : ()=>{},
+    dialogTitle : "",
+    categoryName : "",
+    targetName : ""
+  })
 
   const onClickRemove = ()=>{
     setOpenTaskDialog(false);
@@ -85,18 +89,113 @@ const StateCardComponent = ({ state, stateIndex, snapshot, removeState, removeTa
   };
 
   const onClickOpenAddOrEditTask = (editTaskForm={})=>{
+
     setOpenRemoveDialog(false)
 
-    // setCurrentTaskStateID(state.id);
-    // setCurrentOpenTaskID(editTaskForm?.id ?? "");
-    // setEditTaskForm(editTaskForm); // if empty object means at the Add New Task Button
-
-    currentOpenTaskIDRef.current = editTaskForm?.id ?? "";
-    currentOpenStateIDRef.current = state.id;
-    currentEditTaskFormRef.current = editTaskForm;
-
+    setCurrentEditTaskForm(editTaskForm);
     setOpenTaskDialog(true);
   }
+
+  const closeTaskDialogHandle = ()=>{
+
+    setOpenTaskDialog(false);
+  }
+
+  const PaperComponent = memo(({ nodeRef, ...props }) => {
+    return (
+      <ReactDraggable nodeRef={nodeRef}
+        handle="#draggable-dialog-title"
+        cancel={'[class*="MuiDialogContent-root"]'}
+      >
+        <Paper ref={nodeRef} sx={{ borderRadius: '8px' }} {...props} />
+      </ReactDraggable>
+    );
+  });
+
+
+  const TaskDialog = memo(() => {
+
+    const dialogNodeRef = useRef(null);
+
+    return (
+      <Fragment>
+        <Dialog
+          open={openTaskDialog}
+          onClose={() => closeTaskDialogHandle()}
+          PaperComponent={(props) => (
+            <PaperComponent {...props} nodeRef={dialogNodeRef} />
+          )}
+          aria-labelledby="draggable-dialog-title"
+        >
+          <DialogTitle style={{ cursor: 'move', textAlign: 'center' }} id="draggable-dialog-title">
+            {Object.keys(currentEditTaskForm).length <= 0 ? "Create Task" : "Edit Task"}
+          </DialogTitle>
+
+          <DialogContent>
+            <Paper style={{
+              height: '100%',
+              width: '500px',
+              display: 'flex',
+              marginTop: '10px',
+              flexDirection: 'column', gap: '20px',
+              justifyContent: 'center', alignItems: 'center'
+            }}
+              elevation={0}>
+
+              <TaskFormV2 allUserInProjectDoc={allUserInProjectDoc}
+                              setCloseDialogHandle={closeTaskDialogHandle}
+
+                              stateID={state.id}
+                              currentTaskForm={currentEditTaskForm}
+                              />
+
+            </Paper>
+          </DialogContent>
+        </Dialog>
+      </Fragment >
+    );
+  });
+
+  const RemoveItemDialog = memo(() => {
+
+    const dialogNodeRef = useRef(null);
+  
+    return (
+        <Fragment>
+            <Dialog
+                open={openRemoveDialog}
+                onClose={()=>setOpenRemoveDialog(false)}
+                PaperComponent={(props) => (
+                    <PaperComponent {...props} nodeRef={dialogNodeRef} />
+                )}
+                aria-labelledby="draggable-dialog-title"
+            >
+                <DialogTitle style={{ cursor: 'move', textAlign: 'center' }}
+                             sx={{color:red[800]}}
+                             id="draggable-dialog-title">
+                    {removeItemObj.dialogTitle}
+                </DialogTitle>
+                <DialogContent>
+                    <Paper style={{
+                        height: '100%',
+                        display: 'flex',
+                        marginTop: '10px',
+                        flexDirection: 'column', gap: '20px',
+                        justifyContent: 'center', alignItems: 'center'
+                    }}
+                        elevation={0}>
+  
+                    <RemoveForm removeFromDB={removeItemObj.removeFromDB}
+                                categoryName={removeItemObj.categoryName}
+                                targetName={removeItemObj.targetName}
+                                setOpenDialog={setOpenRemoveDialog}/>
+  
+                    </Paper>
+                </DialogContent>
+            </Dialog>
+        </Fragment >
+    );
+  });
 
 
   return (
@@ -111,6 +210,8 @@ const StateCardComponent = ({ state, stateIndex, snapshot, removeState, removeTa
       minHeight: '10rem'
     }}
     >
+    <TaskDialog />
+    <RemoveItemDialog />
 
     {
       openStateForm ?
@@ -253,7 +354,7 @@ const StateCardComponent = ({ state, stateIndex, snapshot, removeState, removeTa
     </Droppable>
   </div>
   );
-}
+});
 
 //const NestedDraggableGrid_V2 = ({workingStatesWithTasks, setworkingStatesWithTasks, allUserInProjectDoc}) => {
 const NestedDraggableGrid_V2 = ({stateCards, setStateCards, allUserInProjectDoc}) => {
@@ -268,34 +369,9 @@ const NestedDraggableGrid_V2 = ({stateCards, setStateCards, allUserInProjectDoc}
     //  ...
     // ]
 
-  //const [stateCards, setStateCards] = useState(workingStatesWithTasks);
-
-  const [openRemoveDialog, setOpenRemoveDialog] = useState(false);
-
-  const [openTaskDialog, setOpenTaskDialog] = useState(false);
-
-  //const [currentTaskStateID, setCurrentTaskStateID] = useState("");
-  //const [currentOpenTaskID, setCurrentOpenTaskID] = useState("");
-  //const [editTaskForm, setEditTaskForm] = useState({});
-
-  const currentOpenStateIDRef = useRef("");
-  const currentOpenTaskIDRef = useRef("");
-  const currentEditTaskFormRef = useRef({});
-
-  const [removeItemObj, setRemoveItemObj] = useState({
-    removeFromDB : ()=>{},
-    dialogTitle : "",
-    categoryName : "",
-    targetName : ""
-  })
-
   const {
-    moveState, leaveJoinState, removeState
+    moveState, leaveJoinState
   } = useStateDB();
-
-  const {
-    removeTask
-  } = useTaskDB();
 
   const {
     alertComment, setAlertComment
@@ -305,37 +381,6 @@ const NestedDraggableGrid_V2 = ({stateCards, setStateCards, allUserInProjectDoc}
     setAlertComment({ ...alertComment, message: '', isOpen: false });
   }, [])
 
-  // useEffect(()=>{
-  //   setStateCards(workingStatesWithTasks)
-  // }, [workingStatesWithTasks]);
-
-  // useEffect(()=>{
-  //   if (currentTaskStateID != "" && 
-  //       currentOpenTaskID != "")
-  //     {
-  //       const [currentState] = stateCards.filter((state)=>state.id === currentTaskStateID);
-  //       const [currentTask] = currentState.tasks.filter((task)=>task.id === currentOpenTaskID);
-  //       setEditTaskForm(currentTask);
-  //     }
-  // }, [])
-
-  useEffect(()=>{
-    if (currentOpenTaskIDRef.current != "" && 
-      currentOpenStateIDRef.current != "")
-      {
-        const [currentState] = stateCards.filter((state)=>state.id === currentOpenStateIDRef.current);
-        const [currentTask] = currentState.tasks.filter((task)=>task.id === currentOpenTaskIDRef.current);
-        currentEditTaskFormRef.current = currentTask;
-      }
-  })
-
-  const closeTaskDialogHandle = ()=>{
-
-    //setCurrentOpenTaskID("");
-    currentOpenTaskIDRef.current = "";
-
-    setOpenTaskDialog(false);
-  }
 
   const handleDragEnd = (result) => {
     const { draggableId, source, destination } = result;
@@ -428,110 +473,8 @@ const NestedDraggableGrid_V2 = ({stateCards, setStateCards, allUserInProjectDoc}
     }
   };
 
-  const PaperComponent = memo(({ nodeRef, ...props }) => {
-    return (
-      <ReactDraggable nodeRef={nodeRef}
-        handle="#draggable-dialog-title"
-        cancel={'[class*="MuiDialogContent-root"]'}
-      >
-        <Paper ref={nodeRef} sx={{ borderRadius: '8px' }} {...props} />
-      </ReactDraggable>
-    );
-  });
-
-  const RemoveItemDialog = memo(() => {
-
-    const dialogNodeRef = useRef(null);
-  
-    return (
-        <Fragment>
-            <Dialog
-                open={openRemoveDialog}
-                onClose={()=>setOpenRemoveDialog(false)}
-                PaperComponent={(props) => (
-                    <PaperComponent {...props} nodeRef={dialogNodeRef} />
-                )}
-                aria-labelledby="draggable-dialog-title"
-            >
-                <DialogTitle style={{ cursor: 'move', textAlign: 'center' }}
-                             sx={{color:red[800]}}
-                             id="draggable-dialog-title">
-                    {removeItemObj.dialogTitle}
-                </DialogTitle>
-                <DialogContent>
-                    <Paper style={{
-                        height: '100%',
-                        display: 'flex',
-                        marginTop: '10px',
-                        flexDirection: 'column', gap: '20px',
-                        justifyContent: 'center', alignItems: 'center'
-                    }}
-                        elevation={0}>
-  
-                    <RemoveForm removeFromDB={removeItemObj.removeFromDB}
-                                categoryName={removeItemObj.categoryName}
-                                targetName={removeItemObj.targetName}
-                                setOpenDialog={setOpenRemoveDialog}/>
-  
-                    </Paper>
-                </DialogContent>
-            </Dialog>
-        </Fragment >
-    );
-  });
-
-  const TaskDialog = memo(() => {
-
-    const dialogNodeRef = useRef(null);
-
-    return (
-      <Fragment>
-        <Dialog
-          open={openTaskDialog}
-          onClose={() => closeTaskDialogHandle()}
-          PaperComponent={(props) => (
-            <PaperComponent {...props} nodeRef={dialogNodeRef} />
-          )}
-          aria-labelledby="draggable-dialog-title"
-        >
-          <DialogTitle style={{ cursor: 'move', textAlign: 'center' }} id="draggable-dialog-title">
-
-            {/* {Object.keys(editTaskForm).length <= 0 ? "Create Task" : "Edit Task"} */}
-            {Object.keys(currentEditTaskFormRef.current).length <= 0 ? "Create Task" : "Edit Task"}
-
-          </DialogTitle>
-          <DialogContent>
-            <Paper style={{
-              height: '100%',
-              width: '500px',
-              display: 'flex',
-              marginTop: '10px',
-              flexDirection: 'column', gap: '20px',
-              justifyContent: 'center', alignItems: 'center'
-            }}
-              elevation={0}>
-
-              <TaskFormV2 allUserInProjectDoc={allUserInProjectDoc}
-                              setCloseDialogHandle={closeTaskDialogHandle}
-
-                              //stateID={currentTaskStateID}
-                              //currentTaskForm={editTaskForm}
-                              
-                              stateID={currentOpenStateIDRef.current}
-                              currentTaskForm={currentEditTaskFormRef.current}
-                              />
-
-            </Paper>
-          </DialogContent>
-        </Dialog>
-      </Fragment >
-    );
-  });
-
   return (
     <>
-      <RemoveItemDialog />
-      <TaskDialog />
       <Alert alertConfig={alertComment} />
       <DragDropContext onDragEnd={handleDragEnd}>
         <div style={{ display: "flex", gap: "20px" }}>
@@ -565,20 +508,8 @@ const NestedDraggableGrid_V2 = ({stateCards, setStateCards, allUserInProjectDoc}
                                           state={state}
                                           stateIndex={stateIndex}
                                           snapshot={snapshot}
-                                          removeState={removeState} 
-                                          removeTask={removeTask}
-                                          setRemoveItemObj={setRemoveItemObj}
-                                          setOpenRemoveDialog={setOpenRemoveDialog}
-                                          setOpenTaskDialog={setOpenTaskDialog}
 
-                                          //setCurrentTaskStateID={setCurrentTaskStateID}
-                                          //setCurrentOpenTaskID={setCurrentOpenTaskID}
-                                          //currentOpenTaskID={currentOpenTaskID}
-                                          //setEditTaskForm={setEditTaskForm}
-
-                                          currentOpenTaskIDRef={currentOpenTaskIDRef}
-                                          currentOpenStateIDRef={currentOpenStateIDRef}
-                                          currentEditTaskFormRef={currentEditTaskFormRef}
+                                          allUserInProjectDoc={allUserInProjectDoc}
 
                                         />
                                   </div>

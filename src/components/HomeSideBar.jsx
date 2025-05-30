@@ -147,6 +147,14 @@ function Sidebar() {
             itemText={"Profile"}
             buttonClick={()=>navigate(CONST_PATH.home + CONST_PATH.userProfile)}
         />
+        {
+          _currentUser.isAdmin ?
+          <ListItemComponent 
+            IconComponent={<AccountCircle fontSize="large" sx={{ color: '#6e727d' }} />}
+            itemText={"Admin"}
+            buttonClick={()=>navigate(CONST_PATH.home + CONST_PATH.admin)}
+          /> : null
+        }
         <ListItemComponent 
             IconComponent={<Logout fontSize="large" sx={{ color: '#6f727c' }} />}
             itemText={"Logout"}
