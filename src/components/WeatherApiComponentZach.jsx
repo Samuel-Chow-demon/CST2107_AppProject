@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './WeatherApiComponentZach.css'
 
@@ -24,7 +24,7 @@ const WeatherComponent = () => {
   // Fetch weather data
   useEffect(() => {
     if (location.latitude && location.longitude) {
-      const apiKey = '88fb18fef2fc838f632a26564d644422'; 
+      const apiKey = import.meta.env.VITE_WEATHER_API; 
       const url = `https://api.openweathermap.org/data/2.5/weather?lat=${location.latitude}&lon=${location.longitude}&units=metric&appid=${apiKey}`;
 
       axios
