@@ -9,6 +9,11 @@ import useInputForm from "../hooks/useInputForm";
 import DateRangePickerTool from "./DateRangePicker";
 import DisplayComments from "./DisplayComments";
 import CommentForm from "./commentForm";
+import { doc, onSnapshot } from 'firebase/firestore';
+
+import {
+    taskCollectionRef
+} from '../fireStore/database.js';
 
 const TaskFormV2 = ({allUserInProjectDoc, stateID, setCloseDialogHandle, currentTaskForm = {}}) => {
 
@@ -112,9 +117,40 @@ const TaskFormV2 = ({allUserInProjectDoc, stateID, setCloseDialogHandle, current
 
   }, [dateDataSetupReadyRef.current, commentDataSetupReadyRef.current, dataSetupReadyRef.current])
 
+  // Important -- Need Create subscription on itself task id doc if being changed that required to update
+  // to current currentTaskForm if it is in edit mode
+  const callbackUpdateEditModeCurrentTaskFormData = (snapshot)=>{
+    if (isEditMode &&
+        snapshot.exists())
+    {
+      setFormData(snapshot.data());
+    }
+  }
 
+  useEffect(()=>{
 
+    let unsubscribeTaskDoc = null;
 
+    if (isEditMode)
+    {
+      unsubscribeTaskDoc = onSnapshot(
+        doc(taskCollectionRef, currentTaskForm.id), // Listen to the current opened doc with id                        
+        (snapshot)=>callbackUpdateEditModeCurrentTaskFormData(snapshot),
+        (error) => {
+            console.error("TaskForm Listening Task Doc DB Fail", error);
+          }
+      )
+
+    }
+
+    return ()=>{
+      if (unsubscribeTaskDoc)
+      {
+        unsubscribeTaskDoc();
+      }
+    }
+
+  }, []);
 
   const handleInputChange = useCallback((field)=>(e) => enterInput(field)(e), [enterInput]);
 
