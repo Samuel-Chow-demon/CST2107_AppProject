@@ -217,10 +217,10 @@ const LogInform = ({clickHandleToSignUp}) => {
                     <ul style={{listStyleType: 'disc'}}>
                         <li>
                             <p style={{textAlign: 'justify'}}>Guest account would be <span style={{color: 'orange'}}>removed </span> 
-                             after logged out or <span style={{color: 'orange'}}>persisted ONE day only</span></p>
+                             after logged out or <span style={{color: 'orange'}}>persisted ONE week only</span></p>
                         </li>
                         <li>
-                            <p style={{textAlign: 'justify'}}>Guest account created <span style={{color: 'orange'}}>entries would be removed</span> after <span style={{color: 'orange'}}>ONE day</span></p>
+                            <p style={{textAlign: 'justify'}}>Guest account created <span style={{color: 'orange'}}>entries would be removed</span> after <span style={{color: 'orange'}}>ONE week</span></p>
                         </li>
                             
                     </ul>
