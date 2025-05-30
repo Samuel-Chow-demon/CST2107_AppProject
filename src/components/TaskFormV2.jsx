@@ -1,5 +1,5 @@
 import AddCircleIcon from '@mui/icons-material/AddCircle';
-import { Box, Button, Chip, Popover, TextField, Typography } from "@mui/material";
+import { Box, Button, Chip, CircularProgress, Popover, TextField, Typography } from "@mui/material";
 import { blue, grey } from "@mui/material/colors";
 import dayjs from "dayjs";
 import { memo, useCallback, useContext, useEffect, useRef, useState } from "react";
@@ -13,6 +13,12 @@ import CommentForm from "./commentForm";
 const TaskFormV2 = ({allUserInProjectDoc, stateID, setCloseDialogHandle, currentTaskForm = {}}) => {
 
   const {_currentUser, setCurrentUser} = useContext(userContext);
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  const dataSetupReadyRef = useRef(false);
+  const commentDataSetupReadyRef = useRef(false);
+  const dateDataSetupReadyRef = useRef(false);
 
   // currentAllCommentsInTask
   // [{
@@ -70,28 +76,9 @@ const TaskFormV2 = ({allUserInProjectDoc, stateID, setCloseDialogHandle, current
       {
         setCurrentTaskData(currentTaskForm);
       }
+      dataSetupReadyRef.current = true;
 
-    }, [])
-
-    // useEffect(()=>{
-
-    //   if (isEditMode)
-    //   {
-    //     setCurrentTaskData(currentTaskForm);
-    //   }
-
-    // }, [currentTaskForm]);
-
-    // useEffect(()=>{
-
-    //   if (isEditMode)
-    //   {
-    //     const getAllComments = async()=>{
-    //       await getAllCommentByCommentIDs(currentTaskForm.commentIDs);
-    //     }
-    //     getAllComments();
-    //   }
-    // }, [currentTaskForm])
+    }, []);
 
     useEffect(()=>{
 
@@ -101,21 +88,33 @@ const TaskFormV2 = ({allUserInProjectDoc, stateID, setCloseDialogHandle, current
         const taskRelatedComments = currentAllCommentsInTask.filter((commentDoc)=>commentDoc?.taskID === currentTaskForm.id);
         setTaskRelatedAllComments(taskRelatedComments);
       }
+      commentDataSetupReadyRef.current = true;
 
-    }, [currentAllCommentsInTask])
+    }, [currentAllCommentsInTask]);
 
   useEffect(()=>{
 
     enterInput('startDateISO', dateRange[0] ? dateRange[0].toISOString() : "")()
     enterInput('endDateISO', dateRange[1] ? dateRange[1].toISOString() : "")()
 
-  }, [dateRange])
+    dateDataSetupReadyRef.current = true;
 
-  // useEffect(()=>{
+  }, [dateRange]);
 
-  //   enterInput('projectColor', color)()
+  useEffect(()=>{
 
-  // }, [color])
+    if (dataSetupReadyRef.current &&
+        commentDataSetupReadyRef.current &&
+        dateDataSetupReadyRef.current)
+    {
+      setIsLoading(false); // when all loading finished, set loading is finished
+    }
+
+  }, [dateDataSetupReadyRef.current, commentDataSetupReadyRef.current, dataSetupReadyRef.current])
+
+
+
+
 
   const handleInputChange = useCallback((field)=>(e) => enterInput(field)(e), [enterInput]);
 
@@ -136,7 +135,7 @@ const TaskFormV2 = ({allUserInProjectDoc, stateID, setCloseDialogHandle, current
     }
 }
 
-  const DisplayAddedUserComponent = ()=>{
+  const DisplayAddedUserComponent = memo(()=>{
     return (
        <Box sx={{display: 'grid', gridTemplateColumns: '5fr 1fr', alignItems:'center', gap: 2, width:'100%'}}>
         
@@ -181,7 +180,7 @@ const TaskFormV2 = ({allUserInProjectDoc, stateID, setCloseDialogHandle, current
                     />
         </Box>
     );
-}
+});
 
 const handleDeleteAddedUser = (userUid)=>{
 
@@ -281,79 +280,90 @@ const DisplayUserListComponent = memo(() => {
 
   return (
     <div style={{width:'100%', display:'flex', flexDirection: 'column', gap:'16px'}}>
-      
-      <TaskActionComponent />
-      <TextField
-            fullWidth
-            autoFocus
-            required
-            disabled={isDisableInput}
-            sx={{
-                opacity: isDisableInput ? 0.5 : 1,
-                marginTop:'5px'
-            }}
-            error={formInputErrors['title'].isError}
-            label={"Task Title"}
-            placeholder={"Enter Task Title Or Name"}
-            size='Normal'
-            helperText={formInputErrors['title'].message}
-            value={formData['title']}
-            onChange={handleInputChange('title')}
-        />
 
-      <TextField
-            fullWidth
-            autoFocus
-            required={false}
-            multiline={true}
-            rows={4}
-            disabled={isDisableInput}
-            sx={{
-                opacity: isDisableInput ? 0.5 : 1,
-            }}
-            error={formInputErrors['description'].isError}
-            label={"Description"}
-            placeholder={"Enter Project Description"}
-            size='Normal'
-            helperText={formInputErrors['description'].message}
-            value={formData['description']}
-            onChange={handleInputChange('description')}
-        />
-
-      <DateRangePickerTool dateRange={dateRange} setDateRange={setDateRange} />
-      <DisplayAddedUserComponent />
-      <Box ref={addedUserRef} sx={{width:'100%', height:'100%'}}>
-        <DisplayUserListComponent />
-      </Box>
-      {/* <ColorPicker /> */}
       {
-        isEditMode && !openCommentBox &&
-        <Button sx={{
-                width : '100%',
-                height : 'auto',
-                '&:hover':{
-                    color:grey[100],
-                    backgroundColor:grey[600]
-                }
-            }}
-            onClick={()=>setOpenCommentBox(true)}>
-            Add Comments
-        </Button>
-      }
-      {
-        isEditMode && openCommentBox &&
-        <CommentForm taskID={currentTaskForm.id} userUID={_currentUser.uid}
-                      setFormOpen={setOpenCommentBox}/>
-
-      }
-      {
-        isEditMode &&
-        <div style={{display:'flex', flexDirection:'column', width:'100%', height:'auto', marginBottom:'10px', gap:'10px'}}>
-          <DisplayComments currentAllCommentsInTask={taskRelatedAllComments}
-                            allUserInProjectDoc={allUserInProjectDoc}
-                            taskID={currentTaskForm.id} userUID={_currentUser.uid}/>
+        isLoading ?
+        <div style={{width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
+          <CircularProgress />
         </div>
+        :
+        <>
+          <TaskActionComponent />
+          <TextField
+                fullWidth
+                autoFocus
+                required
+                disabled={isDisableInput}
+                sx={{
+                    opacity: isDisableInput ? 0.5 : 1,
+                    marginTop:'5px'
+                }}
+                error={formInputErrors['title'].isError}
+                label={"Task Title"}
+                placeholder={"Enter Task Title Or Name"}
+                size='Normal'
+                helperText={formInputErrors['title'].message}
+                value={formData['title']}
+                onChange={handleInputChange('title')}
+            />
+    
+          <TextField
+                fullWidth
+                autoFocus
+                required={false}
+                multiline={true}
+                rows={4}
+                disabled={isDisableInput}
+                sx={{
+                    opacity: isDisableInput ? 0.5 : 1,
+                }}
+                error={formInputErrors['description'].isError}
+                label={"Description"}
+                placeholder={"Enter Project Description"}
+                size='Normal'
+                helperText={formInputErrors['description'].message}
+                value={formData['description']}
+                onChange={handleInputChange('description')}
+            />
+    
+          <DateRangePickerTool dateRange={dateRange} setDateRange={setDateRange} />
+          <DisplayAddedUserComponent />
+          <Box ref={addedUserRef} sx={{width:'100%', height:'100%'}}>
+            <DisplayUserListComponent />
+          </Box>
+          {/* <ColorPicker /> */}
+          {
+            isEditMode && !openCommentBox &&
+            <Button sx={{
+                    width : '100%',
+                    height : 'auto',
+                    '&:hover':{
+                        color:grey[100],
+                        backgroundColor:grey[600]
+                    }
+                }}
+                onClick={()=>setOpenCommentBox(true)}>
+                Add Comments
+            </Button>
+          }
+          {
+            isEditMode && openCommentBox &&
+            <CommentForm taskID={currentTaskForm.id} userUID={_currentUser.uid}
+                          setFormOpen={setOpenCommentBox}/>
+    
+          }
+          {
+            isEditMode &&
+            <div style={{display:'flex', flexDirection:'column', width:'100%', height:'auto', marginBottom:'10px', gap:'10px'}}>
+              <DisplayComments currentAllCommentsInTask={taskRelatedAllComments}
+                                allUserInProjectDoc={allUserInProjectDoc}
+                                taskID={currentTaskForm.id} userUID={_currentUser.uid}/>
+            </div>
+          }
+        
+        </>
       }
+      
     </div>
   );
 };

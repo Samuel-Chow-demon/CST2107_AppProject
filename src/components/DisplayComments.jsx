@@ -13,7 +13,7 @@ import { useCommentDB } from '../context/commentDBContext';
 import CommentForm from './commentForm';
 import RemoveCommentForm from './RemoveCommentForm';
 
-const ReclusiveCommentsComponent = ({ commentDoc, userUID, setEditCommentForm, setIsRemoveComment,
+const ReclusiveCommentsComponent = memo(({ commentDoc, userUID, setEditCommentForm, setIsRemoveComment,
                                       getUserObjByUID,
                                       setOpenCommentDialog }) => {
   
@@ -176,7 +176,7 @@ const ReclusiveCommentsComponent = ({ commentDoc, userUID, setEditCommentForm, s
             }
       </div>
     );
-  };
+  });
 
 const DisplayComments = ({currentAllCommentsInTask, allUserInProjectDoc, taskID, userUID}) => {
 
