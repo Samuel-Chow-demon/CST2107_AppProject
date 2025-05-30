@@ -3,6 +3,7 @@ import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { memo } from 'react';
 
 const DateRangePickerTool = ({ dateRange, setDateRange }) => {
   return (
@@ -23,4 +24,4 @@ const DateRangePickerTool = ({ dateRange, setDateRange }) => {
   );
 };
 
-export default DateRangePickerTool;
+export default memo(DateRangePickerTool);
